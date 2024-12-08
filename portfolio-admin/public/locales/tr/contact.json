@@ -1,0 +1,34 @@
+{
+  "title": "İletişim",
+  "description": "Herhangi bir soru veya işbirliği önerisi için benimle iletişime geçin",
+  "getInTouch": "İletişime geçelim",
+  "contactText": "Projelerinizi tartışmak veya başka sorularınız için benimle iletişime geçmekten çekinmeyin. En kısa sürede size geri döneceğim.",
+  "methods": {
+    "email": "E-posta",
+    "phone": "Telefon",
+    "location": "Konum"
+  },
+  "form": {
+    "title": "Bana mesaj gönderin",
+    "name": {
+      "label": "İsim",
+      "placeholder": "Adınız"
+    },
+    "email": {
+      "label": "E-posta",
+      "placeholder": "mailiniz@ornek.com"
+    },
+    "subject": {
+      "label": "Konu",
+      "placeholder": "Mesaj konusu"
+    },
+    "message": {
+      "label": "Mesaj",
+      "placeholder": "Mesajınız"
+    },
+    "submit": "Gönder",
+    "submitting": "Gönderiliyor...",
+    "success": "Mesaj başarıyla gönderildi!",
+    "error": "Bir hata oluştu. Lütfen tekrar deneyin."
+  }
+}

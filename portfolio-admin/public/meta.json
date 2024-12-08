@@ -1,0 +1,10 @@
+{
+  "name": "Portfolio Admin",
+  "description": "Portfolio administration dashboard",
+  "version": "1.0.0",
+  "author": "sketur60@admin.msk",
+  "theme": {
+    "primary": "#3B82F6",
+    "background": "#1F2937"
+  }
+}

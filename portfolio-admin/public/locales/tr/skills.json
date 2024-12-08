@@ -1,0 +1,18 @@
+{
+  "title": "Yeteneklerim",
+  "description": "Teknik ve profesyonel yeteneklerimi keşfedin",
+  "categories": {
+    "frontend": "Frontend Geliştirme",
+    "backend": "Backend Geliştirme",
+    "database": "Veritabanları",
+    "devops": "DevOps & Cloud",
+    "tools": "Araçlar & Ortam",
+    "other": "Diğer Yetenekler"
+  },
+  "levels": {
+    "beginner": "Başlangıç",
+    "intermediate": "Orta Seviye",
+    "advanced": "İleri Seviye",
+    "expert": "Uzman"
+  }
+}

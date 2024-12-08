@@ -1,0 +1,18 @@
+{
+  "title": "Professional Experience",
+  "description": "Discover my professional journey and achievements",
+  "present": "Present",
+  "achievements": "Achievements",
+  "technologies": "Technologies used",
+  "duration": {
+    "years": "{{count}} year | {{count}} years",
+    "months": "{{count}} month | {{count}} months",
+    "days": "{{count}} day | {{count}} days"
+  },
+  "filters": {
+    "all": "All",
+    "current": "Current position",
+    "past": "Previous positions"
+  },
+  "noExperience": "No experience to display at the moment"
+}

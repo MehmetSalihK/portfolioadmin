@@ -1,0 +1,18 @@
+{
+  "title": "Mes Compétences",
+  "description": "Découvrez mes compétences techniques et professionnelles",
+  "categories": {
+    "frontend": "Développement Frontend",
+    "backend": "Développement Backend",
+    "database": "Bases de données",
+    "devops": "DevOps & Cloud",
+    "tools": "Outils & Environnement",
+    "other": "Autres compétences"
+  },
+  "levels": {
+    "beginner": "Débutant",
+    "intermediate": "Intermédiaire",
+    "advanced": "Avancé",
+    "expert": "Expert"
+  }
+}

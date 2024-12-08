@@ -1,0 +1,21 @@
+{
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "projects": "Projects",
+    "skills": "Skills",
+    "experience": "Experience",
+    "contact": "Contact"
+  },
+  "home": {
+    "title": "Welcome to my Portfolio",
+    "subtitle": "Full Stack Developer passionate about creating modern and performant web applications",
+    "cta": {
+      "projects": "View my projects",
+      "contact": "Contact me"
+    }
+  },
+  "footer": {
+    "rights": "All rights reserved."
+  }
+}
