@@ -6,12 +6,24 @@ import { motion } from 'framer-motion';
 import { FiPlus, FiTrash2, FiMove, FiEye, FiEyeOff, FiCode } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
+import * as Si from 'react-icons/si';
+import { FaCode, FaReact, FaNodeJs, FaGit, FaDocker, FaAws, FaJava, FaPhp, FaNpm, FaWordpress, FaGitlab } from 'react-icons/fa';
+import { TbApi, TbBrandPython } from 'react-icons/tb';
+import { IconType } from 'react-icons';
 
 interface SkillCategory {
   _id: string;
   name: string;
   displayOrder: number;
   isVisible: boolean;
+}
+
+interface Skill {
+  _id: string;
+  name: string;
+  level: number;
+  categoryId?: string;
+  isHidden: boolean;
 }
 
 const DEFAULT_CATEGORIES = [
@@ -22,18 +34,61 @@ const DEFAULT_CATEGORIES = [
   'Logiciels'
 ];
 
+const getSkillIcon = (skillName: string): JSX.Element => {
+  const icons: { [key: string]: IconType } = {
+    'React': FaReact,
+    'Node.js': FaNodeJs,
+    'TypeScript': Si.SiTypescript,
+    'JavaScript': Si.SiJavascript,
+    'MongoDB': Si.SiMongodb,
+    'PostgreSQL': Si.SiPostgresql,
+    'Git': FaGit,
+    'Docker': FaDocker,
+    'AWS': FaAws,
+    'Python': TbBrandPython,
+    'Java': FaJava,
+    'PHP': FaPhp,
+    'Tailwind': Si.SiTailwindcss,
+    'Next.js': Si.SiNextdotjs,
+    'Adobe Photoshop': Si.SiAdobephotoshop,
+    'Wordpress': FaWordpress,
+    'API': TbApi,
+    'GitLab': FaGitlab,
+    'GitHub': FaGitlab,
+    'NPM': FaNpm,
+    'Composer': Si.SiComposer,
+    'Flutter': Si.SiFlutter,
+    'Microsoft Word': Si.SiMicrosoftword,
+    'Microsoft Excel': Si.SiMicrosoftexcel,
+    'Microsoft PowerPoint': Si.SiMicrosoftpowerpoint,
+    'Adobe Premiere Pro': Si.SiAdobepremierepro,
+    'Yarn': Si.SiYarn,
+    'PIP': FaCode
+  };
+
+  const normalizedName = skillName.toLowerCase().trim();
+  const Icon = Object.entries(icons).find(([key]) => 
+    key.toLowerCase() === normalizedName
+  )?.[1] || FaCode;
+
+  return <Icon className="w-5 h-5" />;
+};
+
 export default function SkillCategoriesPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [categories, setCategories] = useState<SkillCategory[]>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/admin/login');
     } else {
       fetchCategories();
+      fetchSkills();
     }
   }, [status]);
 
@@ -49,6 +104,18 @@ export default function SkillCategoriesPage() {
       }
     } catch (error) {
       toast.error('Erreur lors du chargement des catégories');
+    }
+  };
+
+  const fetchSkills = async () => {
+    try {
+      const response = await fetch('/api/skills');
+      if (response.ok) {
+        const data = await response.json();
+        setSkills(data);
+      }
+    } catch (error) {
+      toast.error('Erreur lors du chargement des compétences');
     }
   };
 
@@ -174,19 +241,44 @@ export default function SkillCategoriesPage() {
           </div>
         </div>
 
-        {/* Bouton d'ajout */}
-        <div className="flex justify-end mb-6">
-          <button
-            onClick={() => setIsAddingCategory(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200"
-          >
-            <FiPlus className="w-5 h-5" /> Add Category
-          </button>
+        {/* Toutes les compétences disponibles */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-white mb-4">Toutes les compétences</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {skills.map((skill) => (
+              <motion.div
+                key={skill._id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-[#1E1E1E] rounded-lg p-3 shadow-lg border border-[#2A2A2A] hover:border-blue-500 transition-all duration-200 cursor-pointer"
+                onClick={() => {
+                  // Logique pour sélectionner une compétence
+                  setSelectedSkills(prev => 
+                    prev.includes(skill._id) 
+                      ? prev.filter(id => id !== skill._id)
+                      : [...prev, skill._id]
+                  );
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    {getSkillIcon(skill.name)}
+                    <span className="text-sm font-medium text-white">
+                      {skill.name}
+                    </span>
+                  </div>
+                  {selectedSkills.includes(skill._id) && (
+                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
-        {/* Liste des catégories style page d'accueil */}
-        <div className="space-y-8">
-          {categories.map((category, index) => (
+        {/* Liste des catégories */}
+        <div className="space-y-8 mt-8">
+          {categories.map((category) => (
             <motion.div
               key={category._id}
               initial={{ opacity: 0, y: 20 }}
@@ -197,63 +289,39 @@ export default function SkillCategoriesPage() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <h2 className="text-xl font-semibold text-white">{category.name}</h2>
-                  <div className="h-0.5 w-full bg-gray-700"></div>
+                  <div className="h-0.5 w-32 bg-gray-700"></div>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => toggleVisibility(category._id, !category.isVisible)}
-                    className={`p-2 rounded-lg ${
-                      category.isVisible 
-                        ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30' 
-                        : 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
-                    }`}
-                  >
-                    {category.isVisible ? <FiEye /> : <FiEyeOff />}
-                  </button>
-                  <button
-                    onClick={() => {/* Logique de suppression */}}
-                    className="p-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30"
-                  >
-                    <FiTrash2 />
-                  </button>
-                </div>
+                <button
+                  onClick={() => {
+                    // Logique pour assigner les compétences sélectionnées à cette catégorie
+                    if (selectedSkills.length > 0) {
+                      // Appel API pour mettre à jour les compétences de la catégorie
+                      selectedSkills.forEach(async (skillId) => {
+                        await fetch(`/api/admin/skills/${skillId}`, {
+                          method: 'PATCH',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({ categoryId: category._id }),
+                        });
+                      });
+                      toast.success('Compétences assignées à la catégorie');
+                      setSelectedSkills([]);
+                      fetchSkills();
+                    }
+                  }}
+                  className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                    selectedSkills.length > 0
+                      ? 'bg-blue-500 text-white hover:bg-blue-600'
+                      : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  Assigner les compétences sélectionnées
+                </button>
               </div>
             </motion.div>
           ))}
         </div>
-
-        {/* Modal d'ajout de catégorie */}
-        {isAddingCategory && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-[#1E1E1E] rounded-lg p-6 w-full max-w-md">
-              <h2 className="text-xl font-bold text-white mb-4">Ajouter une catégorie</h2>
-              <form onSubmit={handleAddCategory} className="space-y-4">
-                <input
-                  type="text"
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  placeholder="Nom de la catégorie"
-                  className="w-full px-3 py-2 bg-gray-800 text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:outline-none"
-                />
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsAddingCategory(false)}
-                    className="px-4 py-2 text-gray-400 hover:text-white"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
-                  >
-                    Ajouter
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
 
         {/* Bouton d'initialisation si pas de catégories */}
         {categories.length === 0 && (

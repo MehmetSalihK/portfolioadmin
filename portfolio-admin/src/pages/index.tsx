@@ -352,98 +352,28 @@ export default function Home({ projects, experiences, skills, homeData = default
         </section>
 
         {/* Skills Section */}
-        <section id="skills" className="py-20 bg-gray-50 dark:bg-gray-800 relative overflow-hidden">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className="text-center mb-16"
-            >
-              <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                {t('home:skills.title')}
-              </h2>
-            </motion.div>
-
-            {/* Groupes de compétences */}
-            <div className="space-y-12">
-              {/* Développement Web */}
-              <div className="space-y-4">
-                <h3 className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-6 border-b border-gray-700 pb-2">
-                  Développement Web
+        <section id="skills" className="py-20 bg-gray-50 dark:bg-gray-800">
+          <div className="container mx-auto px-4">
+            <h2 className="text-4xl font-bold text-center mb-16">
+              {t('home:skills.title')}
+            </h2>
+            
+            {skillsByCategory.map((category) => (
+              <div key={category._id} className="mb-12">
+                <h3 className="text-2xl font-semibold mb-6">
+                  {category.name}
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {skills
-                    .filter(skill => ['React', 'Node.js', 'TypeScript', 'JavaScript', 'PHP', 'Next.js'].includes(skill.name))
-                    .map((skill, index) => (
-                      <SkillCard key={skill._id} skill={skill} index={index} getIcon={getIcon} />
-                    ))}
+                  {category.skills.map((skill) => (
+                    <SkillCard
+                      key={skill._id}
+                      skill={skill}
+                      getIcon={getIcon}
+                    />
+                  ))}
                 </div>
               </div>
-
-              {/* Base de données & Backend */}
-              <div className="space-y-4">
-                <h3 className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-6 border-b border-gray-700 pb-2">
-                  Base de données & Backend
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {skills
-                    .filter(skill => ['MongoDB', 'PostgreSQL', 'API', 'Python'].includes(skill.name))
-                    .map((skill, index) => (
-                      <SkillCard key={skill._id} skill={skill} index={index} getIcon={getIcon} />
-                    ))}
-                </div>
-              </div>
-
-              {/* Outils de Développement */}
-              <div className="space-y-4">
-                <h3 className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-6 border-b border-gray-700 pb-2">
-                  Outils de Développement
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {skills
-                    .filter(skill => ['Git', 'GitHub', 'GitLab', 'Docker', 'NPM', 'Yarn', 'Composer', 'PIP'].includes(skill.name))
-                    .map((skill, index) => (
-                      <SkillCard key={skill._id} skill={skill} index={index} getIcon={getIcon} />
-                    ))}
-                </div>
-              </div>
-
-              {/* CMS & Frameworks */}
-              <div className="space-y-4">
-                <h3 className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-6 border-b border-gray-700 pb-2">
-                  CMS & Frameworks
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {skills
-                    .filter(skill => ['Wordpress', 'Flutter'].includes(skill.name))
-                    .map((skill, index) => (
-                      <SkillCard key={skill._id} skill={skill} index={index} getIcon={getIcon} />
-                    ))}
-                </div>
-              </div>
-
-              {/* Logiciels */}
-              <div className="space-y-4">
-                <h3 className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-6 border-b border-gray-700 pb-2">
-                  Logiciels
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {skills
-                    .filter(skill => [
-                      'Adobe Photoshop',
-                      'Adobe Premiere Pro',
-                      'Microsoft Word',
-                      'Microsoft Excel',
-                      'Microsoft PowerPoint'
-                    ].includes(skill.name))
-                    .map((skill, index) => (
-                      <SkillCard key={skill._id} skill={skill} index={index} getIcon={getIcon} />
-                    ))}
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </section>
 
@@ -685,12 +615,19 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       .populate('categoryId')
       .lean();
 
-    const skillsByCategory = categories.map(category => ({
-      ...category,
-      skills: skills.filter(skill => 
-        skill.categoryId && skill.categoryId._id.toString() === category._id.toString()
-      )
-    }));
+    const uniqueCategories = new Map();
+    categories.forEach(category => {
+      if (!uniqueCategories.has(category._id.toString())) {
+        uniqueCategories.set(category._id.toString(), {
+          ...category,
+          skills: skills.filter(skill => 
+            skill.categoryId && skill.categoryId._id.toString() === category._id.toString()
+          )
+        });
+      }
+    });
+
+    const skillsByCategory = Array.from(uniqueCategories.values());
 
     return {
       props: {
