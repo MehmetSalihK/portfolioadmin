@@ -13,10 +13,44 @@ import Experience from '@/models/Experience';
 import Skill from '@/models/Skill';
 import HomePage from '@/models/HomePage';
 import { useRef, useEffect } from 'react';
-import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
+import { 
+  FaGithub, 
+  FaLinkedin, 
+  FaTwitter, 
+  FaReact, 
+  FaNodeJs, 
+  FaGit, 
+  FaDocker, 
+  FaAws, 
+  FaPython, 
+  FaJava, 
+  FaPhp,
+  FaNpm,
+  FaWordpress,
+  FaGitlab,
+  FaCode
+} from 'react-icons/fa';
 import { HiArrowDown } from 'react-icons/hi';
-import { FiExternalLink, FiGithub } from 'react-icons/fi';
+import { FiExternalLink, FiGithub, FiSettings, FiCode } from 'react-icons/fi';
 import parse from 'html-react-parser';
+import { 
+  SiTypescript, 
+  SiJavascript, 
+  SiMongodb, 
+  SiPostgresql,
+  SiTailwindcss,
+  SiNextdotjs,
+  SiAdobephotoshop,
+  SiMicrosoftword,
+  SiMicrosoftexcel,
+  SiMicrosoftpowerpoint,
+  SiAdobepremierepro,
+  SiFlutter,
+  SiComposer,
+  SiYarn
+} from 'react-icons/si';
+import { TbApi, TbBrandPython } from 'react-icons/tb';
+import SkillCategory from '@/models/SkillCategory';
 
 interface HomePageProps {
   projects: Array<{
@@ -55,6 +89,16 @@ interface HomePageProps {
       twitter: string;
     };
   };
+  skillsByCategory: Array<{
+    _id: string;
+    name: string;
+    skills: Array<{
+      _id: string;
+      name: string;
+      level: number;
+      category: string;
+    }>;
+  }>;
 }
 
 const defaultHomeData = {
@@ -69,7 +113,48 @@ const defaultHomeData = {
   }
 };
 
-export default function Home({ projects, experiences, skills, homeData = defaultHomeData }: HomePageProps) {
+const getIcon = (skillName: string) => {
+  const icons: { [key: string]: JSX.Element } = {
+    'React': <FaReact className="w-12 h-12" />,
+    'Node.js': <FaNodeJs className="w-12 h-12" />,
+    'TypeScript': <SiTypescript className="w-12 h-12" />,
+    'JavaScript': <SiJavascript className="w-12 h-12" />,
+    'MongoDB': <SiMongodb className="w-12 h-12" />,
+    'PostgreSQL': <SiPostgresql className="w-12 h-12" />,
+    'Git': <FaGit className="w-12 h-12" />,
+    'Docker': <FaDocker className="w-12 h-12" />,
+    'AWS': <FaAws className="w-12 h-12" />,
+    'Python': <TbBrandPython className="w-12 h-12" />,
+    'Java': <FaJava className="w-12 h-12" />,
+    'PHP': <FaPhp className="w-12 h-12" />,
+    'Tailwind': <SiTailwindcss className="w-12 h-12" />,
+    'Next.js': <SiNextdotjs className="w-12 h-12" />,
+    'Adobe Photoshop': <SiAdobephotoshop className="w-12 h-12" />,
+    'Wordpress': <FaWordpress className="w-12 h-12" />,
+    'API': <TbApi className="w-12 h-12" />,
+    'GitLab': <FaGitlab className="w-12 h-12" />,
+    'GitHub': <FaGithub className="w-12 h-12" />,
+    'NPM': <FaNpm className="w-12 h-12" />,
+    'Composer': <SiComposer className="w-12 h-12" />,
+    'Flutter': <SiFlutter className="w-12 h-12" />,
+    'Microsoft Word': <SiMicrosoftword className="w-12 h-12" />,
+    'Microsoft Excel': <SiMicrosoftexcel className="w-12 h-12" />,
+    'Microsoft PowerPoint': <SiMicrosoftpowerpoint className="w-12 h-12" />,
+    'Adobe Premiere Pro': <SiAdobepremierepro className="w-12 h-12" />,
+    'Yarn': <SiYarn className="w-12 h-12" />,
+    'PIP': <FaCode className="w-12 h-12" />
+  };
+  
+  const normalizedName = skillName.toLowerCase().trim();
+  
+  const icon = Object.entries(icons).find(([key]) => 
+    key.toLowerCase() === normalizedName
+  )?.[1];
+
+  return icon || <FaCode className="w-12 h-12" />;
+};
+
+export default function Home({ projects, experiences, skills, homeData = defaultHomeData, skillsByCategory }: HomePageProps) {
   const { t } = useTranslation(['common', 'home']);
   const { scrollYProgress } = useScroll();
   const mainRef = useRef<HTMLDivElement>(null);
@@ -274,36 +359,90 @@ export default function Home({ projects, experiences, skills, homeData = default
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
-              className="text-center mb-12"
+              className="text-center mb-16"
             >
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
                 {t('home:skills.title')}
               </h2>
             </motion.div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {skills.map((skill, index) => (
-                <motion.div
-                  key={skill._id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                  whileHover={{ scale: 1.05 }}
-                  viewport={{ once: true }}
-                  className="bg-white dark:bg-gray-700 rounded-lg p-6 shadow-sm hover:shadow-lg transition-shadow duration-300"
-                >
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    {skill.name}
-                  </h3>
-                  <div className="relative w-full h-2.5 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
-                    <motion.div
-                      style={{ width: 0 }}
-                      animate={{ width: `${skill.level || 0}%` }}
-                      transition={{ duration: 1, ease: "easeOut", delay: index * 0.1 }}
-                      className="absolute top-0 left-0 h-full bg-primary-500 rounded-full"
-                    />
-                  </div>
-                </motion.div>
-              ))}
+
+            {/* Groupes de compétences */}
+            <div className="space-y-12">
+              {/* Développement Web */}
+              <div className="space-y-4">
+                <h3 className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-6 border-b border-gray-700 pb-2">
+                  Développement Web
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {skills
+                    .filter(skill => ['React', 'Node.js', 'TypeScript', 'JavaScript', 'PHP', 'Next.js'].includes(skill.name))
+                    .map((skill, index) => (
+                      <SkillCard key={skill._id} skill={skill} index={index} getIcon={getIcon} />
+                    ))}
+                </div>
+              </div>
+
+              {/* Base de données & Backend */}
+              <div className="space-y-4">
+                <h3 className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-6 border-b border-gray-700 pb-2">
+                  Base de données & Backend
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {skills
+                    .filter(skill => ['MongoDB', 'PostgreSQL', 'API', 'Python'].includes(skill.name))
+                    .map((skill, index) => (
+                      <SkillCard key={skill._id} skill={skill} index={index} getIcon={getIcon} />
+                    ))}
+                </div>
+              </div>
+
+              {/* Outils de Développement */}
+              <div className="space-y-4">
+                <h3 className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-6 border-b border-gray-700 pb-2">
+                  Outils de Développement
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {skills
+                    .filter(skill => ['Git', 'GitHub', 'GitLab', 'Docker', 'NPM', 'Yarn', 'Composer', 'PIP'].includes(skill.name))
+                    .map((skill, index) => (
+                      <SkillCard key={skill._id} skill={skill} index={index} getIcon={getIcon} />
+                    ))}
+                </div>
+              </div>
+
+              {/* CMS & Frameworks */}
+              <div className="space-y-4">
+                <h3 className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-6 border-b border-gray-700 pb-2">
+                  CMS & Frameworks
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {skills
+                    .filter(skill => ['Wordpress', 'Flutter'].includes(skill.name))
+                    .map((skill, index) => (
+                      <SkillCard key={skill._id} skill={skill} index={index} getIcon={getIcon} />
+                    ))}
+                </div>
+              </div>
+
+              {/* Logiciels */}
+              <div className="space-y-4">
+                <h3 className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-6 border-b border-gray-700 pb-2">
+                  Logiciels
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {skills
+                    .filter(skill => [
+                      'Adobe Photoshop',
+                      'Adobe Premiere Pro',
+                      'Microsoft Word',
+                      'Microsoft Excel',
+                      'Microsoft PowerPoint'
+                    ].includes(skill.name))
+                    .map((skill, index) => (
+                      <SkillCard key={skill._id} skill={skill} index={index} getIcon={getIcon} />
+                    ))}
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -530,18 +669,28 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
   try {
     await connectDB();
 
-    // Récupérer les données de la page d'accueil
     let homeData = await HomePage.findOne().lean();
     if (!homeData) {
-      // Utiliser les données par défaut si aucune donnée n'existe
       homeData = defaultHomeData;
     }
 
     const projects = await Project.find({}).lean();
     const experiences = await Experience.find({}).sort({ startDate: -1 }).lean();
     
-    // Récupérer les compétences groupées par catégorie
-    const skills = await Skill.find({}).sort({ level: -1 }).lean();
+    const categories = await SkillCategory.find({ isVisible: true })
+      .sort('displayOrder')
+      .lean();
+
+    const skills = await Skill.find({ isHidden: false })
+      .populate('categoryId')
+      .lean();
+
+    const skillsByCategory = categories.map(category => ({
+      ...category,
+      skills: skills.filter(skill => 
+        skill.categoryId && skill.categoryId._id.toString() === category._id.toString()
+      )
+    }));
 
     return {
       props: {
@@ -549,9 +698,10 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
         experiences: JSON.parse(JSON.stringify(experiences)),
         skills: JSON.parse(JSON.stringify(skills)),
         homeData: JSON.parse(JSON.stringify(homeData)),
+        skillsByCategory: JSON.parse(JSON.stringify(skillsByCategory)),
         ...(await serverSideTranslations(currentLocale, ['common', 'home', 'projects', 'experiences'])),
       },
-      revalidate: 60,
+      revalidate: 1,
     };
   } catch (error) {
     console.error('Error in getStaticProps:', error);
@@ -561,9 +711,34 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
         experiences: [],
         skills: [],
         homeData: defaultHomeData,
+        skillsByCategory: [],
         ...(await serverSideTranslations(currentLocale, ['common', 'home', 'projects', 'experiences'])),
       },
-      revalidate: 60,
+      revalidate: 1,
     };
   }
 };
+
+// Créez un nouveau composant SkillCard pour la carte de compétence
+const SkillCard = ({ skill, index, getIcon }) => (
+  <motion.div
+    key={skill._id}
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5, delay: index * 0.1 }}
+    viewport={{ once: true }}
+    className="group relative"
+  >
+    <div className="bg-white dark:bg-gray-700 rounded-xl p-4 transform transition-all duration-300 hover:scale-105 hover:shadow-2xl dark:shadow-primary-500/20 flex flex-col items-center justify-center gap-3 hover:bg-gradient-to-br from-gray-700 to-gray-800">
+      <div className="text-primary-500 transition-transform duration-300 group-hover:scale-110 group-hover:text-primary-400">
+        {getIcon(skill.name)}
+      </div>
+      <div className="text-center">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-primary-400">
+          {skill.name}
+        </h3>
+        <div className="mt-2 h-0.5 w-8 bg-primary-500 mx-auto rounded-full transform origin-left transition-all duration-300 group-hover:w-full"></div>
+      </div>
+    </div>
+  </motion.div>
+);

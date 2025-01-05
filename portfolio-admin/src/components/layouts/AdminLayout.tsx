@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { FiHome, FiUser, FiBriefcase, FiCode, FiFolder, FiLogOut, FiMenu, FiMail, FiSettings } from 'react-icons/fi';
+import { FiHome, FiUser, FiBriefcase, FiCode, FiFolder, FiLogOut, FiMenu, FiMail, FiSettings, FiList } from 'react-icons/fi';
 import { signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';

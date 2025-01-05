@@ -4,16 +4,18 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiPlus, FiX, FiTrash2, FiCode, FiCheck, FiAlertCircle, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiPlus, FiX, FiTrash2, FiCode, FiCheck, FiAlertCircle, FiEye, FiEyeOff, FiList } from 'react-icons/fi';
 import * as Si from 'react-icons/si';
 import { IconType } from 'react-icons';
+import toast from 'react-hot-toast';
+import Link from 'next/link';
 
 interface Skill {
   _id: string;
   name: string;
   level: number;
   category: string;
-  isVisible: boolean;
+  isHidden: boolean;
 }
 
 interface Toast {
@@ -580,25 +582,16 @@ const getSkillCategory = (skillName: string): SkillCategory => {
 };
 
 // Fonction pour grouper les compétences par catégorie
-const groupSkillsByCategory = (skills: Skill[]): Record<SkillCategory, Skill[]> => {
-  const grouped: Partial<Record<SkillCategory, Skill[]>> = {};
-  
+const groupSkillsByCategory = (skills: Skill[]) => {
+  const grouped = {};
   skills.forEach(skill => {
-    const category = getSkillCategory(skill.name);
-    if (!grouped[category]) {
-      grouped[category] = [];
+    const categoryName = skill.categoryId?.name || 'Non catégorisé';
+    if (!grouped[categoryName]) {
+      grouped[categoryName] = [];
     }
-    grouped[category]!.push(skill);
+    grouped[categoryName].push(skill);
   });
-
-  // Trier les compétences dans chaque catégorie
-  Object.keys(grouped).forEach(category => {
-    grouped[category as SkillCategory]?.sort((a, b) => 
-      a.name.localeCompare(b.name)
-    );
-  });
-
-  return grouped as Record<SkillCategory, Skill[]>;
+  return grouped;
 };
 
 // Fonction pour détecter automatiquement la catégorie
@@ -685,38 +678,36 @@ export default function SkillsPage() {
   };
 
   // Fonction pour mettre à jour la visibilité d'une compétence
-  const toggleSkillVisibility = async (skillId: string, isVisible: boolean) => {
+  const toggleVisibility = async (skillId: string, isHidden: boolean) => {
     try {
-      const response = await fetch(`/api/skills/${skillId}`, {
+      console.log('Toggling visibility:', { skillId, isHidden }); // Debug log
+      
+      const response = await fetch(`/api/admin/skills/${skillId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ isVisible }),
+        body: JSON.stringify({ isHidden }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update skill visibility');
+      const data = await response.json();
+      console.log('Response:', data); // Debug log
+
+      if (response.ok) {
+        // Mettre à jour l'état local immédiatement
+        setSkills(prevSkills => 
+          prevSkills.map(skill => 
+            skill._id === skillId ? { ...skill, isHidden } : skill
+          )
+        );
+        
+        toast.success(isHidden ? 'Compétence masquée' : 'Compétence affichée');
+      } else {
+        toast.error('Erreur lors de la mise à jour');
       }
-
-      // Mise à jour locale de l'état
-      setSkills(prevSkills => 
-        prevSkills.map(skill => 
-          skill._id === skillId ? { ...skill, isVisible } : skill
-        )
-      );
-
-      // Afficher un toast de succès
-      addToast({
-        message: 'Visibilité mise à jour avec succès',
-        type: 'success',
-      });
     } catch (error) {
-      console.error('Error updating skill visibility:', error);
-      addToast({
-        message: 'Erreur lors de la mise à jour de la visibilité',
-        type: 'error',
-      });
+      console.error('Error toggling visibility:', error);
+      toast.error('Erreur lors de la mise à jour');
     }
   };
 
@@ -751,9 +742,7 @@ export default function SkillsPage() {
 
   const handleAddSkill = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     try {
-      const category = detectCategory(newSkillName);
       const response = await fetch('/api/skills', {
         method: 'POST',
         headers: {
@@ -761,20 +750,21 @@ export default function SkillsPage() {
         },
         body: JSON.stringify({
           name: newSkillName,
-          level: 50, // Valeur par défaut
-          category: category,
-          isVisible: true
+          level: 50,
+          categoryId: selectedCategoryId,
+          isHidden: false
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to add skill');
-
-      const newSkill = await response.json();
-      setSkills([...skills, newSkill]);
-      setIsAddingSkill(false);
-      setNewSkillName('');
+      if (response.ok) {
+        const newSkill = await response.json();
+        setSkills([...skills, newSkill]);
+        setIsAddingSkill(false);
+        setNewSkillName('');
+        toast.success('Compétence ajoutée');
+      }
     } catch (error) {
-      console.error('Error adding skill:', error);
+      toast.error('Erreur lors de l\'ajout');
     }
   };
 
@@ -802,19 +792,49 @@ export default function SkillsPage() {
   return (
     <AdminLayout>
       <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-3">
-            <FiCode className="w-8 h-8 text-gray-300" />
-            <h1 className="text-2xl font-bold text-white">Skills Management</h1>
+        {/* En-tête avec les onglets */}
+        <div className="flex flex-col gap-4 mb-6">
+          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+            <FiCode className="w-8 h-8" />
+            Skills Management
+          </h1>
+          
+          {/* Onglets */}
+          <div className="flex gap-2">
+            <Link
+              href="/admin/skills"
+              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                !router.pathname.includes('categories')
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-[#2A2A2A] text-gray-300 hover:bg-[#333333]'
+              }`}
+            >
+              Skills
+            </Link>
+            <Link
+              href="/admin/skill-categories"
+              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                router.pathname.includes('categories')
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-[#2A2A2A] text-gray-300 hover:bg-[#333333]'
+              }`}
+            >
+              Categories
+            </Link>
           </div>
+        </div>
+
+        {/* Bouton d'ajout */}
+        <div className="flex justify-end mb-6">
           <button
             onClick={() => setIsAddingSkill(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#2A2A2A] hover:bg-[#333333] text-white rounded-lg transition-all duration-200 hover:scale-105"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200"
           >
-            <FiPlus className="text-white" /> Add Skill
+            <FiPlus className="w-5 h-5" /> Add Skill
           </button>
         </div>
 
+        {/* Reste du contenu */}
         <div className="space-y-6">
           {Object.entries(groupSkillsByCategory(skills)).map(([category, skills]) => (
             skills.length > 0 && (
@@ -851,17 +871,17 @@ export default function SkillsPage() {
                         <div className="flex gap-1">
                           {/* Bouton de visibilité */}
                           <button
-                            onClick={() => toggleSkillVisibility(skill._id, !skill.isVisible)}
+                            onClick={() => toggleVisibility(skill._id, !skill.isHidden)}
                             className={`p-1.5 rounded-lg transition-all duration-200 ${
-                              skill.isVisible 
-                                ? 'bg-[#2A2A2A] hover:bg-[#333333] hover:scale-110' 
-                                : 'bg-[#1A1A1A] hover:bg-[#222222] hover:scale-110'
+                              skill.isHidden 
+                                ? 'bg-red-500/20 text-red-400'
+                                : 'bg-green-500/20 text-green-400'
                             }`}
-                            title={skill.isVisible ? 'Visible sur le portfolio' : 'Masqué sur le portfolio'}
+                            title={skill.isHidden ? 'Masqué' : 'Affiché'}
                           >
-                            {skill.isVisible ? 
-                              <FiEye className="text-gray-300 hover:text-white transition-colors duration-200 w-4 h-4" /> : 
-                              <FiEyeOff className="text-gray-500 hover:text-white transition-colors duration-200 w-4 h-4" />
+                            {skill.isHidden ? 
+                              <FiEyeOff className="w-4 h-4" /> : 
+                              <FiEye className="w-4 h-4" />
                             }
                           </button>
                           {/* Bouton de suppression */}

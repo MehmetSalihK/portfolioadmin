@@ -3,6 +3,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 import { 
   FiSave, 
   FiEdit3, 
@@ -11,28 +12,44 @@ import {
   FiLinkedin, 
   FiTwitter, 
   FiFileText,
-  FiSettings
+  FiSettings,
+  FiPhone
 } from 'react-icons/fi';
+import { FaWhatsapp, FaTelegram } from 'react-icons/fa';
 
 interface Settings {
   siteTitle: string;
   siteDescription: string;
   email: string;
+  phone: string;
   github: string;
   linkedin: string;
   twitter: string;
+  whatsapp: string;
+  telegram: string;
 }
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [settings, setSettings] = useState<Settings>({
-    siteTitle: '',
-    siteDescription: '',
-    email: '',
-    github: '',
-    linkedin: '',
-    twitter: ''
+  const [settings, setSettings] = useState<Settings>(() => {
+    if (typeof window !== 'undefined') {
+      const savedSettings = localStorage.getItem('adminSettings');
+      if (savedSettings) {
+        return JSON.parse(savedSettings);
+      }
+    }
+    return {
+      siteTitle: '',
+      siteDescription: '',
+      email: '',
+      phone: '',
+      github: '',
+      linkedin: '',
+      twitter: '',
+      whatsapp: '',
+      telegram: ''
+    };
   });
   const [isSaving, setIsSaving] = useState(false);
 
@@ -40,16 +57,20 @@ export default function SettingsPage() {
     if (status === 'unauthenticated') {
       router.push('/admin/login');
     } else {
-      fetchSettings();
+      const savedSettings = localStorage.getItem('adminSettings');
+      if (!savedSettings) {
+        fetchSettings();
+      }
     }
   }, [status]);
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('/api/settings');
+      const response = await fetch('/api/admin/settings');
       if (response.ok) {
         const data = await response.json();
         setSettings(data);
+        localStorage.setItem('adminSettings', JSON.stringify(data));
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -58,28 +79,34 @@ export default function SettingsPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setSettings(prev => ({
-      ...prev,
+    const newSettings = {
+      ...settings,
       [name]: value
-    }));
+    };
+    setSettings(newSettings);
+    localStorage.setItem('adminSettings', JSON.stringify(newSettings));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     try {
-      const response = await fetch('/api/settings', {
-        method: 'PUT',
+      const response = await fetch('/api/admin/settings', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(settings),
       });
       if (response.ok) {
-        // Show success message
+        localStorage.setItem('adminSettings', JSON.stringify(settings));
+        toast.success('Settings updated successfully!');
+      } else {
+        toast.error('Failed to update settings');
       }
     } catch (error) {
       console.error('Error updating settings:', error);
+      toast.error('An error occurred while saving');
     } finally {
       setIsSaving(false);
     }
@@ -164,6 +191,26 @@ export default function SettingsPage() {
               >
                 <label className="block text-gray-400 text-sm font-medium mb-2">
                   <div className="flex items-center gap-2">
+                    <FiPhone className="text-blue-500" />
+                    Phone Number
+                  </div>
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={settings.phone}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ x: 20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+              >
+                <label className="block text-gray-400 text-sm font-medium mb-2">
+                  <div className="flex items-center gap-2">
                     <FiGithub className="text-blue-500" />
                     GitHub URL
                   </div>
@@ -212,6 +259,46 @@ export default function SettingsPage() {
                   type="url"
                   name="twitter"
                   value={settings.twitter}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ x: 20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+              >
+                <label className="block text-gray-400 text-sm font-medium mb-2">
+                  <div className="flex items-center gap-2">
+                    <FaWhatsapp className="text-blue-500" />
+                    WhatsApp URL
+                  </div>
+                </label>
+                <input
+                  type="url"
+                  name="whatsapp"
+                  value={settings.whatsapp}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.7 }}
+              >
+                <label className="block text-gray-400 text-sm font-medium mb-2">
+                  <div className="flex items-center gap-2">
+                    <FaTelegram className="text-blue-500" />
+                    Telegram URL
+                  </div>
+                </label>
+                <input
+                  type="url"
+                  name="telegram"
+                  value={settings.telegram}
                   onChange={handleChange}
                   className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />

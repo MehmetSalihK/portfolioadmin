@@ -13,15 +13,15 @@ const SkillSchema = new mongoose.Schema({
     max: [100, 'Level cannot be more than 100'],
     default: 50,
   },
-  isVisible: {
+  categoryId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SkillCategory',
+    required: true
+  },
+  isHidden: {
     type: Boolean,
-    default: true, 
-  },
-  category: {
-    type: String,
-    required: [true, 'Please provide a category for this skill.'],
-    default: 'Autres',
-  },
+    default: false
+  }
 }, {
   timestamps: true,
 });
