@@ -611,23 +611,25 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       .sort('displayOrder')
       .lean();
 
+    const uniqueCategories = categories.reduce((acc, current) => {
+      const x = acc.find(item => item.name === current.name);
+      if (!x) {
+        return acc.concat([current]);
+      } else {
+        return acc;
+      }
+    }, []);
+
     const skills = await Skill.find({ isHidden: false })
       .populate('categoryId')
       .lean();
 
-    const uniqueCategories = new Map();
-    categories.forEach(category => {
-      if (!uniqueCategories.has(category._id.toString())) {
-        uniqueCategories.set(category._id.toString(), {
-          ...category,
-          skills: skills.filter(skill => 
-            skill.categoryId && skill.categoryId._id.toString() === category._id.toString()
-          )
-        });
-      }
-    });
-
-    const skillsByCategory = Array.from(uniqueCategories.values());
+    const skillsByCategory = uniqueCategories.map(category => ({
+      ...category,
+      skills: skills.filter(skill => 
+        skill.categoryId && skill.categoryId._id.toString() === category._id.toString()
+      )
+    }));
 
     return {
       props: {
