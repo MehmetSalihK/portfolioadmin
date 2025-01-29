@@ -22,8 +22,6 @@ const SkillSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   }
-}, {
-  timestamps: true,
 });
 
 export default mongoose.models.Skill || mongoose.model('Skill', SkillSchema);

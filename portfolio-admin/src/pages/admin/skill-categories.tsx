@@ -241,86 +241,93 @@ export default function SkillCategoriesPage() {
           </div>
         </div>
 
-        {/* Toutes les compétences disponibles */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-white mb-4">Toutes les compétences</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {skills.map((skill) => (
+        {/* Liste des catégories avec leurs compétences */}
+        <div className="space-y-8">
+          {categories.map((category) => {
+            // Filtrer les compétences pour cette catégorie
+            const categorySkills = skills.filter(skill => {
+              const skillName = skill.name.toLowerCase();
+              
+              switch(category.name) {
+                case 'Logiciels':
+                  return skillName.includes('word') || 
+                         skillName.includes('excel') || 
+                         skillName.includes('powerpoint') ||
+                         skillName.includes('photoshop') ||
+                         skillName.includes('premiere') ||
+                         skillName.includes('illustrator');
+                
+                case 'Développement Web':
+                  return skillName.includes('html') || 
+                         skillName.includes('css') || 
+                         skillName.includes('javascript') ||
+                         skillName.includes('typescript') ||
+                         skillName.includes('react') ||
+                         skillName.includes('vue') ||
+                         skillName.includes('angular');
+                
+                case 'Base de données & Backend':
+                  return skillName.includes('sql') || 
+                         skillName.includes('mongo') || 
+                         skillName.includes('postgres') ||
+                         skillName.includes('mysql') ||
+                         skillName.includes('mariadb') ||
+                         skillName.includes('node') ||
+                         skillName.includes('php');
+                
+                case 'Outils de Développement':
+                  return skillName.includes('git') || 
+                         skillName.includes('docker') || 
+                         skillName.includes('npm') ||
+                         skillName.includes('yarn') ||
+                         skillName.includes('pip') ||
+                         skillName.includes('composer');
+                
+                case 'CMS & Frameworks':
+                  return skillName.includes('wordpress') || 
+                         skillName.includes('tailwind') || 
+                         skillName.includes('bootstrap') ||
+                         skillName.includes('next') ||
+                         skillName.includes('flutter');
+                
+                default:
+                  return false;
+              }
+            });
+
+            return (
               <motion.div
-                key={skill._id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-[#1E1E1E] rounded-lg p-3 shadow-lg border border-[#2A2A2A] hover:border-blue-500 transition-all duration-200 cursor-pointer"
-                onClick={() => {
-                  // Logique pour sélectionner une compétence
-                  setSelectedSkills(prev => 
-                    prev.includes(skill._id) 
-                      ? prev.filter(id => id !== skill._id)
-                      : [...prev, skill._id]
-                  );
-                }}
+                key={category._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mb-8"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    {getSkillIcon(skill.name)}
-                    <span className="text-sm font-medium text-white">
-                      {skill.name}
-                    </span>
-                  </div>
-                  {selectedSkills.includes(skill._id) && (
-                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                  )}
+                <div className="flex items-center mb-4">
+                  <h2 className="text-xl font-semibold text-white">{category.name}</h2>
+                  <div className="h-0.5 w-full bg-gray-700 ml-4"></div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  {categorySkills.map((skill) => (
+                    <motion.div
+                      key={skill._id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="bg-[#1E1E1E] rounded-lg p-3 shadow-lg border border-[#2A2A2A] hover:border-[#3A3A3A] transition-all duration-200"
+                    >
+                      <div className="flex items-center space-x-2">
+                        {getSkillIcon(skill.name)}
+                        <span className="text-sm font-medium text-white">
+                          {skill.name}
+                        </span>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
               </motion.div>
-            ))}
-          </div>
-        </div>
-
-        {/* Liste des catégories */}
-        <div className="space-y-8 mt-8">
-          {categories.map((category) => (
-            <motion.div
-              key={category._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="mb-8"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-semibold text-white">{category.name}</h2>
-                  <div className="h-0.5 w-32 bg-gray-700"></div>
-                </div>
-                <button
-                  onClick={() => {
-                    // Logique pour assigner les compétences sélectionnées à cette catégorie
-                    if (selectedSkills.length > 0) {
-                      // Appel API pour mettre à jour les compétences de la catégorie
-                      selectedSkills.forEach(async (skillId) => {
-                        await fetch(`/api/admin/skills/${skillId}`, {
-                          method: 'PATCH',
-                          headers: {
-                            'Content-Type': 'application/json',
-                          },
-                          body: JSON.stringify({ categoryId: category._id }),
-                        });
-                      });
-                      toast.success('Compétences assignées à la catégorie');
-                      setSelectedSkills([]);
-                      fetchSkills();
-                    }
-                  }}
-                  className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                    selectedSkills.length > 0
-                      ? 'bg-blue-500 text-white hover:bg-blue-600'
-                      : 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                  }`}
-                >
-                  Assigner les compétences sélectionnées
-                </button>
-              </div>
-            </motion.div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Bouton d'initialisation si pas de catégories */}

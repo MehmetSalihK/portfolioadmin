@@ -51,6 +51,7 @@ import {
 } from 'react-icons/si';
 import { TbApi, TbBrandPython } from 'react-icons/tb';
 import SkillCategory from '@/models/SkillCategory';
+import { toast } from 'react-hot-toast';
 
 interface HomePageProps {
   projects: Array<{
@@ -221,6 +222,187 @@ export default function Home({ projects, experiences, skills, homeData = default
     };
   }, []);
 
+  const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    // Afficher une notification de chargement
+    const loadingToastId = toast.loading(
+      <div className="flex items-center space-x-2">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+        <span>Envoi en cours...</span>
+      </div>
+    );
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: formData.get('firstName'),
+          lastName: formData.get('lastName'),
+          company: formData.get('company'),
+          phone: formData.get('phone'),
+          email: formData.get('email'),
+          subject: formData.get('subject'),
+          message: formData.get('message'),
+        }),
+      });
+
+      if (response.ok) {
+        // Succès : Remplacer la notification de chargement par une notification de succès
+        toast.dismiss(loadingToastId);
+        toast.custom((t) => (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className={`${
+              t.visible ? 'animate-enter' : 'animate-leave'
+            } max-w-md w-full bg-gradient-to-r from-green-500 to-green-600 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+          >
+            <div className="flex-1 w-0 p-4">
+              <div className="flex items-start">
+                <div className="flex-shrink-0 pt-0.5">
+                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
+                    <motion.svg
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.2 }}
+                      className="h-6 w-6 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <motion.path
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </motion.svg>
+                  </div>
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium text-white">
+                    Message envoyé avec succès !
+                  </p>
+                  <p className="mt-1 text-sm text-white/80">
+                    Nous vous répondrons dans les plus brefs délais.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex border-l border-green-400">
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-white hover:text-white/80 focus:outline-none"
+              >
+                <motion.svg
+                  whileHover={{ rotate: 90 }}
+                  className="w-5 h-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </motion.svg>
+              </button>
+            </div>
+          </motion.div>
+        ), {
+          duration: 5000,
+        });
+
+        // Réinitialiser le formulaire
+        form.reset();
+      } else {
+        // Erreur : Afficher une notification d'erreur
+        toast.dismiss(loadingToastId);
+        toast.custom((t) => (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className={`${
+              t.visible ? 'animate-enter' : 'animate-leave'
+            } max-w-md w-full bg-gradient-to-r from-red-500 to-red-600 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+          >
+            <div className="flex-1 w-0 p-4">
+              <div className="flex items-start">
+                <div className="flex-shrink-0 pt-0.5">
+                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
+                    <motion.svg
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="h-6 w-6 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </motion.svg>
+                  </div>
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium text-white">
+                    Erreur lors de l'envoi
+                  </p>
+                  <p className="mt-1 text-sm text-white/80">
+                    Veuillez réessayer ultérieurement.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex border-l border-red-400">
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-white hover:text-white/80 focus:outline-none"
+              >
+                <motion.svg
+                  whileHover={{ rotate: 90 }}
+                  className="w-5 h-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </motion.svg>
+              </button>
+            </div>
+          </motion.div>
+        ), {
+          duration: 5000,
+        });
+      }
+    } catch (error) {
+      // Gérer l'erreur comme ci-dessus
+      toast.dismiss(loadingToastId);
+      toast.error('Erreur lors de l\'envoi du message');
+    }
+  };
+
   return (
     <Layout>
       <Head>
@@ -354,26 +536,42 @@ export default function Home({ projects, experiences, skills, homeData = default
         {/* Skills Section */}
         <section id="skills" className="py-20 bg-gray-50 dark:bg-gray-800">
           <div className="container mx-auto px-4">
-            <h2 className="text-4xl font-bold text-center mb-16">
-              {t('home:skills.title')}
-            </h2>
-            
-            {skillsByCategory.map((category) => (
-              <div key={category._id} className="mb-12">
-                <h3 className="text-2xl font-semibold mb-6">
-                  {category.name}
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {category.skills.map((skill) => (
-                    <SkillCard
-                      key={skill._id}
-                      skill={skill}
-                      getIcon={getIcon}
-                    />
-                  ))}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                {t('home:skills.title')}
+              </h2>
+            </motion.div>
+
+            {/* Affichage des catégories et leurs compétences */}
+            <div className="space-y-16">
+              {skillsByCategory.map((category) => (
+                <div key={category._id} className="mb-12">
+                  <div className="flex items-center mb-8">
+                    <h3 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                      {category.name}
+                    </h3>
+                    <div className="h-0.5 w-full bg-gray-700 ml-4"></div>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    {category.skills.map((skill, index) => (
+                      <SkillCard
+                        key={skill._id}
+                        skill={skill}
+                        index={index}
+                        getIcon={getIcon}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 
@@ -518,74 +716,146 @@ export default function Home({ projects, experiences, skills, homeData = default
         </section>
 
         {/* Contact Section */}
-        <section id="contact" className="py-20 bg-white dark:bg-gray-900 relative overflow-hidden">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <section id="contact" className="py-8 sm:py-12 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">
+          {/* Effet de grille en arrière-plan */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute inset-0 bg-grid-white/[0.1]" />
+          </div>
+
+          <div className="container mx-auto px-4 relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
-              className="max-w-xl mx-auto"
+              className="text-center mb-6 sm:mb-8"
             >
-              <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                  {t('home:contact.title')}
-                </h2>
-              </div>
-              <motion.form
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                viewport={{ once: true }}
-                className="space-y-6 bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg"
-              >
-                <motion.div
-                  initial={{ x: -50, opacity: 0 }}
-                  whileInView={{ x: 0, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                >
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder={t('home:contact.namePlaceholder')}
-                    className="w-full px-4 py-3 rounded-lg bg-gray-100 dark:bg-gray-700 border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-gray-600 focus:ring-0 transition-colors duration-300"
-                  />
-                </motion.div>
-                <motion.div
-                  initial={{ x: 50, opacity: 0 }}
-                  whileInView={{ x: 0, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                >
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder={t('home:contact.emailPlaceholder')}
-                    className="w-full px-4 py-3 rounded-lg bg-gray-100 dark:bg-gray-700 border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-gray-600 focus:ring-0 transition-colors duration-300"
-                  />
-                </motion.div>
-                <motion.div
-                  initial={{ y: 50, opacity: 0 }}
-                  whileInView={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.5 }}
-                >
-                  <textarea
-                    name="message"
-                    rows={4}
-                    placeholder={t('home:contact.messagePlaceholder')}
-                    className="w-full px-4 py-3 rounded-lg bg-gray-100 dark:bg-gray-700 border-transparent focus:border-primary-500 focus:bg-white dark:focus:bg-gray-600 focus:ring-0 transition-colors duration-300"
-                  ></textarea>
-                </motion.div>
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  whileInView={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.6 }}
-                >
-                  <Button type="submit" variant="primary" size="lg" className="w-full">
-                    {t('home:contact.submitButton')}
-                  </Button>
-                </motion.div>
-              </motion.form>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+                Me Contacter
+              </h2>
+              <p className="text-gray-400 text-xs sm:text-sm max-w-xl mx-auto">
+                Une idée de projet ? N'hésitez pas à me contacter !
+              </p>
             </motion.div>
+
+            <div className="max-w-xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="bg-white/10 backdrop-blur-xl rounded-xl p-4 sm:p-6 shadow-xl"
+              >
+                <form onSubmit={handleContactSubmit} className="space-y-4">
+                  {/* Nom et Prénom */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
+                        Prénom *
+                      </label>
+                      <input
+                        type="text"
+                        name="firstName"
+                        className="w-full px-3 py-2 bg-white/5 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
+                        placeholder="John"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
+                        Nom *
+                      </label>
+                      <input
+                        type="text"
+                        name="lastName"
+                        className="w-full px-3 py-2 bg-white/5 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
+                        placeholder="Doe"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Société et Téléphone */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
+                        Société <span className="text-gray-500 text-xs">(optionnel)</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="company"
+                        className="w-full px-3 py-2 bg-white/5 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
+                        placeholder="Entreprise SA"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
+                        Téléphone <span className="text-gray-500 text-xs">(optionnel)</span>
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        className="w-full px-3 py-2 bg-white/5 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
+                        placeholder="Téléphone"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
+                      Email *
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      className="w-full px-3 py-2 bg-white/5 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
+                      placeholder="email@exemple.com"
+                      required
+                    />
+                  </div>
+
+                  {/* Sujet */}
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
+                      Sujet *
+                    </label>
+                    <input
+                      type="text"
+                      name="subject"
+                      className="w-full px-3 py-2 bg-white/5 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
+                      placeholder="Sujet de votre message"
+                      required
+                    />
+                  </div>
+
+                  {/* Message */}
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
+                      Message *
+                    </label>
+                    <textarea
+                      name="message"
+                      rows={4}
+                      className="w-full px-3 py-2 bg-white/5 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 resize-none text-sm"
+                      placeholder="Votre message..."
+                      required
+                    ></textarea>
+                  </div>
+
+                  {/* Bouton d'envoi */}
+                  <div className="text-center pt-2">
+                    <button
+                      type="submit"
+                      className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105"
+                    >
+                      Envoyer
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
           </div>
         </section>
       </main>
@@ -607,29 +877,35 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     const projects = await Project.find({}).lean();
     const experiences = await Experience.find({}).sort({ startDate: -1 }).lean();
     
-    const categories = await SkillCategory.find({ isVisible: true })
+    // Récupérer les catégories visibles sans doublons
+    const allCategories = await SkillCategory.find({ isVisible: true })
       .sort('displayOrder')
       .lean();
 
-    const uniqueCategories = categories.reduce((acc, current) => {
-      const x = acc.find(item => item.name === current.name);
-      if (!x) {
-        return acc.concat([current]);
-      } else {
-        return acc;
+    // Filtrer les catégories pour n'avoir que des noms uniques
+    const uniqueCategories = allCategories.reduce((acc, current) => {
+      const exists = acc.find(cat => cat.name === current.name);
+      if (!exists) {
+        acc.push(current);
       }
+      return acc;
     }, []);
 
+    // Récupérer les compétences non masquées
     const skills = await Skill.find({ isHidden: false })
       .populate('categoryId')
       .lean();
 
+    // Associer les compétences aux catégories uniques
     const skillsByCategory = uniqueCategories.map(category => ({
-      ...category,
+      _id: category._id,
+      name: category.name,
+      displayOrder: category.displayOrder,
       skills: skills.filter(skill => 
-        skill.categoryId && skill.categoryId._id.toString() === category._id.toString()
+        skill.categoryId && 
+        skill.categoryId.name === category.name // Utiliser le nom au lieu de l'ID
       )
-    }));
+    })).sort((a, b) => a.displayOrder - b.displayOrder);
 
     return {
       props: {

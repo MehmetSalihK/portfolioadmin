@@ -1,25 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { z } from 'zod';
-import nodemailer from 'nodemailer';
 import connectDB from '@/lib/db';
-import Contact from '@/models/Contact';
+import Message from '@/models/Message';
+import { Resend } from 'resend';
+import { ContactEmail } from '@/emails/ContactEmail';
 
-const contactSchema = z.object({
-  name: z.string().min(2).max(100),
-  email: z.string().email(),
-  subject: z.string().min(2).max(200),
-  message: z.string().min(10).max(2000),
-});
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: Boolean(process.env.SMTP_SECURE),
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async function handler(
   req: NextApiRequest,
@@ -30,43 +15,46 @@ export default async function handler(
   }
 
   try {
-    // Validate input
-    const validatedData = contactSchema.parse(req.body);
-
-    // Connect to database
     await connectDB();
 
-    // Save message to database
-    const contact = await Contact.create({
-      ...validatedData,
-      ipAddress: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
-      userAgent: req.headers['user-agent'],
+    const { firstName, lastName, company, phone, email, subject, message } = req.body;
+
+    // Validation des champs requis
+    if (!firstName || !lastName || !email || !subject || !message) {
+      return res.status(400).json({ message: 'Veuillez remplir tous les champs requis' });
+    }
+
+    // Créer le message dans la base de données
+    const newMessage = await Message.create({
+      firstName,
+      lastName,
+      company,
+      phone,
+      email,
+      subject,
+      message,
     });
 
-    // Send email notification
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM,
-      to: process.env.CONTACT_EMAIL,
-      subject: `New Contact Form Submission: ${validatedData.subject}`,
-      text: `
-        Name: ${validatedData.name}
-        Email: ${validatedData.email}
-        Subject: ${validatedData.subject}
-        Message: ${validatedData.message}
-      `,
-      html: `
-        <h2>New Contact Form Submission</h2>
-        <p><strong>Name:</strong> ${validatedData.name}</p>
-        <p><strong>Email:</strong> ${validatedData.email}</p>
-        <p><strong>Subject:</strong> ${validatedData.subject}</p>
-        <p><strong>Message:</strong></p>
-        <p>${validatedData.message.replace(/\n/g, '<br>')}</p>
-      `,
+    // Envoyer l'email avec Resend en utilisant le template React
+    await resend.emails.send({
+      from: 'Contact Form <onboarding@resend.dev>',
+      to: process.env.RESEND_EMAIL!,
+      subject: `Nouveau message: ${subject}`,
+      react: ContactEmail({
+        firstName,
+        lastName,
+        email,
+        phone,
+        company,
+        subject,
+        message,
+      }),
+      replyTo: email,
     });
 
-    return res.status(200).json({ message: 'Message sent successfully' });
+    return res.status(201).json({ message: 'Message envoyé avec succès' });
   } catch (error) {
-    console.error('Contact form error:', error);
-    return res.status(500).json({ message: 'Failed to send message' });
+    console.error('Error in contact API:', error);
+    return res.status(500).json({ message: 'Erreur lors de l\'envoi du message' });
   }
 }
