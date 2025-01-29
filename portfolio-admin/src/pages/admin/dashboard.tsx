@@ -36,7 +36,7 @@ export default function DashboardPage() {
     } else {
       fetchDashboardData();
     }
-  }, [status]);
+  }, [status, router]);
 
   const fetchDashboardData = async () => {
     try {

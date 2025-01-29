@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/layouts/AdminLayout';
@@ -32,9 +32,9 @@ export default function MessagesPage() {
     } else {
       fetchMessages();
     }
-  }, [status]);
+  }, [status, router, fetchMessages]);
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/messages');
       if (response.ok) {
@@ -44,7 +44,7 @@ export default function MessagesPage() {
     } catch (error) {
       toast.error('Erreur lors du chargement des messages');
     }
-  };
+  }, []);
 
   const filteredMessages = messages.filter(message => {
     if (filter === 'unread') return message.status === 'unread';
@@ -88,7 +88,7 @@ export default function MessagesPage() {
 
   return (
     <AdminLayout>
-      <div className="p-6 bg-gray-900 min-h-screen">
+      <div className="p-6 min-h-screen">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="flex justify-between items-center mb-8">
@@ -103,15 +103,15 @@ export default function MessagesPage() {
             </div>
             
             {/* Filtres */}
-            <div className="flex gap-2 bg-gray-800 p-1 rounded-lg">
+            <div className="flex gap-2 bg-[#1A1A1A] p-1 rounded-lg border border-gray-800">
               {(['all', 'unread', 'read'] as const).map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     filter === f
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-300 hover:bg-gray-700'
+                      ? 'bg-[#2A2A2A] text-white'
+                      : 'text-gray-400 hover:text-gray-200'
                   }`}
                 >
                   {f === 'all' ? 'Tous' : f === 'unread' ? 'Non lus' : 'Lus'}
@@ -129,10 +129,10 @@ export default function MessagesPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -100 }}
-                  className={`bg-gray-800 rounded-xl overflow-hidden border ${
+                  className={`bg-[#1A1A1A] rounded-xl overflow-hidden border ${
                     message.status === 'unread'
-                      ? 'border-blue-500/50'
-                      : 'border-gray-700'
+                      ? 'border-gray-700'
+                      : 'border-gray-800'
                   }`}
                 >
                   <div className="p-6">
@@ -211,20 +211,20 @@ export default function MessagesPage() {
           </div>
         </div>
 
-        {/* Modal de visualisation */}
+        {/* Modal avec fond sombre */}
         <AnimatePresence>
           {selectedMessage && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+              className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             >
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-gray-800 rounded-2xl w-full max-w-3xl overflow-hidden border border-gray-700"
+                className="bg-[#1A1A1A] rounded-2xl w-full max-w-3xl overflow-hidden border border-gray-800"
               >
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-6">

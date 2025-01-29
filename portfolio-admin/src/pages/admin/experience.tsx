@@ -37,10 +37,8 @@ export default function ExperiencePage() {
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/admin/login');
-    } else {
-      fetchExperiences();
     }
-  }, [status]);
+  }, [status, router]);
 
   const fetchExperiences = async () => {
     try {

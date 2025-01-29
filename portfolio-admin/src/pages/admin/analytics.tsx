@@ -48,7 +48,7 @@ export default function AnalyticsPage() {
     } else {
       fetchProjects();
     }
-  }, [status]);
+  }, [status, router, fetchProjects]);
 
   const fetchProjects = async () => {
     try {
