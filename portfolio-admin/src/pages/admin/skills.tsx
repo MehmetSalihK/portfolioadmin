@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import React from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
@@ -663,6 +663,26 @@ export default function SkillsPage() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [nextToastId, setNextToastId] = useState(0);
 
+  const fetchSkills = useCallback(async () => {
+    try {
+      const response = await fetch('/api/admin/skills');
+      if (response.ok) {
+        const data = await response.json();
+        setSkills(data);
+      }
+    } catch (error) {
+      toast.error('Erreur lors du chargement des compétences');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/admin/login');
+    } else {
+      fetchSkills();
+    }
+  }, [status, router, fetchSkills]);
+
   // Fonction pour ajouter un toast
   const addToast = ({ message, type }: Omit<Toast, 'id'>) => {
     const newToast = {
@@ -711,33 +731,12 @@ export default function SkillsPage() {
     }
   };
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/admin/login');
-    } else {
-      fetchSkills();
-    }
-  }, [status]);
-
   const showToast = (message: string, type: 'success' | 'error') => {
     const id = Date.now();
     setToasts(prev => [...prev, { id, message, type }]);
     setTimeout(() => {
       setToasts(prev => prev.filter(toast => toast.id !== id));
     }, 2000);
-  };
-
-  const fetchSkills = async () => {
-    try {
-      const response = await fetch('/api/skills');
-      if (response.ok) {
-        const data = await response.json();
-        setSkills(data);
-      }
-    } catch (error) {
-      console.error('Error fetching skills:', error);
-      showToast('Failed to fetch skills', 'error');
-    }
   };
 
   const handleAddSkill = async (e: React.FormEvent) => {

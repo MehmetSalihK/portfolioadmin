@@ -56,13 +56,8 @@ export default function SettingsPage() {
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/admin/login');
-    } else {
-      const savedSettings = localStorage.getItem('adminSettings');
-      if (!savedSettings) {
-        fetchSettings();
-      }
     }
-  }, [status]);
+  }, [status, router]);
 
   const fetchSettings = async () => {
     try {

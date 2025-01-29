@@ -41,7 +41,7 @@ export default function StatsPage() {
     } else {
       fetchProjects();
     }
-  }, [status, timeRange]); 
+  }, [status, timeRange, router]); 
 
   const fetchProjects = async () => {
     try {

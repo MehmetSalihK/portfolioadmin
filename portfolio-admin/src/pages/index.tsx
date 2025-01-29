@@ -31,7 +31,7 @@ import {
   FaCode
 } from 'react-icons/fa';
 import { HiArrowDown } from 'react-icons/hi';
-import { FiExternalLink, FiGithub, FiSettings, FiCode } from 'react-icons/fi';
+import { FiExternalLink, FiGithub, FiSettings, FiCode, FiStar } from 'react-icons/fi';
 import parse from 'html-react-parser';
 import { 
   SiTypescript, 
@@ -52,6 +52,7 @@ import {
 import { TbApi, TbBrandPython } from 'react-icons/tb';
 import SkillCategory from '@/models/SkillCategory';
 import { toast } from 'react-hot-toast';
+import Image from 'next/image';
 
 interface HomePageProps {
   projects: Array<{
@@ -599,9 +600,11 @@ export default function Home({ projects, experiences, skills, homeData = default
                   className="group relative bg-gradient-to-br from-[#1E1E1E] to-[#252525] rounded-xl overflow-hidden"
                 >
                   <div className="relative aspect-video">
-                    <img
+                    <Image
                       src={project.imageUrl}
                       alt={project.title}
+                      width={500}
+                      height={300}
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                     {project.featured && (

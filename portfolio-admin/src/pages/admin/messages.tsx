@@ -26,14 +26,6 @@ export default function MessagesPage() {
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/admin/login');
-    } else {
-      fetchMessages();
-    }
-  }, [status, router, fetchMessages]);
-
   const fetchMessages = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/messages');
@@ -45,6 +37,14 @@ export default function MessagesPage() {
       toast.error('Erreur lors du chargement des messages');
     }
   }, []);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/admin/login');
+    } else {
+      fetchMessages();
+    }
+  }, [status, router, fetchMessages]);
 
   const filteredMessages = messages.filter(message => {
     if (filter === 'unread') return message.status === 'unread';
