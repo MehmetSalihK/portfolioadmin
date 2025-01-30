@@ -1,8 +1,12 @@
 const bcrypt = require('bcryptjs');
 const { MongoClient } = require('mongodb');
+require('dotenv').config();
 
 async function createAdmin() {
-  const uri = "mongodb+srv://portfolio:port123@portfolio.64jmn.mongodb.net/";
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error('La variable d\'environnement MONGODB_URI n\'est pas définie');
+  }
   const client = new MongoClient(uri);
 
   try {
