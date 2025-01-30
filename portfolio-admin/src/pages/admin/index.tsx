@@ -25,10 +25,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/admin/login');
-    } else {
-      fetchStats();
     }
-  }, [status]);
+  }, [status, router]);
 
   const fetchStats = async () => {
     try {

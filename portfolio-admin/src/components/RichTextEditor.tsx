@@ -106,7 +106,9 @@ const MenuBar = ({ editor }: any) => {
       </button>
       <input
         type="color"
-        onInput={e => editor.chain().focus().setColor(e.target.value).run()}
+        onInput={(e: React.FormEvent<HTMLInputElement>) => 
+          editor.chain().focus().setColor((e.target as HTMLInputElement).value).run()
+        }
         value={editor.getAttributes('textStyle').color || '#ffffff'}
         className="w-8 h-8 p-0 bg-transparent border-none cursor-pointer"
         title="Choisir la couleur"

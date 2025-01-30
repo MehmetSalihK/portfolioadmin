@@ -86,18 +86,15 @@ export default function SkillCategoriesPage() {
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/admin/login');
-    } else {
-      fetchCategories();
-      fetchSkills();
     }
-  }, [status]);
+  }, [status, router]);
 
   const fetchCategories = async () => {
     try {
       const response = await fetch('/api/admin/skill-categories');
       if (response.ok) {
         const data = await response.json();
-        const uniqueCategories = data.filter((category, index, self) =>
+        const uniqueCategories = data.filter((category: SkillCategory, index: number, self: SkillCategory[]) =>
           index === self.findIndex((c) => c.name === category.name)
         );
         setCategories(uniqueCategories);

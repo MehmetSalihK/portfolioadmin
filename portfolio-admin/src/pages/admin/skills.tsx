@@ -5,7 +5,83 @@ import { useRouter } from 'next/router';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiPlus, FiX, FiTrash2, FiCode, FiCheck, FiAlertCircle, FiEye, FiEyeOff, FiList } from 'react-icons/fi';
-import * as Si from 'react-icons/si';
+import { 
+  SiJavascript, 
+  SiTypescript, 
+  SiPython, 
+  SiJava, 
+  SiPhp, 
+  SiHtml5,
+  SiCss3,
+  SiSass,
+  SiDart,
+  SiKotlin,
+  SiSwift,
+  SiReact,
+  SiVuedotjs,
+  SiAngular,
+  SiNextdotjs,
+  SiNodedotjs,
+  SiDjango,
+  SiLaravel,
+  SiTailwindcss,
+  SiBootstrap,
+  SiFlutter,
+  SiXamarin,
+  SiWordpress,
+  SiDrupal,
+  SiJoomla,
+  SiWoo,
+  SiShopify,
+  SiMysql,
+  SiMariadb,
+  SiPostgresql,
+  SiMongodb,
+  SiRedis,
+  SiSqlite,
+  SiWindows,
+  SiLinux,
+  SiUbuntu,
+  SiDebian,
+  SiKalilinux,
+  SiApple,
+  SiAdobephotoshop,
+  SiAdobeillustrator,
+  SiAdobepremierepro,
+  SiAdobeaftereffects,
+  SiAdobeindesign,
+  SiAdobexd,
+  SiFigma,
+  SiSketch,
+  SiVisualstudiocode,
+  SiGit,
+  SiGithub,
+  SiGitlab,
+  SiBitbucket,
+  SiPostman,
+  SiComposer,
+  SiNpm,
+  SiYarn,
+  SiPypi,
+  SiAmazonaws,
+  SiFirebase,
+  SiDocker,
+  SiKubernetes,
+  SiSlack,
+  SiDiscord,
+  SiMicrosoftteams,
+  SiJira,
+  SiNotion,
+  SiMicrosoftexcel,
+  SiMicrosoftword,
+  SiMicrosoftpowerpoint,
+  SiMicrosoftoffice,
+  SiOpenapiinitiative,
+  SiGraphql,
+  SiSwagger,
+  SiSoap,
+  SiWebsocket
+} from 'react-icons/si';
 import { IconType } from 'react-icons';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
@@ -50,67 +126,67 @@ interface TechInfo {
 const techMapping: Record<string, TechInfo> = {
   // Langages de programmation
   'javascript': { 
-    icon: Si.SiJavascript, 
+    icon: SiJavascript, 
     fullName: 'JavaScript',
     aliases: ['js', 'javascript', 'javascripts', 'javascript.js'],
     category: 'Langages de programmation'
   },
   'typescript': { 
-    icon: Si.SiTypescript, 
+    icon: SiTypescript, 
     fullName: 'TypeScript',
     aliases: ['ts', 'typescript', 'typescript.ts'],
     category: 'Langages de programmation'
   },
   'python': { 
-    icon: Si.SiPython, 
+    icon: SiPython, 
     fullName: 'Python',
     aliases: ['py', 'python', 'python3'],
     category: 'Langages de programmation'
   },
   'java': { 
-    icon: Si.SiJava, 
+    icon: SiJava, 
     fullName: 'Java',
     aliases: ['java', 'java8', 'java11', 'java17'],
     category: 'Langages de programmation'
   },
   'php': {
-    icon: Si.SiPhp,
+    icon: SiPhp,
     fullName: 'PHP',
     aliases: ['php', 'php7', 'php8'],
     category: 'Langages de programmation'
   },
   'html': { 
-    icon: Si.SiHtml5, 
+    icon: SiHtml5, 
     fullName: 'HTML',
     aliases: ['html', 'html5', 'html 5'],
     category: 'Langages de programmation'
   },
   'css': { 
-    icon: Si.SiCss3, 
+    icon: SiCss3, 
     fullName: 'CSS',
     aliases: ['css', 'css3', 'css 3'],
     category: 'Langages de programmation'
   },
   'sass': {
-    icon: Si.SiSass,
+    icon: SiSass,
     fullName: 'Sass',
     aliases: ['sass', 'scss'],
     category: 'Langages de programmation'
   },
   'dart': {
-    icon: Si.SiDart,
+    icon: SiDart,
     fullName: 'Dart',
     aliases: ['dart', 'dart lang', 'Dart'],
     category: 'Langages de programmation'
   },
   'kotlin': {
-    icon: Si.SiKotlin,
+    icon: SiKotlin,
     fullName: 'Kotlin',
     aliases: ['kotlin', 'kotlin lang', 'Kotlin'],
     category: 'Langages de programmation'
   },
   'swift': {
-    icon: Si.SiSwift,
+    icon: SiSwift,
     fullName: 'Swift',
     aliases: ['swift', 'swift lang', 'Swift'],
     category: 'Langages de programmation'
@@ -118,103 +194,103 @@ const techMapping: Record<string, TechInfo> = {
 
   // Frameworks
   'react': { 
-    icon: Si.SiReact, 
+    icon: SiReact, 
     fullName: 'React',
     aliases: ['react', 'reactjs', 'react.js'],
     category: 'Frameworks'
   },
   'reactnative': { 
-    icon: Si.SiReact, 
+    icon: SiReact, 
     fullName: 'React Native',
     aliases: ['react native', 'reactnative', 'react-native', 'rn'],
     category: 'Frameworks'
   },
   'vue': { 
-    icon: Si.SiVuedotjs, 
+    icon: SiVuedotjs, 
     fullName: 'Vue.js',
     aliases: ['vue', 'vuejs', 'vue.js', 'vue3'],
     category: 'Frameworks'
   },
   'angular': { 
-    icon: Si.SiAngular, 
+    icon: SiAngular, 
     fullName: 'Angular',
     aliases: ['ng', 'angular', 'angularjs', 'angular.js'],
     category: 'Frameworks'
   },
   'next': { 
-    icon: Si.SiNextdotjs, 
+    icon: SiNextdotjs, 
     fullName: 'Next.js',
     aliases: ['next', 'nextjs', 'next.js', 'next js'],
     category: 'Frameworks'
   },
   'node': { 
-    icon: Si.SiNodedotjs, 
+    icon: SiNodedotjs, 
     fullName: 'Node.js',
     aliases: ['node', 'nodejs', 'node.js', 'node js'],
     category: 'Frameworks'
   },
   'django': { 
-    icon: Si.SiDjango, 
+    icon: SiDjango, 
     fullName: 'Django',
     aliases: ['django', 'django3', 'django4'],
     category: 'Frameworks'
   },
   'laravel': {
-    icon: Si.SiLaravel,
+    icon: SiLaravel,
     fullName: 'Laravel',
     aliases: ['laravel', 'laravel9'],
     category: 'Frameworks'
   },
   'tailwind': { 
-    icon: Si.SiTailwindcss, 
+    icon: SiTailwindcss, 
     fullName: 'Tailwind CSS',
     aliases: ['tailwind', 'tailwindcss', 'tailwind css', 'tailwind-css'],
     category: 'Frameworks'
   },
   'bootstrap': { 
-    icon: Si.SiBootstrap, 
+    icon: SiBootstrap, 
     fullName: 'Bootstrap',
     aliases: ['bootstrap', 'bootstrap5', 'bootstrap 5'],
     category: 'Frameworks'
   },
   'flutter': {
-    icon: Si.SiFlutter,
+    icon: SiFlutter,
     fullName: 'Flutter',
     aliases: ['flutter', 'flutter sdk', 'Flutter'],
     category: 'Frameworks'
   },
   'xamarin': {
-    icon: Si.SiXamarin,
+    icon: SiXamarin,
     fullName: 'Xamarin',
     aliases: ['xamarin', 'xamarin forms', 'Xamarin'],
     category: 'Frameworks'
   },
   'wordpress': {
-    icon: Si.SiWordpress,
+    icon: SiWordpress,
     fullName: 'WordPress',
     aliases: ['wordpress', 'wp', 'WordPress'],
     category: 'Frameworks'
   },
   'drupal': {
-    icon: Si.SiDrupal,
+    icon: SiDrupal,
     fullName: 'Drupal',
     aliases: ['drupal', 'Drupal'],
     category: 'Frameworks'
   },
   'joomla': {
-    icon: Si.SiJoomla,
+    icon: SiJoomla,
     fullName: 'Joomla',
     aliases: ['joomla', 'Joomla'],
     category: 'Frameworks'
   },
   'woocommerce': {
-    icon: Si.SiWoo,
+    icon: SiWoo,
     fullName: 'WooCommerce',
     aliases: ['woocommerce', 'woo', 'WooCommerce'],
     category: 'Frameworks'
   },
   'shopify': {
-    icon: Si.SiShopify,
+    icon: SiShopify,
     fullName: 'Shopify',
     aliases: ['shopify', 'Shopify'],
     category: 'Frameworks'
@@ -222,37 +298,37 @@ const techMapping: Record<string, TechInfo> = {
 
   // Bases de données
   'mysql': { 
-    icon: Si.SiMysql, 
+    icon: SiMysql, 
     fullName: 'MySQL',
     aliases: ['mysql', 'my-sql', 'my sql'],
     category: 'Bases de données'
   },
   'mariadb': {
-    icon: Si.SiMariadb,
+    icon: SiMariadb,
     fullName: 'MariaDB',
     aliases: ['mariadb', 'maria', 'maria-db', 'maria db'],
     category: 'Bases de données'
   },
   'postgresql': {
-    icon: Si.SiPostgresql,
+    icon: SiPostgresql,
     fullName: 'PostgreSQL',
     aliases: ['postgres', 'postgresql', 'psql', 'postgre'],
     category: 'Bases de données'
   },
   'mongodb': { 
-    icon: Si.SiMongodb, 
+    icon: SiMongodb, 
     fullName: 'MongoDB',
     aliases: ['mongo', 'mongodb', 'mongo db'],
     category: 'Bases de données'
   },
   'redis': {
-    icon: Si.SiRedis,
+    icon: SiRedis,
     fullName: 'Redis',
     aliases: ['redis', 'redis-db', 'redis db'],
     category: 'Bases de données'
   },
   'sqlite': {
-    icon: Si.SiSqlite,
+    icon: SiSqlite,
     fullName: 'SQLite',
     aliases: ['sqlite', 'sqlite3', 'sql lite'],
     category: 'Bases de données'
@@ -260,37 +336,37 @@ const techMapping: Record<string, TechInfo> = {
 
   // Systèmes d'exploitation
   'windows': {
-    icon: Si.SiWindows,
+    icon: SiWindows,
     fullName: 'Windows',
     aliases: ['windows', 'windows 10', 'windows 11', 'win', 'win10', 'win11'],
     category: "Systèmes d'exploitation"
   },
   'linux': {
-    icon: Si.SiLinux,
+    icon: SiLinux,
     fullName: 'Linux',
     aliases: ['linux', 'gnu linux', 'gnu/linux'],
     category: "Systèmes d'exploitation"
   },
   'ubuntu': {
-    icon: Si.SiUbuntu,
+    icon: SiUbuntu,
     fullName: 'Ubuntu',
     aliases: ['ubuntu', 'ubuntu linux'],
     category: "Systèmes d'exploitation"
   },
   'debian': {
-    icon: Si.SiDebian,
+    icon: SiDebian,
     fullName: 'Debian',
     aliases: ['debian', 'debian linux'],
     category: "Systèmes d'exploitation"
   },
   'kali': {
-    icon: Si.SiKalilinux,
+    icon: SiKalilinux,
     fullName: 'Kali Linux',
     aliases: ['kali', 'kali linux', 'kalilinux'],
     category: "Systèmes d'exploitation"
   },
   'macos': {
-    icon: Si.SiApple,
+    icon: SiApple,
     fullName: 'macOS',
     aliases: ['mac', 'macos', 'mac os', 'osx', 'mac os x', 'apple'],
     category: "Systèmes d'exploitation"
@@ -298,49 +374,49 @@ const techMapping: Record<string, TechInfo> = {
 
   // Outils de design
   'photoshop': {
-    icon: Si.SiAdobephotoshop,
+    icon: SiAdobephotoshop,
     fullName: 'Adobe Photoshop',
     aliases: ['photoshop', 'adobe photoshop', 'ps', 'Adobe Photoshop'],
     category: 'Outils de design'
   },
   'illustrator': {
-    icon: Si.SiAdobeillustrator,
+    icon: SiAdobeillustrator,
     fullName: 'Adobe Illustrator',
     aliases: ['illustrator', 'adobe illustrator', 'ai', 'Adobe Illustrator'],
     category: 'Outils de design'
   },
   'premiere': {
-    icon: Si.SiAdobepremierepro,
+    icon: SiAdobepremierepro,
     fullName: 'Adobe Premiere Pro',
     aliases: ['premiere', 'premiere pro', 'adobe premiere', 'pr', 'Adobe Premiere Pro'],
     category: 'Outils de design'
   },
   'aftereffects': {
-    icon: Si.SiAdobeaftereffects,
+    icon: SiAdobeaftereffects,
     fullName: 'Adobe After Effects',
     aliases: ['after effects', 'adobe after effects', 'ae', 'Adobe After Effects'],
     category: 'Outils de design'
   },
   'indesign': {
-    icon: Si.SiAdobeindesign,
+    icon: SiAdobeindesign,
     fullName: 'Adobe InDesign',
     aliases: ['indesign', 'adobe indesign', 'id', 'Adobe InDesign'],
     category: 'Outils de design'
   },
   'xd': {
-    icon: Si.SiAdobexd,
+    icon: SiAdobexd,
     fullName: 'Adobe XD',
     aliases: ['xd', 'adobe xd', 'Adobe XD'],
     category: 'Outils de design'
   },
   'figma': {
-    icon: Si.SiFigma,
+    icon: SiFigma,
     fullName: 'Figma',
     aliases: ['figma', 'figma design'],
     category: 'Outils de design'
   },
   'sketch': {
-    icon: Si.SiSketch,
+    icon: SiSketch,
     fullName: 'Sketch',
     aliases: ['sketch', 'sketch app'],
     category: 'Outils de design'
@@ -348,37 +424,37 @@ const techMapping: Record<string, TechInfo> = {
 
   // Outils de développement
   'vscode': {
-    icon: Si.SiVisualstudiocode,
+    icon: SiVisualstudiocode,
     fullName: 'Visual Studio Code',
     aliases: ['vscode', 'vs code', 'visual studio code'],
     category: 'Outils de développement'
   },
   'git': { 
-    icon: Si.SiGit, 
+    icon: SiGit, 
     fullName: 'Git',
     aliases: ['git', 'git-scm'],
     category: 'Outils de développement'
   },
   'github': {
-    icon: Si.SiGithub,
+    icon: SiGithub,
     fullName: 'GitHub',
     aliases: ['github', 'gh', 'GitHub'],
     category: 'Outils de développement'
   },
   'gitlab': {
-    icon: Si.SiGitlab,
+    icon: SiGitlab,
     fullName: 'GitLab',
     aliases: ['gitlab', 'gl', 'GitLab'],
     category: 'Outils de développement'
   },
   'bitbucket': {
-    icon: Si.SiBitbucket,
+    icon: SiBitbucket,
     fullName: 'Bitbucket',
     aliases: ['bitbucket', 'bb', 'Bitbucket'],
     category: 'Outils de développement'
   },
   'postman': {
-    icon: Si.SiPostman,
+    icon: SiPostman,
     fullName: 'Postman',
     aliases: ['postman', 'postman api'],
     category: 'Outils de développement'
@@ -386,25 +462,25 @@ const techMapping: Record<string, TechInfo> = {
 
   // Gestionnaires de paquets
   'composer': {
-    icon: Si.SiComposer,
+    icon: SiComposer,
     fullName: 'Composer',
     aliases: ['composer', 'php composer', 'Composer'],
     category: 'Outils de développement'
   },
   'npm': {
-    icon: Si.SiNpm,
+    icon: SiNpm,
     fullName: 'NPM',
     aliases: ['npm', 'node package manager', 'NPM'],
     category: 'Outils de développement'
   },
   'yarn': {
-    icon: Si.SiYarn,
+    icon: SiYarn,
     fullName: 'Yarn',
     aliases: ['yarn', 'yarn package manager', 'Yarn'],
     category: 'Outils de développement'
   },
   'pip': {
-    icon: Si.SiPypi,
+    icon: SiPypi,
     fullName: 'PIP',
     aliases: ['pip', 'python pip', 'PIP'],
     category: 'Outils de développement'
@@ -412,13 +488,13 @@ const techMapping: Record<string, TechInfo> = {
 
   // Services Cloud
   'aws': {
-    icon: Si.SiAmazonaws,
+    icon: SiAmazonaws,
     fullName: 'AWS',
     aliases: ['aws', 'amazon aws', 'amazon web services'],
     category: 'Services Cloud'
   },
   'firebase': {
-    icon: Si.SiFirebase,
+    icon: SiFirebase,
     fullName: 'Firebase',
     aliases: ['firebase', 'google firebase'],
     category: 'Services Cloud'
@@ -426,13 +502,13 @@ const techMapping: Record<string, TechInfo> = {
 
   // Outils DevOps
   'docker': { 
-    icon: Si.SiDocker, 
+    icon: SiDocker, 
     fullName: 'Docker',
     aliases: ['docker', 'docker-compose', 'dockerfile'],
     category: 'Outils DevOps'
   },
   'kubernetes': {
-    icon: Si.SiKubernetes,
+    icon: SiKubernetes,
     fullName: 'Kubernetes',
     aliases: ['k8s', 'kubernetes', 'kube'],
     category: 'Outils DevOps'
@@ -440,31 +516,31 @@ const techMapping: Record<string, TechInfo> = {
 
   // Outils de collaboration
   'slack': {
-    icon: Si.SiSlack,
+    icon: SiSlack,
     fullName: 'Slack',
     aliases: ['slack', 'slack app'],
     category: 'Outils de collaboration'
   },
   'discord': {
-    icon: Si.SiDiscord,
+    icon: SiDiscord,
     fullName: 'Discord',
     aliases: ['discord', 'discord app'],
     category: 'Outils de collaboration'
   },
   'teams': {
-    icon: Si.SiMicrosoftteams,
+    icon: SiMicrosoftteams,
     fullName: 'Microsoft Teams',
     aliases: ['teams', 'ms teams', 'microsoft teams'],
     category: 'Outils de collaboration'
   },
   'jira': {
-    icon: Si.SiJira,
+    icon: SiJira,
     fullName: 'Jira',
     aliases: ['jira', 'jira software', 'atlassian jira'],
     category: 'Outils de collaboration'
   },
   'notion': {
-    icon: Si.SiNotion,
+    icon: SiNotion,
     fullName: 'Notion',
     aliases: ['notion', 'notion app'],
     category: 'Outils de collaboration'
@@ -472,25 +548,25 @@ const techMapping: Record<string, TechInfo> = {
 
   // Microsoft Office
   'excel': {
-    icon: Si.SiMicrosoftexcel,
+    icon: SiMicrosoftexcel,
     fullName: 'Microsoft Excel',
     aliases: ['excel', 'ms excel', 'microsoft excel', 'Excel', 'Microsoft Excel'],
     category: 'Outils de bureautique'
   },
   'word': {
-    icon: Si.SiMicrosoftword,
+    icon: SiMicrosoftword,
     fullName: 'Microsoft Word',
     aliases: ['word', 'ms word', 'microsoft word', 'Word', 'Microsoft Word'],
     category: 'Outils de bureautique'
   },
   'powerpoint': {
-    icon: Si.SiMicrosoftpowerpoint,
+    icon: SiMicrosoftpowerpoint,
     fullName: 'Microsoft PowerPoint',
     aliases: ['powerpoint', 'ms powerpoint', 'microsoft powerpoint', 'PowerPoint', 'Microsoft PowerPoint'],
     category: 'Outils de bureautique'
   },
   'office': {
-    icon: Si.SiMicrosoftoffice,
+    icon: SiMicrosoftoffice,
     fullName: 'Microsoft Office',
     aliases: ['office', 'ms office', 'microsoft office', 'Office', 'Microsoft Office'],
     category: 'Outils de bureautique'
@@ -498,31 +574,31 @@ const techMapping: Record<string, TechInfo> = {
 
   // APIs et Protocoles
   'rest-api': {
-    icon: Si.SiOpenapiinitiative,
+    icon: SiOpenapiinitiative,
     fullName: 'REST API',
     aliases: ['rest', 'rest api', 'restful', 'restful api', 'api', 'API'],
     category: 'Outils de développement'
   },
   'graphql': {
-    icon: Si.SiGraphql,
+    icon: SiGraphql,
     fullName: 'GraphQL',
     aliases: ['graphql', 'graph ql', 'GraphQL'],
     category: 'Outils de développement'
   },
   'swagger': {
-    icon: Si.SiSwagger,
+    icon: SiSwagger,
     fullName: 'Swagger',
     aliases: ['swagger', 'openapi', 'swagger ui', 'Swagger'],
     category: 'Outils de développement'
   },
   'soap': {
-    icon: Si.SiSoap,
+    icon: SiSoap,
     fullName: 'SOAP',
     aliases: ['soap', 'soap api', 'SOAP'],
     category: 'Outils de développement'
   },
   'websocket': {
-    icon: Si.SiWebsocket,
+    icon: SiWebsocket,
     fullName: 'WebSocket',
     aliases: ['websocket', 'ws', 'WebSocket'],
     category: 'Outils de développement'

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/layouts/AdminLayout';
@@ -30,15 +30,7 @@ export default function DashboardPage() {
   });
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/admin/login');
-    } else {
-      fetchDashboardData();
-    }
-  }, [status, router]);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       const response = await fetch('/api/dashboard');
       if (response.ok) {
@@ -49,7 +41,15 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/admin/login');
+    } else {
+      fetchDashboardData();
+    }
+  }, [status, router, fetchDashboardData]);
 
   const StatCard = ({ title, value, icon: Icon, onClick }: { title: string; value: number; icon: any; onClick: () => void }) => (
     <motion.div

@@ -1,6 +1,6 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { FiTrendingUp, FiGithub, FiExternalLink, FiEye, FiClock, FiBarChart2 } from 'react-icons/fi';
 import { motion } from 'framer-motion';
@@ -42,15 +42,7 @@ export default function AnalyticsPage() {
     views: 0,
   });
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/admin/login');
-    } else {
-      fetchProjects();
-    }
-  }, [status, router, fetchProjects]);
-
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     try {
       const response = await fetch('/api/projects');
       if (!response.ok) throw new Error('Failed to fetch projects');
@@ -62,7 +54,15 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/admin/login');
+    } else {
+      fetchProjects();
+    }
+  }, [status, router, fetchProjects]);
 
   const calculateTotalStats = (projects: ProjectStats[]) => {
     const totals = projects.reduce((acc, project) => {

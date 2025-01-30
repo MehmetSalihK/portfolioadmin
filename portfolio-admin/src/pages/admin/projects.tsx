@@ -1,6 +1,6 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiPlus, FiX, FiEye, FiGithub, FiExternalLink, FiStar, FiEdit2, FiTrash2, FiLoader, FiFolder, FiUpload } from 'react-icons/fi';
@@ -46,16 +46,7 @@ export default function ProjectsPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadType, setUploadType] = useState<'url' | 'file'>('url');
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/admin/login');
-    } else {
-      fetchProjects();
-      fetchSkills();
-    }
-  }, [status]);
-
-  const fetchSkills = async () => {
+  const fetchSkills = useCallback(async () => {
     try {
       const response = await fetch('/api/skills');
       if (!response.ok) {
@@ -67,9 +58,9 @@ export default function ProjectsPage() {
       console.error('Error fetching skills:', error);
       toast.error('Failed to load skills');
     }
-  };
+  }, []);
 
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     try {
       const response = await fetch('/api/projects');
       if (!response.ok) {
@@ -81,7 +72,16 @@ export default function ProjectsPage() {
       console.error('Error fetching projects:', error);
       toast.error('Failed to load projects');
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/admin/login');
+    } else {
+      fetchProjects();
+      fetchSkills();
+    }
+  }, [status, router, fetchProjects, fetchSkills]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;

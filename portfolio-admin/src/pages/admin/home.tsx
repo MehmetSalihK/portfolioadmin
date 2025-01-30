@@ -40,10 +40,8 @@ export default function HomePageAdmin() {
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/admin/login');
-    } else if (status === 'authenticated') {
-      fetchData();
     }
-  }, [status]);
+  }, [status, router]);
 
   const fetchData = async () => {
     try {
