@@ -1,0 +1,29 @@
+{
+  "Common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "success": "Succès",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer"
+  },
+  "Projects": {
+    "pageTitle": "Mes Projets",
+    "pageDescription": "Découvrez mon portfolio de projets",
+    "title": "Projets",
+    "noProjects": "Aucun projet trouvé"
+  },
+  "Admin": {
+    "login": "Connexion",
+    "email": "Email",
+    "password": "Mot de passe",
+    "signIn": "Se connecter",
+    "dashboard": "Tableau de bord",
+    "projects": "Projets",
+    "skills": "Compétences",
+    "experiences": "Expériences",
+    "messages": "Messages"
+  }
+}

@@ -1,0 +1,1061 @@
+import { useState, useEffect, useCallback } from 'react';
+import React from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
+import AdminLayout from '@/components/layouts/AdminLayout';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiPlus, FiX, FiTrash2, FiCode, FiCheck, FiAlertCircle, FiEye, FiEyeOff, FiList } from 'react-icons/fi';
+import { 
+  SiJavascript, 
+  SiTypescript, 
+  SiPython, 
+  SiJava, 
+  SiPhp, 
+  SiHtml5,
+  SiCss3,
+  SiSass,
+  SiDart,
+  SiKotlin,
+  SiSwift,
+  SiReact,
+  SiVuedotjs,
+  SiAngular,
+  SiNextdotjs,
+  SiNodedotjs,
+  SiDjango,
+  SiLaravel,
+  SiTailwindcss,
+  SiBootstrap,
+  SiFlutter,
+  SiXamarin,
+  SiWordpress,
+  SiDrupal,
+  SiJoomla,
+  SiWoo,
+  SiShopify,
+  SiMysql,
+  SiMariadb,
+  SiPostgresql,
+  SiMongodb,
+  SiRedis,
+  SiSqlite,
+  SiWindows,
+  SiLinux,
+  SiUbuntu,
+  SiDebian,
+  SiKalilinux,
+  SiApple,
+  SiAdobephotoshop,
+  SiAdobeillustrator,
+  SiAdobepremierepro,
+  SiAdobeaftereffects,
+  SiAdobeindesign,
+  SiAdobexd,
+  SiFigma,
+  SiSketch,
+  SiVisualstudiocode,
+  SiGit,
+  SiGithub,
+  SiGitlab,
+  SiBitbucket,
+  SiPostman,
+  SiComposer,
+  SiNpm,
+  SiYarn,
+  SiPypi,
+  SiAmazonaws,
+  SiFirebase,
+  SiDocker,
+  SiKubernetes,
+  SiSlack,
+  SiDiscord,
+  SiMicrosoftteams,
+  SiJira,
+  SiNotion,
+  SiMicrosoftexcel,
+  SiMicrosoftword,
+  SiMicrosoftpowerpoint,
+  SiMicrosoftoffice,
+  SiOpenapiinitiative,
+  SiGraphql,
+  SiSwagger,
+  SiSoap,
+  SiWebsocket
+} from 'react-icons/si';
+import { IconType } from 'react-icons';
+import toast from 'react-hot-toast';
+import Link from 'next/link';
+
+interface Skill {
+  _id: string;
+  name: string;
+  level: number;
+  category: string;
+  isHidden: boolean;
+}
+
+interface Toast {
+  id: number;
+  message: string;
+  type: 'success' | 'error';
+}
+
+// Types de catégories
+type SkillCategory = 
+  | 'Langages de programmation'
+  | 'Frameworks'
+  | "Systèmes d'exploitation"
+  | 'Bases de données'
+  | 'Outils de design'
+  | 'Outils de développement'
+  | 'Services Cloud'
+  | 'Outils DevOps'
+  | 'Outils de collaboration'
+  | 'Outils de bureautique'
+  | 'Autres';
+
+// Interface pour les informations de technologie
+interface TechInfo {
+  icon: IconType;
+  fullName: string;
+  aliases: string[];
+  category: SkillCategory;
+}
+
+// Mapping des technologies avec leurs catégories
+const techMapping: Record<string, TechInfo> = {
+  // Langages de programmation
+  'javascript': { 
+    icon: SiJavascript, 
+    fullName: 'JavaScript',
+    aliases: ['js', 'javascript', 'javascripts', 'javascript.js'],
+    category: 'Langages de programmation'
+  },
+  'typescript': { 
+    icon: SiTypescript, 
+    fullName: 'TypeScript',
+    aliases: ['ts', 'typescript', 'typescript.ts'],
+    category: 'Langages de programmation'
+  },
+  'python': { 
+    icon: SiPython, 
+    fullName: 'Python',
+    aliases: ['py', 'python', 'python3'],
+    category: 'Langages de programmation'
+  },
+  'java': { 
+    icon: SiJava, 
+    fullName: 'Java',
+    aliases: ['java', 'java8', 'java11', 'java17'],
+    category: 'Langages de programmation'
+  },
+  'php': {
+    icon: SiPhp,
+    fullName: 'PHP',
+    aliases: ['php', 'php7', 'php8'],
+    category: 'Langages de programmation'
+  },
+  'html': { 
+    icon: SiHtml5, 
+    fullName: 'HTML',
+    aliases: ['html', 'html5', 'html 5'],
+    category: 'Langages de programmation'
+  },
+  'css': { 
+    icon: SiCss3, 
+    fullName: 'CSS',
+    aliases: ['css', 'css3', 'css 3'],
+    category: 'Langages de programmation'
+  },
+  'sass': {
+    icon: SiSass,
+    fullName: 'Sass',
+    aliases: ['sass', 'scss'],
+    category: 'Langages de programmation'
+  },
+  'dart': {
+    icon: SiDart,
+    fullName: 'Dart',
+    aliases: ['dart', 'dart lang', 'Dart'],
+    category: 'Langages de programmation'
+  },
+  'kotlin': {
+    icon: SiKotlin,
+    fullName: 'Kotlin',
+    aliases: ['kotlin', 'kotlin lang', 'Kotlin'],
+    category: 'Langages de programmation'
+  },
+  'swift': {
+    icon: SiSwift,
+    fullName: 'Swift',
+    aliases: ['swift', 'swift lang', 'Swift'],
+    category: 'Langages de programmation'
+  },
+
+  // Frameworks
+  'react': { 
+    icon: SiReact, 
+    fullName: 'React',
+    aliases: ['react', 'reactjs', 'react.js'],
+    category: 'Frameworks'
+  },
+  'reactnative': { 
+    icon: SiReact, 
+    fullName: 'React Native',
+    aliases: ['react native', 'reactnative', 'react-native', 'rn'],
+    category: 'Frameworks'
+  },
+  'vue': { 
+    icon: SiVuedotjs, 
+    fullName: 'Vue.js',
+    aliases: ['vue', 'vuejs', 'vue.js', 'vue3'],
+    category: 'Frameworks'
+  },
+  'angular': { 
+    icon: SiAngular, 
+    fullName: 'Angular',
+    aliases: ['ng', 'angular', 'angularjs', 'angular.js'],
+    category: 'Frameworks'
+  },
+  'next': { 
+    icon: SiNextdotjs, 
+    fullName: 'Next.js',
+    aliases: ['next', 'nextjs', 'next.js', 'next js'],
+    category: 'Frameworks'
+  },
+  'node': { 
+    icon: SiNodedotjs, 
+    fullName: 'Node.js',
+    aliases: ['node', 'nodejs', 'node.js', 'node js'],
+    category: 'Frameworks'
+  },
+  'django': { 
+    icon: SiDjango, 
+    fullName: 'Django',
+    aliases: ['django', 'django3', 'django4'],
+    category: 'Frameworks'
+  },
+  'laravel': {
+    icon: SiLaravel,
+    fullName: 'Laravel',
+    aliases: ['laravel', 'laravel9'],
+    category: 'Frameworks'
+  },
+  'tailwind': { 
+    icon: SiTailwindcss, 
+    fullName: 'Tailwind CSS',
+    aliases: ['tailwind', 'tailwindcss', 'tailwind css', 'tailwind-css'],
+    category: 'Frameworks'
+  },
+  'bootstrap': { 
+    icon: SiBootstrap, 
+    fullName: 'Bootstrap',
+    aliases: ['bootstrap', 'bootstrap5', 'bootstrap 5'],
+    category: 'Frameworks'
+  },
+  'flutter': {
+    icon: SiFlutter,
+    fullName: 'Flutter',
+    aliases: ['flutter', 'flutter sdk', 'Flutter'],
+    category: 'Frameworks'
+  },
+  'xamarin': {
+    icon: SiXamarin,
+    fullName: 'Xamarin',
+    aliases: ['xamarin', 'xamarin forms', 'Xamarin'],
+    category: 'Frameworks'
+  },
+  'wordpress': {
+    icon: SiWordpress,
+    fullName: 'WordPress',
+    aliases: ['wordpress', 'wp', 'WordPress'],
+    category: 'Frameworks'
+  },
+  'drupal': {
+    icon: SiDrupal,
+    fullName: 'Drupal',
+    aliases: ['drupal', 'Drupal'],
+    category: 'Frameworks'
+  },
+  'joomla': {
+    icon: SiJoomla,
+    fullName: 'Joomla',
+    aliases: ['joomla', 'Joomla'],
+    category: 'Frameworks'
+  },
+  'woocommerce': {
+    icon: SiWoo,
+    fullName: 'WooCommerce',
+    aliases: ['woocommerce', 'woo', 'WooCommerce'],
+    category: 'Frameworks'
+  },
+  'shopify': {
+    icon: SiShopify,
+    fullName: 'Shopify',
+    aliases: ['shopify', 'Shopify'],
+    category: 'Frameworks'
+  },
+
+  // Bases de données
+  'mysql': { 
+    icon: SiMysql, 
+    fullName: 'MySQL',
+    aliases: ['mysql', 'my-sql', 'my sql'],
+    category: 'Bases de données'
+  },
+  'mariadb': {
+    icon: SiMariadb,
+    fullName: 'MariaDB',
+    aliases: ['mariadb', 'maria', 'maria-db', 'maria db'],
+    category: 'Bases de données'
+  },
+  'postgresql': {
+    icon: SiPostgresql,
+    fullName: 'PostgreSQL',
+    aliases: ['postgres', 'postgresql', 'psql', 'postgre'],
+    category: 'Bases de données'
+  },
+  'mongodb': { 
+    icon: SiMongodb, 
+    fullName: 'MongoDB',
+    aliases: ['mongo', 'mongodb', 'mongo db'],
+    category: 'Bases de données'
+  },
+  'redis': {
+    icon: SiRedis,
+    fullName: 'Redis',
+    aliases: ['redis', 'redis-db', 'redis db'],
+    category: 'Bases de données'
+  },
+  'sqlite': {
+    icon: SiSqlite,
+    fullName: 'SQLite',
+    aliases: ['sqlite', 'sqlite3', 'sql lite'],
+    category: 'Bases de données'
+  },
+
+  // Systèmes d'exploitation
+  'windows': {
+    icon: SiWindows,
+    fullName: 'Windows',
+    aliases: ['windows', 'windows 10', 'windows 11', 'win', 'win10', 'win11'],
+    category: "Systèmes d'exploitation"
+  },
+  'linux': {
+    icon: SiLinux,
+    fullName: 'Linux',
+    aliases: ['linux', 'gnu linux', 'gnu/linux'],
+    category: "Systèmes d'exploitation"
+  },
+  'ubuntu': {
+    icon: SiUbuntu,
+    fullName: 'Ubuntu',
+    aliases: ['ubuntu', 'ubuntu linux'],
+    category: "Systèmes d'exploitation"
+  },
+  'debian': {
+    icon: SiDebian,
+    fullName: 'Debian',
+    aliases: ['debian', 'debian linux'],
+    category: "Systèmes d'exploitation"
+  },
+  'kali': {
+    icon: SiKalilinux,
+    fullName: 'Kali Linux',
+    aliases: ['kali', 'kali linux', 'kalilinux'],
+    category: "Systèmes d'exploitation"
+  },
+  'macos': {
+    icon: SiApple,
+    fullName: 'macOS',
+    aliases: ['mac', 'macos', 'mac os', 'osx', 'mac os x', 'apple'],
+    category: "Systèmes d'exploitation"
+  },
+
+  // Outils de design
+  'photoshop': {
+    icon: SiAdobephotoshop,
+    fullName: 'Adobe Photoshop',
+    aliases: ['photoshop', 'adobe photoshop', 'ps', 'Adobe Photoshop'],
+    category: 'Outils de design'
+  },
+  'illustrator': {
+    icon: SiAdobeillustrator,
+    fullName: 'Adobe Illustrator',
+    aliases: ['illustrator', 'adobe illustrator', 'ai', 'Adobe Illustrator'],
+    category: 'Outils de design'
+  },
+  'premiere': {
+    icon: SiAdobepremierepro,
+    fullName: 'Adobe Premiere Pro',
+    aliases: ['premiere', 'premiere pro', 'adobe premiere', 'pr', 'Adobe Premiere Pro'],
+    category: 'Outils de design'
+  },
+  'aftereffects': {
+    icon: SiAdobeaftereffects,
+    fullName: 'Adobe After Effects',
+    aliases: ['after effects', 'adobe after effects', 'ae', 'Adobe After Effects'],
+    category: 'Outils de design'
+  },
+  'indesign': {
+    icon: SiAdobeindesign,
+    fullName: 'Adobe InDesign',
+    aliases: ['indesign', 'adobe indesign', 'id', 'Adobe InDesign'],
+    category: 'Outils de design'
+  },
+  'xd': {
+    icon: SiAdobexd,
+    fullName: 'Adobe XD',
+    aliases: ['xd', 'adobe xd', 'Adobe XD'],
+    category: 'Outils de design'
+  },
+  'figma': {
+    icon: SiFigma,
+    fullName: 'Figma',
+    aliases: ['figma', 'figma design'],
+    category: 'Outils de design'
+  },
+  'sketch': {
+    icon: SiSketch,
+    fullName: 'Sketch',
+    aliases: ['sketch', 'sketch app'],
+    category: 'Outils de design'
+  },
+
+  // Outils de développement
+  'vscode': {
+    icon: SiVisualstudiocode,
+    fullName: 'Visual Studio Code',
+    aliases: ['vscode', 'vs code', 'visual studio code'],
+    category: 'Outils de développement'
+  },
+  'git': { 
+    icon: SiGit, 
+    fullName: 'Git',
+    aliases: ['git', 'git-scm'],
+    category: 'Outils de développement'
+  },
+  'github': {
+    icon: SiGithub,
+    fullName: 'GitHub',
+    aliases: ['github', 'gh', 'GitHub'],
+    category: 'Outils de développement'
+  },
+  'gitlab': {
+    icon: SiGitlab,
+    fullName: 'GitLab',
+    aliases: ['gitlab', 'gl', 'GitLab'],
+    category: 'Outils de développement'
+  },
+  'bitbucket': {
+    icon: SiBitbucket,
+    fullName: 'Bitbucket',
+    aliases: ['bitbucket', 'bb', 'Bitbucket'],
+    category: 'Outils de développement'
+  },
+  'postman': {
+    icon: SiPostman,
+    fullName: 'Postman',
+    aliases: ['postman', 'postman api'],
+    category: 'Outils de développement'
+  },
+
+  // Gestionnaires de paquets
+  'composer': {
+    icon: SiComposer,
+    fullName: 'Composer',
+    aliases: ['composer', 'php composer', 'Composer'],
+    category: 'Outils de développement'
+  },
+  'npm': {
+    icon: SiNpm,
+    fullName: 'NPM',
+    aliases: ['npm', 'node package manager', 'NPM'],
+    category: 'Outils de développement'
+  },
+  'yarn': {
+    icon: SiYarn,
+    fullName: 'Yarn',
+    aliases: ['yarn', 'yarn package manager', 'Yarn'],
+    category: 'Outils de développement'
+  },
+  'pip': {
+    icon: SiPypi,
+    fullName: 'PIP',
+    aliases: ['pip', 'python pip', 'PIP'],
+    category: 'Outils de développement'
+  },
+
+  // Services Cloud
+  'aws': {
+    icon: SiAmazonaws,
+    fullName: 'AWS',
+    aliases: ['aws', 'amazon aws', 'amazon web services'],
+    category: 'Services Cloud'
+  },
+  'firebase': {
+    icon: SiFirebase,
+    fullName: 'Firebase',
+    aliases: ['firebase', 'google firebase'],
+    category: 'Services Cloud'
+  },
+
+  // Outils DevOps
+  'docker': { 
+    icon: SiDocker, 
+    fullName: 'Docker',
+    aliases: ['docker', 'docker-compose', 'dockerfile'],
+    category: 'Outils DevOps'
+  },
+  'kubernetes': {
+    icon: SiKubernetes,
+    fullName: 'Kubernetes',
+    aliases: ['k8s', 'kubernetes', 'kube'],
+    category: 'Outils DevOps'
+  },
+
+  // Outils de collaboration
+  'slack': {
+    icon: SiSlack,
+    fullName: 'Slack',
+    aliases: ['slack', 'slack app'],
+    category: 'Outils de collaboration'
+  },
+  'discord': {
+    icon: SiDiscord,
+    fullName: 'Discord',
+    aliases: ['discord', 'discord app'],
+    category: 'Outils de collaboration'
+  },
+  'teams': {
+    icon: SiMicrosoftteams,
+    fullName: 'Microsoft Teams',
+    aliases: ['teams', 'ms teams', 'microsoft teams'],
+    category: 'Outils de collaboration'
+  },
+  'jira': {
+    icon: SiJira,
+    fullName: 'Jira',
+    aliases: ['jira', 'jira software', 'atlassian jira'],
+    category: 'Outils de collaboration'
+  },
+  'notion': {
+    icon: SiNotion,
+    fullName: 'Notion',
+    aliases: ['notion', 'notion app'],
+    category: 'Outils de collaboration'
+  },
+
+  // Microsoft Office
+  'excel': {
+    icon: SiMicrosoftexcel,
+    fullName: 'Microsoft Excel',
+    aliases: ['excel', 'ms excel', 'microsoft excel', 'Excel', 'Microsoft Excel'],
+    category: 'Outils de bureautique'
+  },
+  'word': {
+    icon: SiMicrosoftword,
+    fullName: 'Microsoft Word',
+    aliases: ['word', 'ms word', 'microsoft word', 'Word', 'Microsoft Word'],
+    category: 'Outils de bureautique'
+  },
+  'powerpoint': {
+    icon: SiMicrosoftpowerpoint,
+    fullName: 'Microsoft PowerPoint',
+    aliases: ['powerpoint', 'ms powerpoint', 'microsoft powerpoint', 'PowerPoint', 'Microsoft PowerPoint'],
+    category: 'Outils de bureautique'
+  },
+  'office': {
+    icon: SiMicrosoftoffice,
+    fullName: 'Microsoft Office',
+    aliases: ['office', 'ms office', 'microsoft office', 'Office', 'Microsoft Office'],
+    category: 'Outils de bureautique'
+  },
+
+  // APIs et Protocoles
+  'rest-api': {
+    icon: SiOpenapiinitiative,
+    fullName: 'REST API',
+    aliases: ['rest', 'rest api', 'restful', 'restful api', 'api', 'API'],
+    category: 'Outils de développement'
+  },
+  'graphql': {
+    icon: SiGraphql,
+    fullName: 'GraphQL',
+    aliases: ['graphql', 'graph ql', 'GraphQL'],
+    category: 'Outils de développement'
+  },
+  'swagger': {
+    icon: SiSwagger,
+    fullName: 'Swagger',
+    aliases: ['swagger', 'openapi', 'swagger ui', 'Swagger'],
+    category: 'Outils de développement'
+  },
+  'soap': {
+    icon: SiSoap,
+    fullName: 'SOAP',
+    aliases: ['soap', 'soap api', 'SOAP'],
+    category: 'Outils de développement'
+  },
+  'websocket': {
+    icon: SiWebsocket,
+    fullName: 'WebSocket',
+    aliases: ['websocket', 'ws', 'WebSocket'],
+    category: 'Outils de développement'
+  },
+};
+
+// Fonction pour normaliser le nom de la compétence
+const normalizeSkillName = (input: string): string => {
+  const normalizedInput = input.toLowerCase().trim();
+  
+  for (const tech of Object.values(techMapping)) {
+    if (tech.aliases.some(alias => normalizedInput === alias)) {
+      return tech.fullName;
+    }
+  }
+  
+  // Si aucune correspondance n'est trouvée, on retourne le nom avec la première lettre en majuscule
+  return input.charAt(0).toUpperCase() + input.slice(1).toLowerCase();
+};
+
+// Fonction pour obtenir l'icône correspondante
+const getSkillIcon = (skillName: string): IconType => {
+  const normalizedName = skillName.toLowerCase().trim();
+  
+  // Recherche exacte d'abord
+  for (const tech of Object.values(techMapping)) {
+    if (tech.aliases.some(alias => normalizedName === alias)) {
+      return tech.icon;
+    }
+  }
+  
+  // Si pas de correspondance exacte, recherche partielle
+  for (const tech of Object.values(techMapping)) {
+    if (tech.aliases.some(alias => normalizedName.includes(alias))) {
+      return tech.icon;
+    }
+  }
+  
+  return FiCode; // Icône par défaut si aucune correspondance n'est trouvée
+};
+
+// Fonction pour obtenir la catégorie d'une compétence
+const getSkillCategory = (skillName: string): SkillCategory => {
+  const normalizedInput = skillName.toLowerCase().trim();
+  
+  for (const tech of Object.values(techMapping)) {
+    // Vérifier le nom complet
+    if (tech.fullName.toLowerCase() === normalizedInput) {
+      return tech.category;
+    }
+    // Vérifier les alias
+    if (tech.aliases.some(alias => alias.toLowerCase() === normalizedInput)) {
+      return tech.category;
+    }
+  }
+  return 'Autres';
+};
+
+// Fonction pour grouper les compétences par catégorie
+const groupSkillsByCategory = (skills: Skill[]) => {
+  const grouped = {};
+  skills.forEach(skill => {
+    const categoryName = skill.categoryId?.name || 'Non catégorisé';
+    if (!grouped[categoryName]) {
+      grouped[categoryName] = [];
+    }
+    grouped[categoryName].push(skill);
+  });
+  return grouped;
+};
+
+// Fonction pour détecter automatiquement la catégorie
+const detectCategory = (skillName: string): string => {
+  const name = skillName.toLowerCase();
+  
+  // Langages de programmation
+  if (name.includes('javascript') || name.includes('python') || name.includes('java') || 
+      name.includes('typescript') || name.includes('php') || name.includes('ruby') || 
+      name.includes('swift') || name.includes('kotlin') || name.includes('c++') || 
+      name.includes('c#') || name.includes('go')) {
+    return 'Langages de programmation';
+  }
+  
+  // Frameworks
+  if (name.includes('react') || name.includes('vue') || name.includes('angular') || 
+      name.includes('next') || name.includes('nuxt') || name.includes('express') || 
+      name.includes('django') || name.includes('flask') || name.includes('laravel') ||
+      name.includes('spring') || name.includes('flutter') || name.includes('tailwind')) {
+    return 'Frameworks';
+  }
+  
+  // Systèmes d'exploitation
+  if (name.includes('windows') || name.includes('linux') || name.includes('macos') || 
+      name.includes('ubuntu') || name.includes('android') || name.includes('ios')) {
+    return 'Systèmes d\'exploitation';
+  }
+  
+  // Bases de données
+  if (name.includes('sql') || name.includes('mongo') || name.includes('postgres') || 
+      name.includes('mysql') || name.includes('oracle') || name.includes('redis') ||
+      name.includes('firebase')) {
+    return 'Bases de données';
+  }
+  
+  // Outils de design
+  if (name.includes('photoshop') || name.includes('illustrator') || name.includes('figma') || 
+      name.includes('sketch') || name.includes('xd') || name.includes('after') || 
+      name.includes('premiere') || name.includes('indesign')) {
+    return 'Outils de design';
+  }
+  
+  // Outils de développement
+  if (name.includes('git') || name.includes('docker') || name.includes('vscode') || 
+      name.includes('intellij') || name.includes('eclipse') || name.includes('postman')) {
+    return 'Outils de développement';
+  }
+  
+  // Services Cloud
+  if (name.includes('aws') || name.includes('azure') || name.includes('google cloud') || 
+      name.includes('heroku') || name.includes('vercel') || name.includes('netlify')) {
+    return 'Services Cloud';
+  }
+  
+  // Par défaut
+  return 'Autres';
+};
+
+export default function SkillsPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [newSkillName, setNewSkillName] = useState('');
+  const [newSkillLevel, setNewSkillLevel] = useState(50);
+  const [newSkillCategory, setNewSkillCategory] = useState('Autres');
+  const [isAddingSkill, setIsAddingSkill] = useState(false);
+  const [skillToDelete, setSkillToDelete] = useState<Skill | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [nextToastId, setNextToastId] = useState(0);
+
+  const fetchSkills = useCallback(async () => {
+    try {
+      const response = await fetch('/api/admin/skills');
+      if (response.ok) {
+        const data = await response.json();
+        setSkills(data);
+      }
+    } catch (error) {
+      toast.error('Erreur lors du chargement des compétences');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/admin/login');
+    } else {
+      fetchSkills();
+    }
+  }, [status, router, fetchSkills]);
+
+  // Fonction pour ajouter un toast
+  const addToast = ({ message, type }: Omit<Toast, 'id'>) => {
+    const newToast = {
+      id: nextToastId,
+      message,
+      type,
+    };
+    setToasts(prevToasts => [...prevToasts, newToast]);
+    setNextToastId(prevId => prevId + 1);
+    setTimeout(() => {
+      setToasts(prevToasts => prevToasts.filter(toast => toast.id !== newToast.id));
+    }, 3000);
+  };
+
+  // Fonction pour mettre à jour la visibilité d'une compétence
+  const toggleVisibility = async (skillId: string, isHidden: boolean) => {
+    try {
+      console.log('Toggling visibility:', { skillId, isHidden }); // Debug log
+      
+      const response = await fetch(`/api/admin/skills/${skillId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ isHidden }),
+      });
+
+      const data = await response.json();
+      console.log('Response:', data); // Debug log
+
+      if (response.ok) {
+        // Mettre à jour l'état local immédiatement
+        setSkills(prevSkills => 
+          prevSkills.map(skill => 
+            skill._id === skillId ? { ...skill, isHidden } : skill
+          )
+        );
+        
+        toast.success(isHidden ? 'Compétence masquée' : 'Compétence affichée');
+      } else {
+        toast.error('Erreur lors de la mise à jour');
+      }
+    } catch (error) {
+      console.error('Error toggling visibility:', error);
+      toast.error('Erreur lors de la mise à jour');
+    }
+  };
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(toast => toast.id !== id));
+    }, 2000);
+  };
+
+  const handleAddSkill = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/skills', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: newSkillName,
+          level: 50,
+          categoryId: selectedCategoryId,
+          isHidden: false
+        }),
+      });
+
+      if (response.ok) {
+        const newSkill = await response.json();
+        setSkills([...skills, newSkill]);
+        setIsAddingSkill(false);
+        setNewSkillName('');
+        toast.success('Compétence ajoutée');
+      }
+    } catch (error) {
+      toast.error('Erreur lors de l\'ajout');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!skillToDelete) return;
+
+    try {
+      const response = await fetch(`/api/skills/${skillToDelete._id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        await fetchSkills();
+        showToast('Skill deleted successfully', 'success');
+      }
+    } catch (error) {
+      console.error('Error deleting skill:', error);
+      showToast('Failed to delete skill', 'error');
+    } finally {
+      setIsDeleteModalOpen(false);
+      setSkillToDelete(null);
+    }
+  };
+
+  return (
+    <AdminLayout>
+      <div className="p-6">
+        {/* En-tête avec les onglets */}
+        <div className="flex flex-col gap-4 mb-6">
+          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+            <FiCode className="w-8 h-8" />
+            Skills Management
+          </h1>
+          
+          {/* Onglets */}
+          <div className="flex gap-2">
+            <Link
+              href="/admin/skills"
+              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                !router.pathname.includes('categories')
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-[#2A2A2A] text-gray-300 hover:bg-[#333333]'
+              }`}
+            >
+              Skills
+            </Link>
+            <Link
+              href="/admin/skill-categories"
+              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                router.pathname.includes('categories')
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-[#2A2A2A] text-gray-300 hover:bg-[#333333]'
+              }`}
+            >
+              Categories
+            </Link>
+          </div>
+        </div>
+
+        {/* Bouton d'ajout */}
+        <div className="flex justify-end mb-6">
+          <button
+            onClick={() => setIsAddingSkill(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200"
+          >
+            <FiPlus className="w-5 h-5" /> Add Skill
+          </button>
+        </div>
+
+        {/* Reste du contenu */}
+        <div className="space-y-6">
+          {Object.entries(groupSkillsByCategory(skills)).map(([category, skills]) => (
+            skills.length > 0 && (
+              <motion.div
+                key={category}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mb-8"
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <h2 className="text-xl font-semibold text-white">{category}</h2>
+                  <span className="text-sm text-gray-400">({skills.length})</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {skills.map((skill, index) => (
+                    <motion.div
+                      key={skill._id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.2, delay: index * 0.05 }}
+                      className="bg-[#1E1E1E] rounded-lg p-3 shadow-lg border border-[#2A2A2A] hover:border-[#3A3A3A] transition-all duration-200 hover:shadow-xl group"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center space-x-2">
+                          {(() => {
+                            const Icon = getSkillIcon(skill.name);
+                            return Icon && <Icon className="text-xl text-gray-300 group-hover:text-white transition-colors duration-200" />;
+                          })()}
+                          <h3 className="text-sm font-medium text-white group-hover:text-white transition-colors duration-200">
+                            {skill.name}
+                          </h3>
+                        </div>
+                        <div className="flex gap-1">
+                          {/* Bouton de visibilité */}
+                          <button
+                            onClick={() => toggleVisibility(skill._id, !skill.isHidden)}
+                            className={`p-1.5 rounded-lg transition-all duration-200 ${
+                              skill.isHidden 
+                                ? 'bg-red-500/20 text-red-400'
+                                : 'bg-green-500/20 text-green-400'
+                            }`}
+                            title={skill.isHidden ? 'Masqué' : 'Affiché'}
+                          >
+                            {skill.isHidden ? 
+                              <FiEyeOff className="w-4 h-4" /> : 
+                              <FiEye className="w-4 h-4" />
+                            }
+                          </button>
+                          {/* Bouton de suppression */}
+                          <button
+                            onClick={() => {
+                              setSkillToDelete(skill);
+                              setIsDeleteModalOpen(true);
+                            }}
+                            className="p-1.5 rounded-lg bg-[#2A2A2A] hover:bg-[#333333] text-red-400 hover:text-red-300 transition-all duration-200 hover:scale-110"
+                            title="Supprimer"
+                          >
+                            <FiTrash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )
+          ))}
+        </div>
+
+        <AnimatePresence>
+          {isAddingSkill && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-[#1E1E1E] rounded-lg p-6 w-full max-w-md">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold text-white">Add New Skill</h2>
+                  <button
+                    onClick={() => setIsAddingSkill(false)}
+                    className="text-gray-400 hover:text-white transition-colors duration-200"
+                  >
+                    <FiX className="text-xl" />
+                  </button>
+                </div>
+                <form onSubmit={handleAddSkill}>
+                  <div className="mb-4">
+                    <label className="block text-gray-300 text-sm font-medium mb-2">
+                      Skill Name
+                    </label>
+                    <input
+                      type="text"
+                      value={newSkillName}
+                      onChange={(e) => setNewSkillName(e.target.value)}
+                      className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-[#404040] focus:outline-none transition-colors duration-200"
+                      placeholder="Enter skill name (e.g., React, Python, Photoshop)"
+                      required
+                    />
+                  </div>
+                  <div className="flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingSkill(false)}
+                      className="px-4 py-2 text-gray-400 hover:text-white transition-colors duration-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-[#2A2A2A] hover:bg-[#333333] text-white rounded-lg transition-colors duration-200"
+                    >
+                      Add Skill
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {isDeleteModalOpen && skillToDelete && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-[#1E1E1E] rounded-lg p-6 w-full max-w-md">
+                <div className="flex items-center mb-4">
+                  <FiAlertCircle className="text-red-400 text-2xl mr-3" />
+                  <h2 className="text-xl font-bold text-white">Delete Skill</h2>
+                </div>
+                <p className="text-gray-300 mb-6">
+                  Are you sure you want to delete "{skillToDelete.name}"? This action cannot be undone.
+                </p>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setIsDeleteModalOpen(false)}
+                    className="px-4 py-2 text-gray-400 hover:text-white transition-colors duration-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleDelete()}
+                    className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
+    </AdminLayout>
+  );
+}

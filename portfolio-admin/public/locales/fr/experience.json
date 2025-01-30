@@ -1,0 +1,18 @@
+{
+  "title": "Expériences Professionnelles",
+  "description": "Découvrez mon parcours professionnel et mes réalisations",
+  "present": "Présent",
+  "achievements": "Réalisations",
+  "technologies": "Technologies utilisées",
+  "duration": {
+    "years": "{{count}} an | {{count}} ans",
+    "months": "{{count}} mois",
+    "days": "{{count}} jour | {{count}} jours"
+  },
+  "filters": {
+    "all": "Toutes",
+    "current": "Poste actuel",
+    "past": "Postes précédents"
+  },
+  "noExperience": "Aucune expérience à afficher pour le moment"
+}

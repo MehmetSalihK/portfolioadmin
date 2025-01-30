@@ -1,0 +1,18 @@
+{
+  "title": "My Skills",
+  "description": "Discover my technical and professional skills",
+  "categories": {
+    "frontend": "Frontend Development",
+    "backend": "Backend Development",
+    "database": "Databases",
+    "devops": "DevOps & Cloud",
+    "tools": "Tools & Environment",
+    "other": "Other Skills"
+  },
+  "levels": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "expert": "Expert"
+  }
+}

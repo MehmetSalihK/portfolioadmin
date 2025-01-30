@@ -1,0 +1,15 @@
+{
+  "title": "Projelerim",
+  "description": "En yeni ve önemli projelerimi keşfedin",
+  "viewCode": "Kodu görüntüle",
+  "liveDemo": "Canlı demo",
+  "technologies": "Kullanılan teknolojiler",
+  "noProjects": "Şu anda görüntülenecek proje yok",
+  "filters": {
+    "all": "Tümü",
+    "featured": "Öne Çıkanlar",
+    "web": "Web",
+    "mobile": "Mobil",
+    "other": "Diğerleri"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "hero": {
+    "title": "Bienvenue sur mon Portfolio",
+    "subtitle": "Développeur Full Stack passionné par la création d'applications web modernes et performantes",
+    "projectsButton": "Voir mes projets",
+    "contactButton": "Me contacter"
+  },
+  "about": {
+    "title": "À propos de moi",
+    "description": "Je suis un développeur Full Stack passionné par la création d'applications web innovantes. Avec une solide expérience dans le développement front-end et back-end, je m'efforce de créer des solutions élégantes et performantes qui répondent aux besoins des utilisateurs."
+  },
+  "skills": {
+    "title": "Compétences"
+  },
+  "projects": {
+    "title": "Mes Projets"
+  },
+  "experience": {
+    "title": "Expérience Professionnelle"
+  },
+  "contact": {
+    "title": "Me Contacter",
+    "namePlaceholder": "Votre nom",
+    "emailPlaceholder": "Votre email",
+    "messagePlaceholder": "Votre message",
+    "submitButton": "Envoyer"
+  }
+}

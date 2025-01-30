@@ -1,0 +1,21 @@
+{
+  "navigation": {
+    "home": "Ana Sayfa",
+    "about": "Hakkımda",
+    "projects": "Projeler",
+    "skills": "Yetenekler",
+    "experience": "Deneyim",
+    "contact": "İletişim"
+  },
+  "home": {
+    "title": "Portfolyoma Hoş Geldiniz",
+    "subtitle": "Modern ve performanslı web uygulamaları geliştirmeye tutkulu Full Stack Geliştirici",
+    "cta": {
+      "projects": "Projelerimi Gör",
+      "contact": "İletişime Geç"
+    }
+  },
+  "footer": {
+    "rights": "Tüm hakları saklıdır."
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "Common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create"
+  },
+  "Projects": {
+    "title": "My Projects",
+    "pageTitle": "Projects - Portfolio Admin",
+    "pageDescription": "View and manage your portfolio projects",
+    "noProjects": "No projects found",
+    "viewCode": "View Code",
+    "liveDemo": "Live Demo"
+  },
+  "Admin": {
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign In",
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "skills": "Skills",
+    "experiences": "Experiences",
+    "messages": "Messages"
+  }
+}

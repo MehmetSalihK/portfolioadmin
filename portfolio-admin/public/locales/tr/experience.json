@@ -1,0 +1,18 @@
+{
+  "title": "Profesyonel Deneyim",
+  "description": "Profesyonel yolculuğumu ve başarılarımı keşfedin",
+  "present": "Şu anda",
+  "achievements": "Başarılar",
+  "technologies": "Kullanılan teknolojiler",
+  "duration": {
+    "years": "{{count}} yıl",
+    "months": "{{count}} ay",
+    "days": "{{count}} gün"
+  },
+  "filters": {
+    "all": "Tümü",
+    "current": "Mevcut pozisyon",
+    "past": "Önceki pozisyonlar"
+  },
+  "noExperience": "Şu anda görüntülenecek deneyim yok"
+}

@@ -1,0 +1,34 @@
+{
+  "title": "Contact",
+  "description": "Contactez-moi pour toute question ou proposition de collaboration",
+  "getInTouch": "Restons en contact",
+  "contactText": "N'hésitez pas à me contacter pour discuter de vos projets ou pour toute autre question. Je vous répondrai dans les plus brefs délais.",
+  "methods": {
+    "email": "Email",
+    "phone": "Téléphone",
+    "location": "Localisation"
+  },
+  "form": {
+    "title": "Envoyez-moi un message",
+    "name": {
+      "label": "Nom",
+      "placeholder": "Votre nom"
+    },
+    "email": {
+      "label": "Email",
+      "placeholder": "votre@email.com"
+    },
+    "subject": {
+      "label": "Sujet",
+      "placeholder": "Sujet de votre message"
+    },
+    "message": {
+      "label": "Message",
+      "placeholder": "Votre message"
+    },
+    "submit": "Envoyer",
+    "submitting": "Envoi en cours...",
+    "success": "Message envoyé avec succès !",
+    "error": "Une erreur est survenue. Veuillez réessayer."
+  }
+}
