@@ -9,7 +9,7 @@ import {
   SiJavascript, 
   SiTypescript, 
   SiPython, 
-  SiJava, 
+  SiApache,
   SiPhp, 
   SiHtml5,
   SiCss3,
@@ -79,8 +79,8 @@ import {
   SiOpenapiinitiative,
   SiGraphql,
   SiSwagger,
-  SiSoap,
-  SiWebsocket
+  SiSap,
+  SiRsocket
 } from 'react-icons/si';
 import { IconType } from 'react-icons';
 import toast from 'react-hot-toast';
@@ -144,7 +144,7 @@ const techMapping: Record<string, TechInfo> = {
     category: 'Langages de programmation'
   },
   'java': { 
-    icon: SiJava, 
+    icon: SiApache, 
     fullName: 'Java',
     aliases: ['java', 'java8', 'java11', 'java17'],
     category: 'Langages de programmation'
@@ -592,13 +592,13 @@ const techMapping: Record<string, TechInfo> = {
     category: 'Outils de développement'
   },
   'soap': {
-    icon: SiSoap,
+    icon: SiSap,
     fullName: 'SOAP',
     aliases: ['soap', 'soap api', 'SOAP'],
     category: 'Outils de développement'
   },
   'websocket': {
-    icon: SiWebsocket,
+    icon: SiRsocket,
     fullName: 'WebSocket',
     aliases: ['websocket', 'ws', 'WebSocket'],
     category: 'Outils de développement'
@@ -659,9 +659,9 @@ const getSkillCategory = (skillName: string): SkillCategory => {
 
 // Fonction pour grouper les compétences par catégorie
 const groupSkillsByCategory = (skills: Skill[]) => {
-  const grouped = {};
+  const grouped: { [key: string]: Skill[] } = {};
   skills.forEach(skill => {
-    const categoryName = skill.categoryId?.name || 'Non catégorisé';
+    const categoryName = skill.category || 'Non catégorisé';
     if (!grouped[categoryName]) {
       grouped[categoryName] = [];
     }
@@ -826,7 +826,7 @@ export default function SkillsPage() {
         body: JSON.stringify({
           name: newSkillName,
           level: 50,
-          categoryId: selectedCategoryId,
+          category: newSkillCategory,
           isHidden: false
         }),
       });

@@ -1,9 +1,9 @@
 import { GetStaticProps } from 'next';
-import { useTranslations } from 'next-intl';
+import { useTranslation } from 'next-i18next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Head from 'next/head';
 import Layout from '@/components/layout/Layout';
 import ProjectCard from '@/components/projects/ProjectCard';
-import NextIntlProvider from '@/components/providers/NextIntlProvider';
 import connectDB from '@/lib/db';
 import Project from '@/models/Project';
 
@@ -12,27 +12,25 @@ interface ProjectsPageProps {
     _id: string;
     title: string;
     description: string;
-    image: string;
+    imageUrl: string;
     technologies: string[];
     demoUrl?: string;
     githubUrl?: string;
   }>;
-  messages: any;
-  locale: string;
 }
 
-function ProjectsContent({ projects = [] }: { projects: ProjectsPageProps['projects'] }) {
-  const t = useTranslations('Projects');
+export default function ProjectsPage({ projects = [] }: ProjectsPageProps) {
+  const { t } = useTranslation();
 
   return (
     <Layout>
       <Head>
-        <title>{t('pageTitle')}</title>
-        <meta name="description" content={t('pageDescription')} />
+        <title>Projets</title>
+        <meta name="description" content="Liste des projets" />
       </Head>
 
       <main className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-center mb-8">{t('title')}</h1>
+        <h1 className="text-2xl font-bold mb-6">Projets</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
@@ -41,22 +39,14 @@ function ProjectsContent({ projects = [] }: { projects: ProjectsPageProps['proje
         </div>
 
         {projects.length === 0 && (
-          <p className="text-center text-gray-500">{t('noProjects')}</p>
+          <p className="text-center text-gray-500">Aucun projet disponible</p>
         )}
       </main>
     </Layout>
   );
 }
 
-export default function Projects({ projects, messages, locale }: ProjectsPageProps) {
-  return (
-    <NextIntlProvider messages={messages} locale={locale}>
-      <ProjectsContent projects={projects} />
-    </NextIntlProvider>
-  );
-}
-
-export const getStaticProps: GetStaticProps = async ({ locale = 'en' }) => {
+export const getStaticProps: GetStaticProps = async ({ locale = 'fr' }) => {
   try {
     await connectDB();
     const projects = await Project.find({}).lean();
@@ -64,8 +54,7 @@ export const getStaticProps: GetStaticProps = async ({ locale = 'en' }) => {
     return {
       props: {
         projects: JSON.parse(JSON.stringify(projects)),
-        messages: (await import(`../../messages/${locale}.json`)).default,
-        locale,
+        ...(await serverSideTranslations(locale, ['common'])),
       },
       revalidate: 60,
     };
@@ -74,8 +63,7 @@ export const getStaticProps: GetStaticProps = async ({ locale = 'en' }) => {
     return {
       props: {
         projects: [],
-        messages: (await import(`../../messages/${locale}.json`)).default,
-        locale,
+        ...(await serverSideTranslations(locale, ['common'])),
       },
       revalidate: 60,
     };

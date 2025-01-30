@@ -7,7 +7,7 @@ interface ProjectCardProps {
   project: {
     title: string;
     description: string;
-    image: string;
+    imageUrl: string;
     technologies?: string[];
     demoUrl?: string;
     githubUrl?: string;
@@ -26,9 +26,9 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
       className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden"
     >
       <div className="relative h-48 w-full">
-        {project.image && (
+        {project.imageUrl && (
           <Image
-            src={project.image}
+            src={project.imageUrl}
             alt={project.title}
             fill
             className="object-cover"

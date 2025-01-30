@@ -63,6 +63,7 @@ interface HomePageProps {
     technologies: string[];
     demoUrl?: string;
     githubUrl?: string;
+    featured?: boolean;
   }>;
   experiences: Array<{
     _id: string;
@@ -104,6 +105,8 @@ interface HomePageProps {
 }
 
 const defaultHomeData = {
+  _id: 'default',
+  __v: 0,
   title: 'Bienvenue sur mon Portfolio',
   subtitle: 'Développeur Full Stack passionné par la création d\'applications web modernes et performantes',
   aboutTitle: 'À propos de moi',
@@ -155,6 +158,40 @@ const getIcon = (skillName: string) => {
 
   return icon || <FaCode className="w-12 h-12" />;
 };
+
+interface SkillCardProps {
+  skill: {
+    _id: string;
+    name: string;
+    level: number;
+    category: string;
+  };
+  index: number;
+  getIcon: (name: string) => JSX.Element;
+}
+
+const SkillCard = ({ skill, index, getIcon }: SkillCardProps) => (
+  <motion.div
+    key={skill._id}
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5, delay: index * 0.1 }}
+    viewport={{ once: true }}
+    className="group relative"
+  >
+    <div className="bg-white dark:bg-gray-700 rounded-xl p-4 transform transition-all duration-300 hover:scale-105 hover:shadow-2xl dark:shadow-primary-500/20 flex flex-col items-center justify-center gap-3 hover:bg-gradient-to-br from-gray-700 to-gray-800">
+      <div className="text-primary-500 transition-transform duration-300 group-hover:scale-110 group-hover:text-primary-400">
+        {getIcon(skill.name)}
+      </div>
+      <div className="text-center">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-primary-400">
+          {skill.name}
+        </h3>
+        <div className="mt-2 h-0.5 w-8 bg-primary-500 mx-auto rounded-full transform origin-left transition-all duration-300 group-hover:w-full"></div>
+      </div>
+    </div>
+  </motion.div>
+);
 
 export default function Home({ projects, experiences, skills, homeData = defaultHomeData, skillsByCategory }: HomePageProps) {
   const { t } = useTranslation(['common', 'home']);
@@ -637,7 +674,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                     <div className="flex items-center gap-4">
                       {project.demoUrl && (
                         <button
-                          onClick={() => handleDemoClick(project._id, project.demoUrl)}
+                          onClick={() => project.demoUrl && handleDemoClick(project._id, project.demoUrl)}
                           className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors duration-200"
                         >
                           <FiExternalLink className="w-5 h-5" />
@@ -646,7 +683,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                       )}
                       {project.githubUrl && (
                         <button
-                          onClick={() => handleGithubClick(project._id, project.githubUrl)}
+                          onClick={() => project.githubUrl && handleGithubClick(project._id, project.githubUrl)}
                           className="flex items-center gap-2 text-gray-400 hover:text-gray-300 transition-colors duration-200"
                         >
                           <FiGithub className="w-5 h-5" />
@@ -886,7 +923,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       .lean();
 
     // Filtrer les catégories pour n'avoir que des noms uniques
-    const uniqueCategories = allCategories.reduce((acc, current) => {
+    const uniqueCategories = allCategories.reduce<typeof allCategories>((acc, current) => {
       const exists = acc.find(cat => cat.name === current.name);
       if (!exists) {
         acc.push(current);
@@ -936,27 +973,3 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     };
   }
 };
-
-// Créez un nouveau composant SkillCard pour la carte de compétence
-const SkillCard = ({ skill, index, getIcon }) => (
-  <motion.div
-    key={skill._id}
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5, delay: index * 0.1 }}
-    viewport={{ once: true }}
-    className="group relative"
-  >
-    <div className="bg-white dark:bg-gray-700 rounded-xl p-4 transform transition-all duration-300 hover:scale-105 hover:shadow-2xl dark:shadow-primary-500/20 flex flex-col items-center justify-center gap-3 hover:bg-gradient-to-br from-gray-700 to-gray-800">
-      <div className="text-primary-500 transition-transform duration-300 group-hover:scale-110 group-hover:text-primary-400">
-        {getIcon(skill.name)}
-      </div>
-      <div className="text-center">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-primary-400">
-          {skill.name}
-        </h3>
-        <div className="mt-2 h-0.5 w-8 bg-primary-500 mx-auto rounded-full transform origin-left transition-all duration-300 group-hover:w-full"></div>
-      </div>
-    </div>
-  </motion.div>
-);

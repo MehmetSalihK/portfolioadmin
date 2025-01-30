@@ -2,6 +2,13 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import dbConnect from '../../../lib/dbConnect';
 import Project from '../../../models/Project';
 
+interface DailyStat {
+  date: Date;
+  demoClicks: number;
+  githubClicks: number;
+  views: number;
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -74,7 +81,7 @@ export default async function handler(
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    let dailyStat = project.stats.dailyStats.find(stat => {
+    let dailyStat = project.stats.dailyStats.find((stat: DailyStat) => {
       const statDate = new Date(stat.date);
       statDate.setHours(0, 0, 0, 0);
       return statDate.getTime() === today.getTime();
