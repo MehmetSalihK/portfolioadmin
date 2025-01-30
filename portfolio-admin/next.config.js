@@ -11,7 +11,8 @@ const nextConfig = {
       'cdn.futura-sciences.com',
       'images.unsplash.com',
       'picsum.photos',
-      'via.placeholder.com'
+      'via.placeholder.com',
+      'your-image-domain.com'
     ],
   },
   // Désactiver les logs du terminal
@@ -25,6 +26,10 @@ const nextConfig = {
     maxInactiveAge: 25 * 1000,
     pagesBufferLength: 2,
   },
+  i18n: {
+    locales: ['fr'],
+    defaultLocale: 'fr',
+  }
 };
 
 module.exports = withNextIntl(nextConfig);

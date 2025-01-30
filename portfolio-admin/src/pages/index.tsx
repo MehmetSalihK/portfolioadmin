@@ -54,6 +54,17 @@ import SkillCategory from '@/models/SkillCategory';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 
+interface Project {
+  _id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  technologies: string[];
+  demoUrl?: string;
+  githubUrl?: string;
+  featured: boolean;
+}
+
 interface HomePageProps {
   projects: Array<{
     _id: string;
@@ -63,6 +74,7 @@ interface HomePageProps {
     technologies: string[];
     demoUrl?: string;
     githubUrl?: string;
+    featured?: boolean;
   }>;
   experiences: Array<{
     _id: string;
@@ -163,7 +175,8 @@ export default function Home({ projects, experiences, skills, homeData = default
 
   const formattedProjects = projects.map(project => ({
     ...project,
-    image: project.imageUrl
+    image: project.imageUrl,
+    featured: project.featured || false
   }));
 
   const scrollToContent = () => {
