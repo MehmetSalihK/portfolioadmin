@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { FaGithub, FaExternalLinkAlt } from 'react-icons/fa';
-import { useTranslations } from 'next-intl';
+import { useTranslation } from 'next-i18next';
 
 interface ProjectCardProps {
   project: {
@@ -15,7 +15,7 @@ interface ProjectCardProps {
 }
 
 const ProjectCard = ({ project }: ProjectCardProps) => {
-  const t = useTranslations('Projects');
+  const { t } = useTranslation();
 
   return (
     <motion.div
