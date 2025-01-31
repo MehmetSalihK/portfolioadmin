@@ -30,6 +30,10 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleNavigation = (path: string) => {
+    if (isOpen) setIsOpen(false);
+  };
+
   return (
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
@@ -64,6 +68,9 @@ export default function Navbar() {
                 <Link
                   key={item.path}
                   href={item.path}
+                  onClick={() => handleNavigation(item.path)}
+                  scroll={false}
+                  shallow={true}
                   className="relative group px-4 py-2 rounded-lg"
                 >
                   <div
@@ -144,7 +151,9 @@ export default function Navbar() {
                   >
                     <Link
                       href={item.path}
-                      onClick={() => setIsOpen(false)}
+                      onClick={() => handleNavigation(item.path)}
+                      scroll={false}
+                      shallow={true}
                       className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-colors ${
                         isActive
                           ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
