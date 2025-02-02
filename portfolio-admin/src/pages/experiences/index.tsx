@@ -37,39 +37,49 @@ export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-4xl font-bold mb-8 text-center dark:text-white text-gray-900">
+            <h1 className={`text-4xl font-bold mb-12 text-center ${
+              theme === 'dark' ? 'text-white' : 'text-gray-900'
+            }`}>
               Mes Expériences
             </h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
               {experiences.map((experience) => (
                 <motion.div
                   key={experience._id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`rounded-xl p-6 ${
+                  className={`rounded-lg p-6 ${
                     theme === 'dark' 
-                      ? 'bg-[#1E1E1E] hover:bg-[#252525]' 
+                      ? 'bg-[#1E293B] hover:bg-[#233047]' 
                       : 'bg-white hover:bg-gray-50'
-                  } shadow-lg transition-all duration-300 hover:shadow-xl`}
+                  } shadow-lg transition-all duration-300`}
                 >
                   <div className="flex flex-col h-full">
                     <div className="mb-4">
-                      <h2 className="text-xl font-semibold mb-2 dark:text-white text-gray-900">
+                      <h2 className={`text-xl font-semibold mb-2 ${
+                        theme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}>
                         {experience.title}
                       </h2>
                       
-                      <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
+                      <div className={`flex items-center mb-2 ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                      }`}>
                         <FiBriefcase className="w-4 h-4 mr-2" />
                         {experience.company}
                       </div>
 
-                      <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
+                      <div className={`flex items-center mb-2 ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                      }`}>
                         <FiMapPin className="w-4 h-4 mr-2" />
                         {experience.location}
                       </div>
 
-                      <div className="flex items-center text-gray-600 dark:text-gray-400 mb-4">
+                      <div className={`flex items-center mb-4 ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                      }`}>
                         <FiCalendar className="w-4 h-4 mr-2" />
                         {new Date(experience.startDate).toLocaleDateString('fr-FR', {
                           month: 'long',
@@ -87,16 +97,24 @@ export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
                     </div>
 
                     <div className="flex-grow">
-                      <p className="text-gray-700 dark:text-gray-300 mb-4 whitespace-pre-line">
+                      <p className={`mb-4 line-clamp-3 ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                      }`}>
                         {experience.description}
                       </p>
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className={`mt-4 pt-4 border-t ${
+                      theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+                    }`}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
-                          <FiClock className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
-                          <span className="text-sm text-gray-500 dark:text-gray-400">
+                          <FiClock className={`w-4 h-4 mr-2 ${
+                            theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                          }`} />
+                          <span className={`text-sm ${
+                            theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                          }`}>
                             {experience.endDate ? 'Terminé' : 'Poste actuel'}
                           </span>
                         </div>
@@ -106,7 +124,11 @@ export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
                             href={experience.companyUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                            className={`flex items-center transition-colors ${
+                              theme === 'dark' 
+                                ? 'text-blue-400 hover:text-blue-300' 
+                                : 'text-blue-600 hover:text-blue-700'
+                            }`}
                           >
                             <FiLink className="w-4 h-4 mr-1" />
                             Site web

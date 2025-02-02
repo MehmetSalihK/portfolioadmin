@@ -10,7 +10,7 @@ import {
   SiPostman, SiNpm, SiYarn, SiDocker, SiKubernetes,
   SiAmazonaws, SiGooglecloud, SiMicrosoftazure, SiNextdotjs,
   SiMariadb, SiMicrosoftexcel, SiMicrosoftpowerpoint, 
-  SiMicrosoftword, SiReactnative, SiWindows,
+  SiMicrosoftword, SiWindows,
   SiOpenapiinitiative
 } from 'react-icons/si';
 import { FiCode } from 'react-icons/fi';
@@ -37,9 +37,9 @@ const skillIconMap: Record<string, IconType> = {
   'css': SiCss3,
   'sass': SiSass,
   'react': SiReact,
-  'react native': SiReactnative,
-  'reactnative': SiReactnative,
-  'React native': SiReactnative,
+  'react native': SiReact,
+  'reactnative': SiReact,
+  'React native': SiReact,
   'vue.js': SiVuedotjs,
   'vue': SiVuedotjs,
   'Vue.js': SiVuedotjs,

@@ -9,7 +9,7 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className={`min-h-screen ${
-      theme === 'dark' ? 'bg-[#121212]' : 'bg-gray-50'
+      theme === 'dark' ? 'bg-[#0F172A]' : 'bg-gray-50'
     }`}>
       {children}
     </div>
