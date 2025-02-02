@@ -3,7 +3,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiPlus, FiBriefcase, FiX, FiCalendar, FiMapPin, FiLink } from 'react-icons/fi';
+import { FiPlus, FiBriefcase, FiX, FiCalendar, FiMapPin, FiLink, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 interface Experience {
@@ -14,7 +14,6 @@ interface Experience {
   startDate: string;
   endDate?: string;
   description: string;
-  technologies: string[];
   companyUrl?: string;
 }
 
@@ -30,19 +29,22 @@ export default function ExperiencePage() {
     startDate: '',
     endDate: '',
     description: '',
-    technologies: '',
-    companyUrl: ''
+    companyUrl: '',
+    currentPosition: false
   });
+  const [editingExperience, setEditingExperience] = useState<Experience | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/admin/login');
+    } else {
+      fetchExperiences();
     }
   }, [status, router]);
 
   const fetchExperiences = async () => {
     try {
-      const response = await fetch('/api/admin/experiences');
+      const response = await fetch('/api/experiences');
       if (response.ok) {
         const data = await response.json();
         setExperiences(data);
@@ -52,23 +54,46 @@ export default function ExperiencePage() {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette expérience ?')) {
+      try {
+        const response = await fetch(`/api/experiences/${id}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          toast.success('Expérience supprimée avec succès');
+          fetchExperiences();
+        } else {
+          throw new Error('Erreur lors de la suppression');
+        }
+      } catch (error) {
+        toast.error('Erreur lors de la suppression de l\'expérience');
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/admin/experiences', {
-        method: 'POST',
+      const url = editingExperience 
+        ? `/api/experiences/${editingExperience._id}`
+        : '/api/experiences';
+      
+      const method = editingExperience ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...newExperience,
-          technologies: newExperience.technologies.split(',').map(tech => tech.trim())
-        }),
+        body: JSON.stringify(newExperience),
       });
 
       if (response.ok) {
         await fetchExperiences();
         setIsAddingExperience(false);
+        setEditingExperience(null);
         setNewExperience({
           title: '',
           company: '',
@@ -76,14 +101,44 @@ export default function ExperiencePage() {
           startDate: '',
           endDate: '',
           description: '',
-          technologies: '',
-          companyUrl: ''
+          companyUrl: '',
+          currentPosition: false
         });
-        toast.success('Expérience ajoutée avec succès');
+        toast.success(`Expérience ${editingExperience ? 'modifiée' : 'ajoutée'} avec succès`);
       }
     } catch (error) {
-      toast.error('Erreur lors de l\'ajout de l\'expérience');
+      toast.error(`Erreur lors de ${editingExperience ? 'la modification' : 'l\'ajout'} de l'expérience`);
     }
+  };
+
+  const startEditing = (experience: Experience) => {
+    setEditingExperience(experience);
+    setIsAddingExperience(true);
+    setNewExperience({
+      title: experience.title,
+      company: experience.company,
+      location: experience.location,
+      startDate: experience.startDate.split('T')[0],
+      endDate: experience.endDate ? experience.endDate.split('T')[0] : '',
+      description: experience.description,
+      companyUrl: experience.companyUrl || '',
+      currentPosition: !experience.endDate
+    });
+  };
+
+  const closeModal = () => {
+    setIsAddingExperience(false);
+    setEditingExperience(null);
+    setNewExperience({
+      title: '',
+      company: '',
+      location: '',
+      startDate: '',
+      endDate: '',
+      description: '',
+      companyUrl: '',
+      currentPosition: false
+    });
   };
 
   return (
@@ -92,28 +147,95 @@ export default function ExperiencePage() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
             <FiBriefcase className="w-8 h-8" />
-            Experience Management
+            Gestion des Expériences
           </h1>
           <button
             onClick={() => setIsAddingExperience(true)}
             className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200"
           >
-            <FiPlus className="w-5 h-5" /> Add Experience
+            <FiPlus className="w-5 h-5" /> Ajouter une expérience
           </button>
         </div>
 
         {/* Liste des expériences */}
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {experiences.map((experience) => (
             <motion.div
               key={experience._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-[#1E1E1E] p-4 rounded-lg"
+              className="bg-[#1E1E1E] p-6 rounded-lg flex flex-col h-full"
             >
-              <h3 className="text-xl font-semibold text-white">{experience.title}</h3>
-              <p className="text-gray-400">{experience.company}</p>
-              {/* ... autres détails de l'expérience ... */}
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-white mb-2">{experience.title}</h3>
+                  <div className="flex items-center text-gray-400 mb-2">
+                    <FiBriefcase className="w-4 h-4 mr-2" />
+                    {experience.company}
+                  </div>
+                  <div className="flex items-center text-gray-400 mb-2">
+                    <FiMapPin className="w-4 h-4 mr-2" />
+                    {experience.location}
+                  </div>
+                  <div className="flex items-center text-gray-400 mb-2">
+                    <FiCalendar className="w-4 h-4 mr-2" />
+                    {new Date(experience.startDate).toLocaleDateString('fr-FR', {
+                      month: 'short',
+                      year: 'numeric'
+                    })}
+                    {' - '}
+                    {experience.endDate 
+                      ? new Date(experience.endDate).toLocaleDateString('fr-FR', {
+                          month: 'short',
+                          year: 'numeric'
+                        })
+                      : 'Présent'
+                    }
+                  </div>
+                  {experience.companyUrl && (
+                    <a 
+                      href={experience.companyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center text-blue-400 hover:text-blue-300 mb-2"
+                    >
+                      <FiLink className="w-4 h-4 mr-2" />
+                      Site web
+                    </a>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => startEditing(experience)}
+                    className="p-2 text-gray-400 hover:text-blue-500 transition-colors rounded-full hover:bg-blue-500/10"
+                  >
+                    <FiEdit2 className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(experience._id)}
+                    className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-red-500/10"
+                  >
+                    <FiTrash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="text-gray-400 text-sm flex-1">
+                <p className="line-clamp-3">{experience.description}</p>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-gray-700">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${
+                      !experience.endDate ? 'bg-green-500' : 'bg-blue-500'
+                    }`} />
+                    <span className="text-sm text-gray-400">
+                      {!experience.endDate ? 'Poste actuel' : 'Terminé'}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -131,137 +253,139 @@ export default function ExperiencePage() {
                 initial={{ scale: 0.95 }}
                 animate={{ scale: 1 }}
                 exit={{ scale: 0.95 }}
-                className="bg-[#1E1E1E] rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+                className="bg-[#1A1D24] rounded-lg w-full max-w-lg"
               >
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold text-white">Add New Experience</h2>
+                <div className="flex justify-between items-center p-4 border-b border-gray-700">
+                  <h2 className="text-xl text-white">
+                    {editingExperience ? 'Modifier l\'expérience' : 'Ajouter une expérience'}
+                  </h2>
                   <button
-                    onClick={() => setIsAddingExperience(false)}
+                    onClick={closeModal}
                     className="text-gray-400 hover:text-white"
                   >
-                    <FiX className="w-6 h-6" />
+                    <FiX className="w-5 h-5" />
                   </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form onSubmit={handleSubmit} className="p-4 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-gray-400 text-sm font-medium mb-2">
-                        Title
-                      </label>
+                      <label className="block text-gray-400 mb-1">Titre</label>
                       <input
                         type="text"
                         value={newExperience.title}
                         onChange={(e) => setNewExperience({ ...newExperience, title: e.target.value })}
-                        className="w-full px-3 py-2 bg-[#252525] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="w-full bg-[#252931] text-white p-2 rounded border-none focus:ring-1 focus:ring-blue-500"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-gray-400 text-sm font-medium mb-2">
-                        Company
-                      </label>
+                      <label className="block text-gray-400 mb-1">Entreprise</label>
                       <input
                         type="text"
                         value={newExperience.company}
                         onChange={(e) => setNewExperience({ ...newExperience, company: e.target.value })}
-                        className="w-full px-3 py-2 bg-[#252525] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="w-full bg-[#252931] text-white p-2 rounded border-none focus:ring-1 focus:ring-blue-500"
                         required
                       />
                     </div>
+                  </div>
 
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-gray-400 text-sm font-medium mb-2">
-                        Location
-                      </label>
+                      <label className="block text-gray-400 mb-1">Localisation</label>
                       <input
                         type="text"
                         value={newExperience.location}
                         onChange={(e) => setNewExperience({ ...newExperience, location: e.target.value })}
-                        className="w-full px-3 py-2 bg-[#252525] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                        required
+                        className="w-full bg-[#252931] text-white p-2 rounded border-none focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-gray-400 text-sm font-medium mb-2">
-                        Company URL
+                      <label className="block text-gray-400 mb-1">
+                        URL de l'entreprise <span className="text-gray-500 text-sm">(facultatif)</span>
                       </label>
                       <input
                         type="url"
                         value={newExperience.companyUrl}
                         onChange={(e) => setNewExperience({ ...newExperience, companyUrl: e.target.value })}
-                        className="w-full px-3 py-2 bg-[#252525] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="w-full bg-[#252931] text-white p-2 rounded border-none focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
+                  </div>
 
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-gray-400 text-sm font-medium mb-2">
-                        Start Date
-                      </label>
+                      <label className="block text-gray-400 mb-1">Date de début</label>
                       <input
                         type="date"
                         value={newExperience.startDate}
                         onChange={(e) => setNewExperience({ ...newExperience, startDate: e.target.value })}
-                        className="w-full px-3 py-2 bg-[#252525] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="w-full bg-[#252931] text-white p-2 rounded border-none focus:ring-1 focus:ring-blue-500"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-gray-400 text-sm font-medium mb-2">
-                        End Date
-                      </label>
+                      <label className="block text-gray-400 mb-1">Date de fin</label>
                       <input
                         type="date"
                         value={newExperience.endDate}
                         onChange={(e) => setNewExperience({ ...newExperience, endDate: e.target.value })}
-                        className="w-full px-3 py-2 bg-[#252525] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className={`w-full p-2 rounded border-none focus:ring-1 focus:ring-blue-500 transition-colors
+                          ${newExperience.currentPosition 
+                            ? 'bg-[#1A1A1A] text-gray-500 cursor-not-allowed opacity-50' 
+                            : 'bg-[#252931] text-white'
+                          }`}
+                        disabled={newExperience.currentPosition}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-gray-400 text-sm font-medium mb-2">
-                      Technologies (séparées par des virgules)
+                    <label className="flex items-center text-gray-400">
+                      <input
+                        type="checkbox"
+                        checked={newExperience.currentPosition}
+                        onChange={(e) => {
+                          setNewExperience({
+                            ...newExperience,
+                            currentPosition: e.target.checked,
+                            endDate: e.target.checked ? '' : newExperience.endDate
+                          });
+                        }}
+                        className="mr-2 h-4 w-4 rounded border-gray-700 bg-[#252931]"
+                      />
+                      Poste actuel
                     </label>
-                    <input
-                      type="text"
-                      value={newExperience.technologies}
-                      onChange={(e) => setNewExperience({ ...newExperience, technologies: e.target.value })}
-                      className="w-full px-3 py-2 bg-[#252525] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      placeholder="React, Node.js, TypeScript..."
-                      required
-                    />
                   </div>
 
                   <div>
-                    <label className="block text-gray-400 text-sm font-medium mb-2">
-                      Description
-                    </label>
+                    <label className="block text-gray-400 mb-1">Description</label>
                     <textarea
                       value={newExperience.description}
                       onChange={(e) => setNewExperience({ ...newExperience, description: e.target.value })}
                       rows={4}
-                      className="w-full px-3 py-2 bg-[#252525] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-[#252931] text-white p-2 rounded border-none focus:ring-1 focus:ring-blue-500"
                       required
                     />
                   </div>
 
-                  <div className="flex justify-end gap-3">
+                  <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
                     <button
                       type="button"
-                      onClick={() => setIsAddingExperience(false)}
-                      className="px-4 py-2 text-gray-400 hover:text-white transition-colors duration-200"
+                      onClick={closeModal}
+                      className="text-gray-400 hover:text-white"
                     >
-                      Cancel
+                      Annuler
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200"
+                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                     >
-                      Add Experience
+                      {editingExperience ? 'Enregistrer' : 'Ajouter'}
                     </button>
                   </div>
                 </form>

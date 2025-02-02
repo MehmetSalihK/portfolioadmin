@@ -53,6 +53,7 @@ import { TbApi, TbBrandPython } from 'react-icons/tb';
 import SkillCategory from '@/models/SkillCategory';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface HomePageProps {
   projects: Array<{
@@ -483,63 +484,41 @@ export default function Home({ projects, experiences, skills, homeData = default
             {homeData.subtitle}
           </motion.p>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.7 }}
-            className="flex flex-wrap justify-center gap-4 mb-12"
-          >
-            <Button href="#projects" variant="primary" size="lg">
+          <div className="flex gap-4 justify-center mt-8">
+            <Link
+              href="/projects"
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 border border-transparent hover:border-blue-400"
+            >
               Voir mes projets
-            </Button>
-            <Button href="#contact" variant="outline" size="lg">
+            </Link>
+            
+            <Link
+              href="/contact"
+              className="px-6 py-3 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg transition-colors duration-200"
+            >
               Me contacter
-            </Button>
-          </motion.div>
+            </Link>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.9 }}
-            className="flex justify-center space-x-6"
-          >
-            {homeData.socialLinks.github && (
-              <motion.a
-                whileHover={{ scale: 1.2, y: -2 }}
-                whileTap={{ scale: 0.9 }}
-                href={homeData.socialLinks.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
-              >
-                <FaGithub className="w-6 h-6" />
-              </motion.a>
-            )}
-            {homeData.socialLinks.linkedin && (
-              <motion.a
-                whileHover={{ scale: 1.2, y: -2 }}
-                whileTap={{ scale: 0.9 }}
-                href={homeData.socialLinks.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
-              >
-                <FaLinkedin className="w-6 h-6" />
-              </motion.a>
-            )}
-            {homeData.socialLinks.twitter && (
-              <motion.a
-                whileHover={{ scale: 1.2, y: -2 }}
-                whileTap={{ scale: 0.9 }}
-                href={homeData.socialLinks.twitter}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
-              >
-                <FaTwitter className="w-6 h-6" />
-              </motion.a>
-            )}
-          </motion.div>
+          {/* Social Links */}
+          <div className="flex gap-4 justify-center mt-8">
+            <a
+              href={homeData.socialLinks.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
+            >
+              <FaGithub className="w-6 h-6" />
+            </a>
+            <a
+              href={homeData.socialLinks.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
+            >
+              <FaLinkedin className="w-6 h-6" />
+            </a>
+          </div>
         </motion.div>
 
         <motion.div

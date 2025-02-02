@@ -8,37 +8,47 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const session = await getServerSession(req, res, authOptions);
-
-  if (!session) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-
   await connectDB();
+
+  if (req.method === 'GET') {
+    try {
+      const experiences = await Experience.find({}).sort({ startDate: -1 });
+      return res.status(200).json(experiences);
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
 
   switch (req.method) {
     case 'POST':
+      const session = await getServerSession(req, res, authOptions);
+      if (!session) {
+        return res.status(401).json({ message: 'Non autorisé' });
+      }
+
       try {
         const experience = await Experience.create(req.body);
         return res.status(201).json(experience);
       } catch (error: any) {
-        console.error('Error creating experience:', error);
-        return res.status(400).json({
-          message: error.message || 'Failed to create experience',
-        });
+        return res.status(400).json({ error: error.message });
       }
 
-    case 'GET':
+    case 'DELETE':
+      const deleteSession = await getServerSession(req, res, authOptions);
+      if (!deleteSession) {
+        return res.status(401).json({ message: 'Non autorisé' });
+      }
+
       try {
-        const experiences = await Experience.find({}).sort({ startDate: -1 });
-        return res.status(200).json(experiences);
-      } catch (error) {
-        console.error('Error fetching experiences:', error);
-        return res.status(500).json({ message: 'Failed to fetch experiences' });
+        const { id } = req.query;
+        await Experience.findByIdAndDelete(id);
+        return res.status(200).json({ message: 'Expérience supprimée' });
+      } catch (error: any) {
+        return res.status(400).json({ error: error.message });
       }
 
     default:
-      res.setHeader('Allow', ['POST', 'GET']);
+      res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
       return res.status(405).json({ message: `Method ${req.method} not allowed` });
   }
 }

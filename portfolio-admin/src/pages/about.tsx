@@ -15,15 +15,15 @@ export default function About() {
         <meta name="description" content="En savoir plus sur mon parcours, mes valeurs et mes objectifs professionnels" />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-b from-primary-50 to-white dark:from-gray-900 dark:to-gray-800">
-        <div className="container mx-auto pt-24 pb-12">
+      <main className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
+        <div className="container mx-auto px-4">
           <h1 className="text-4xl md:text-5xl font-bold text-center text-gray-900 dark:text-white mb-12">
             {t('title')}
           </h1>
 
           <BiographySection />
         </div>
-      </div>
+      </main>
     </Layout>
   );
 }
