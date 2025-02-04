@@ -741,10 +741,10 @@ export default function Home({ projects, experiences, skills, homeData = default
         </section>
 
         {/* Contact Section */}
-        <section id="contact" className="py-8 sm:py-12 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">
+        <section id="contact" className="py-8 sm:py-12 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black relative overflow-hidden">
           {/* Effet de grille en arrière-plan */}
           <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0 bg-grid-white/[0.1]" />
+            <div className="absolute inset-0 bg-grid-black/[0.1] dark:bg-grid-white/[0.1]" />
           </div>
 
           <div className="container mx-auto px-4 relative z-10">
@@ -755,10 +755,10 @@ export default function Home({ projects, experiences, skills, homeData = default
               viewport={{ once: true }}
               className="text-center mb-6 sm:mb-8"
             >
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 Me Contacter
               </h2>
-              <p className="text-gray-400 text-xs sm:text-sm max-w-xl mx-auto">
+              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm max-w-xl mx-auto">
                 Une idée de projet ? N'hésitez pas à me contacter !
               </p>
             </motion.div>
@@ -768,32 +768,32 @@ export default function Home({ projects, experiences, skills, homeData = default
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="bg-white/10 backdrop-blur-xl rounded-xl p-4 sm:p-6 shadow-xl"
+                className="bg-white dark:bg-white/10 backdrop-blur-xl rounded-xl p-4 sm:p-6 shadow-xl border border-gray-100 dark:border-gray-800"
               >
                 <form onSubmit={handleContactSubmit} className="space-y-4">
                   {/* Nom et Prénom */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Prénom *
                       </label>
                       <input
                         type="text"
                         name="firstName"
-                        className="w-full px-3 py-2 bg-white/5 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
+                        className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
                         placeholder="John"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Nom *
                       </label>
                       <input
                         type="text"
                         name="lastName"
-                        className="w-full px-3 py-2 bg-white/5 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
+                        className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
                         placeholder="Doe"
                         required
                       />
@@ -803,25 +803,25 @@ export default function Home({ projects, experiences, skills, homeData = default
                   {/* Société et Téléphone */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Société <span className="text-gray-500 text-xs">(optionnel)</span>
                       </label>
                       <input
                         type="text"
                         name="company"
-                        className="w-full px-3 py-2 bg-white/5 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
+                        className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
                         placeholder="Entreprise SA"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Téléphone <span className="text-gray-500 text-xs">(optionnel)</span>
                       </label>
                       <input
                         type="tel"
                         name="phone"
-                        className="w-full px-3 py-2 bg-white/5 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
+                        className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
                         placeholder="Téléphone"
                       />
                     </div>
@@ -829,13 +829,13 @@ export default function Home({ projects, experiences, skills, homeData = default
 
                   {/* Email */}
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Email *
                     </label>
                     <input
                       type="email"
                       name="email"
-                      className="w-full px-3 py-2 bg-white/5 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
                       placeholder="email@exemple.com"
                       required
                     />
@@ -843,13 +843,13 @@ export default function Home({ projects, experiences, skills, homeData = default
 
                   {/* Sujet */}
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Sujet *
                     </label>
                     <input
                       type="text"
                       name="subject"
-                      className="w-full px-3 py-2 bg-white/5 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
                       placeholder="Sujet de votre message"
                       required
                     />
@@ -857,13 +857,13 @@ export default function Home({ projects, experiences, skills, homeData = default
 
                   {/* Message */}
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Message *
                     </label>
                     <textarea
                       name="message"
                       rows={4}
-                      className="w-full px-3 py-2 bg-white/5 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 resize-none text-sm"
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 resize-none text-sm"
                       placeholder="Votre message..."
                       required
                     ></textarea>
@@ -873,7 +873,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                   <div className="text-center pt-2">
                     <button
                       type="submit"
-                      className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105"
+                      className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                     >
                       Envoyer
                     </button>

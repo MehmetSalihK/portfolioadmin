@@ -9,8 +9,8 @@ import { FiAward } from 'react-icons/fi';
 
 interface AdminSkillsPageProps {
   initialSkills: {
-    _id: string;
-    name: string;
+  _id: string;
+  name: string;
     isVisible: boolean;
   }[];
 }
@@ -24,7 +24,7 @@ export default function AdminSkillsPage({ initialSkills }: AdminSkillsPageProps)
             <h1 className="text-3xl font-bold text-white flex items-center gap-3">
               <FiAward className="w-8 h-8" />
               Gestion des compétences
-            </h1>
+          </h1>
             <p className="text-gray-400 mt-2">
               Gérez les compétences affichées sur votre portfolio ({initialSkills.length})
             </p>
