@@ -66,13 +66,13 @@ export default async function handler(
           });
         }
 
-        const skill = await Skill.findByIdAndUpdate(
+        const updatedSkill = await Skill.findByIdAndUpdate(
           id, 
           { isVisible }, 
           { new: true, runValidators: true }
         );
 
-        if (!skill) {
+        if (!updatedSkill) {
           return res.status(404).json({ 
             success: false, 
             message: 'Skill not found' 
@@ -81,13 +81,13 @@ export default async function handler(
 
         return res.status(200).json({ 
           success: true, 
-          data: skill 
+          data: updatedSkill 
         });
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error updating skill visibility:', error);
         return res.status(400).json({ 
           success: false, 
-          message: 'Error updating skill visibility' 
+          message: error.message 
         });
       }
 

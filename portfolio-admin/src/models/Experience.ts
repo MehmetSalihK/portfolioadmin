@@ -1,51 +1,37 @@
 import mongoose from 'mongoose';
 
-const ExperienceSchema = new mongoose.Schema({
+const experienceSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: [true, 'Please provide a title for this experience.'],
-    maxlength: [100, 'Title cannot be more than 100 characters'],
+    required: true,
   },
   company: {
     type: String,
-    required: [true, 'Please provide a company name.'],
-    maxlength: [100, 'Company name cannot be more than 100 characters'],
+    required: true,
   },
-  location: {
-    type: String,
-    required: [true, 'Please provide a location.'],
-  },
+  location: String,
+  companyUrl: String,
   startDate: {
     type: Date,
-    required: [true, 'Please provide a start date.'],
+    required: true,
   },
   endDate: {
     type: Date,
-    default: null,
+    required: false,
   },
-  current: {
+  isCurrentPosition: {
     type: Boolean,
     default: false,
   },
-  description: {
-    type: String,
-    required: [true, 'Please provide a description.'],
-  },
-  achievements: [{
-    type: String,
-  }],
-  technologies: [{
-    type: String,
-  }],
-  companyLogo: {
-    type: String,
-  },
-  order: {
-    type: Number,
-    default: 0,
+  description: String,
+  isVisible: {
+    type: Boolean,
+    default: true,
   },
 }, {
   timestamps: true,
 });
 
-export default mongoose.models.Experience || mongoose.model('Experience', ExperienceSchema);
+const Experience = mongoose.models.Experience || mongoose.model('Experience', experienceSchema);
+
+export default Experience;

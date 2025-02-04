@@ -4,6 +4,14 @@ import { authOptions } from '../auth/[...nextauth]';
 import connectDB from '@/lib/db';
 import Skill from '@/models/Skill';
 
+const DEFAULT_CATEGORIES = {
+  "Langages de programmation": ["JavaScript", "TypeScript", "Python"],
+  "Frameworks & Librairies": ["React.js", "Next.js", "Vue.js", "Flutter", "Express Js", "React Native"],
+  "Base de données": ["MongoDB", "MySQL", "PostgreSQL", "MariaDB", "SQL"],
+  "Outils & DevOps": ["Git", "GitHub", "GitLab", "Docker", "Linux", "Kali Linux", "AWS", "Google Cloud", "API", "API REST", "Endpoints"],
+  "Design": ["Figma", "Canva"]
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -13,23 +21,47 @@ export default async function handler(
   switch (req.method) {
     case 'GET':
       try {
-        const skills = await Skill.find({}).sort('name');
-        return res.status(200).json(skills);
+        const skills = await Skill.find().lean();
+        
+        // Organiser les compétences par catégorie
+        const skillsByCategory = Object.entries(DEFAULT_CATEGORIES).map(([category, skillNames]) => ({
+          name: category,
+          skills: skills.filter(skill => skillNames.includes(skill.name))
+        }));
+
+        return res.status(200).json(skillsByCategory);
       } catch (error) {
-        return res.status(500).json({ error: 'Erreur lors du chargement des compétences' });
+        console.error('API Error:', error);
+        return res.status(500).json({ error: 'Erreur lors de la récupération des compétences' });
       }
 
     case 'POST':
-      const session = await getServerSession(req, res, authOptions);
-      if (!session) {
-        return res.status(401).json({ message: 'Non autorisé' });
-      }
-
       try {
-        const skill = await Skill.create(req.body);
+        const { name, isVisible } = req.body;
+        
+        if (!name) {
+          return res.status(400).json({ error: 'Le nom est requis' });
+        }
+
+        // Trouver la catégorie pour cette compétence
+        let skillCategory = null;
+        for (const [category, skills] of Object.entries(DEFAULT_CATEGORIES)) {
+          if (skills.includes(name)) {
+            skillCategory = category;
+            break;
+          }
+        }
+
+        const skill = await Skill.create({
+          name,
+          isVisible,
+          category: skillCategory
+        });
+
         return res.status(201).json(skill);
       } catch (error: any) {
-        return res.status(400).json({ error: error.message });
+        console.error('Erreur détaillée:', error);
+        return res.status(500).json({ error: 'Erreur lors de la création de la compétence' });
       }
 
     case 'DELETE':
@@ -48,6 +80,6 @@ export default async function handler(
 
     default:
       res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
-      return res.status(405).json({ message: `Method ${req.method} not allowed` });
+      return res.status(405).json({ error: 'Méthode non autorisée' });
   }
 }

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { FiPlus, FiEdit2, FiTrash2, FiCode } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiEye, FiEyeOff } from 'react-icons/fi';
 import { getSkillIcon } from '@/utils/skillIcons';
 
 interface Skill {
@@ -9,84 +9,192 @@ interface Skill {
   isVisible: boolean;
 }
 
-export default function SkillsManagement() {
-  const [skills, setSkills] = useState<Skill[]>([]);
-  const [loading, setLoading] = useState(true);
+interface SkillsManagementProps {
+  initialSkills: Skill[];
+}
 
-  useEffect(() => {
-    fetchSkills();
-  }, []);
+export default function SkillsManagement({ initialSkills }: SkillsManagementProps) {
+  const [skills, setSkills] = useState<Skill[]>(initialSkills);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newSkill, setNewSkill] = useState({ 
+    name: '',
+    isVisible: true
+  });
 
-  const fetchSkills = async () => {
+  const handleAddSkill = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      const response = await fetch('/api/skills');
-      if (!response.ok) throw new Error('Erreur lors du chargement des compétences');
-      const data = await response.json();
-      setSkills(data);
+      const response = await fetch('/api/skills', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newSkill),
+      });
+
+      if (!response.ok) throw new Error('Erreur lors de l\'ajout');
+
+      const addedSkill = await response.json();
+      setSkills(prevSkills => [...prevSkills, addedSkill]);
+      
+      toast.success('Compétence ajoutée avec succès');
+      setIsModalOpen(false);
+      setNewSkill({ name: '', isVisible: true });
     } catch (error) {
-      toast.error('Erreur lors du chargement des compétences');
-      console.error(error);
-    } finally {
-      setLoading(false);
+      toast.error('Erreur lors de l\'ajout de la compétence');
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-gray-400">Chargement...</div>
-      </div>
-    );
-  }
+  const handleDelete = async (skillId: string) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette compétence ?')) {
+      try {
+        const response = await fetch(`/api/skills?id=${skillId}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) throw new Error('Erreur lors de la suppression');
+
+        setSkills(prevSkills => prevSkills.filter(skill => skill._id !== skillId));
+        toast.success('Compétence supprimée avec succès');
+      } catch (error) {
+        toast.error('Erreur lors de la suppression de la compétence');
+      }
+    }
+  };
+
+  const handleToggleVisibility = async (skillId: string, currentVisibility: boolean) => {
+    try {
+      const response = await fetch(`/api/skills/${skillId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ isVisible: !currentVisibility }),
+      });
+
+      if (!response.ok) throw new Error('Erreur lors de la modification');
+
+      setSkills(prevSkills => 
+        prevSkills.map(skill => 
+          skill._id === skillId 
+            ? { ...skill, isVisible: !skill.isVisible }
+            : skill
+        )
+      );
+
+      toast.success('Visibilité modifiée avec succès');
+    } catch (error) {
+      toast.error('Erreur lors de la modification de la visibilité');
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-xl font-semibold text-white">Liste des compétences</h2>
-        <button className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+    <div className="space-y-8">
+      {/* En-tête avec bouton */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-blue-500/20"
+        >
           <FiPlus className="w-5 h-5" />
           Ajouter une compétence
         </button>
       </div>
 
-      <div className="bg-[#1E1E1E] rounded-xl shadow-lg overflow-hidden">
-        {skills.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-gray-400">Aucune compétence trouvée</p>
-          </div>
-        ) : (
-          <ul className="divide-y divide-gray-800">
-            {skills.map((skill) => {
-              const SkillIcon = getSkillIcon(skill.name) || FiCode;
-              return (
-                <li 
-                  key={skill._id} 
-                  className="px-6 py-4 flex items-center justify-between hover:bg-gray-800/50 transition-colors duration-200"
+      {/* Grille des compétences */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {skills.map((skill) => {
+          const SkillIcon = getSkillIcon(skill.name);
+          return (
+            <div
+              key={skill._id}
+              className="bg-[#1E1E1E] rounded-xl p-5 flex items-center justify-between shadow-lg hover:shadow-xl hover:bg-[#2A2A2A] transition-all duration-200"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 flex items-center justify-center bg-[#2E2E2E] rounded-xl shadow-inner">
+                  <SkillIcon className="w-7 h-7 text-blue-400" />
+                </div>
+                <div>
+                  <div className="text-white font-medium">{skill.name}</div>
+                  <div className="text-sm text-gray-400">
+                    {skill.isVisible ? 'Visible' : 'Masquée'}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => handleToggleVisibility(skill._id, skill.isVisible)}
+                  className={`p-2.5 rounded-lg hover:bg-[#2E2E2E] transition-colors duration-200 ${
+                    skill.isVisible 
+                      ? 'text-green-400 hover:text-green-300' 
+                      : 'text-gray-400 hover:text-gray-300'
+                  }`}
+                  title={skill.isVisible ? "Masquer" : "Afficher"}
                 >
-                  <div className="flex items-center gap-3">
-                    <SkillIcon className="w-5 h-5 text-gray-400" />
-                    <h3 className="text-white font-medium">{skill.name}</h3>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <button 
-                      className="text-blue-400 hover:text-blue-300 transition-colors duration-200"
-                      title="Modifier"
-                    >
-                      <FiEdit2 className="w-5 h-5" />
-                    </button>
-                    <button 
-                      className="text-red-400 hover:text-red-300 transition-colors duration-200"
-                      title="Supprimer"
-                    >
-                      <FiTrash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+                  {skill.isVisible ? <FiEye className="w-5 h-5" /> : <FiEyeOff className="w-5 h-5" />}
+                </button>
+                <button
+                  onClick={() => handleDelete(skill._id)}
+                  className="text-red-400 hover:text-red-300 p-2.5 rounded-lg hover:bg-[#2E2E2E] transition-colors duration-200"
+                  title="Supprimer"
+                >
+                  <FiTrash2 className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
+
+      {/* Modal d'ajout amélioré */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1E1E1E] rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h2 className="text-2xl font-semibold text-white mb-6">Nouvelle compétence</h2>
+            <form onSubmit={handleAddSkill} className="space-y-5">
+              <div>
+                <label className="block text-gray-300 mb-2 font-medium">
+                  Nom de la compétence
+                </label>
+                <input
+                  type="text"
+                  value={newSkill.name}
+                  onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })}
+                  className="w-full bg-[#2E2E2E] text-white px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-gray-500"
+                  placeholder="Ex: JavaScript, Python, React..."
+                />
+              </div>
+              <div className="flex items-center bg-[#2E2E2E] p-3 rounded-lg">
+                <input
+                  type="checkbox"
+                  id="isVisible"
+                  checked={newSkill.isVisible}
+                  onChange={(e) => setNewSkill({ ...newSkill, isVisible: e.target.checked })}
+                  className="w-4 h-4 text-blue-500 bg-[#3E3E3E] rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <label htmlFor="isVisible" className="ml-3 text-white select-none">
+                  Visible sur le portfolio
+                </label>
+              </div>
+              <div className="flex justify-end gap-3 mt-8">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-5 py-2.5 text-gray-400 hover:text-white transition-colors duration-200"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg transition-all duration-200 shadow-lg hover:shadow-blue-500/20"
+                >
+                  Ajouter
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

@@ -12,7 +12,7 @@ import Project from '@/models/Project';
 import Experience from '@/models/Experience';
 import Skill from '@/models/Skill';
 import HomePage from '@/models/HomePage';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { 
   FaGithub, 
   FaLinkedin, 
@@ -31,7 +31,7 @@ import {
   FaCode
 } from 'react-icons/fa';
 import { HiArrowDown } from 'react-icons/hi';
-import { FiExternalLink, FiGithub, FiSettings, FiCode, FiStar } from 'react-icons/fi';
+import { FiExternalLink, FiGithub, FiSettings, FiCode, FiStar, FiAlertTriangle, FiX } from 'react-icons/fi';
 import parse from 'html-react-parser';
 import { 
   SiTypescript, 
@@ -54,6 +54,9 @@ import SkillCategory from '@/models/SkillCategory';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import Link from 'next/link';
+import { AnimatePresence } from 'framer-motion';
+import SkillsSection from '@/components/home/SkillsSection';
+import ExperienceSection from '@/components/experiences/ExperienceSection';
 
 interface HomePageProps {
   projects: Array<{
@@ -96,11 +99,15 @@ interface HomePageProps {
   skillsByCategory: Array<{
     _id: string;
     name: string;
+    displayOrder: number;
     skills: Array<{
       _id: string;
       name: string;
-      level: number;
-      category: string;
+      categoryId: {
+        name: string;
+        _id: string;
+      };
+      displayOrder: number;
     }>;
   }>;
 }
@@ -194,10 +201,24 @@ const SkillCard = ({ skill, index, getIcon }: SkillCardProps) => (
   </motion.div>
 );
 
+interface Category {
+  _id: string;
+  name: string;
+  displayOrder: number;
+}
+
+interface Skill {
+  _id: string;
+  name: string;
+  displayOrder: number;
+  categoryId: Category | string | null;
+}
+
 export default function Home({ projects, experiences, skills, homeData = defaultHomeData, skillsByCategory }: HomePageProps) {
   const { t } = useTranslation(['common', 'home']);
   const { scrollYProgress } = useScroll();
   const mainRef = useRef<HTMLDivElement>(null);
+  const [showBanner, setShowBanner] = useState(true);
 
   const formattedProjects = projects.map(project => ({
     ...project,
@@ -450,6 +471,31 @@ export default function Home({ projects, experiences, skills, homeData = default
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
+      <AnimatePresence>
+        {showBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className="fixed top-20 left-0 right-0 z-50 flex justify-center px-4"
+          >
+            <div className="flex items-center gap-3 bg-amber-500/90 text-amber-900 px-4 py-3 rounded-lg shadow-lg backdrop-blur-sm max-w-2xl">
+              <FiAlertTriangle className="w-5 h-5 flex-shrink-0" />
+              <p className="text-sm">
+                Ce site est actuellement en cours de développement (version bêta). 
+                Certaines fonctionnalités peuvent ne pas fonctionner correctement.
+              </p>
+              <button
+                onClick={() => setShowBanner(false)}
+                className="flex-shrink-0 text-amber-900 hover:text-amber-950 transition-colors"
+              >
+                <FiX className="w-5 h-5" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Progress bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-primary-500 origin-left z-50"
@@ -551,46 +597,7 @@ export default function Home({ projects, experiences, skills, homeData = default
         </section>
 
         {/* Skills Section */}
-        <section id="skills" className="py-20 bg-gray-50 dark:bg-gray-800">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className="text-center mb-16"
-            >
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                {t('home:skills.title')}
-              </h2>
-            </motion.div>
-
-            {/* Affichage des catégories et leurs compétences */}
-            <div className="space-y-16">
-              {skillsByCategory.map((category) => (
-                <div key={category._id} className="mb-12">
-                  <div className="flex items-center mb-8">
-                    <h3 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                      {category.name}
-                    </h3>
-                    <div className="h-0.5 w-full bg-gray-700 ml-4"></div>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    {category.skills.map((skill, index) => (
-                      <SkillCard
-                        key={skill._id}
-                        skill={skill}
-                        index={index}
-                        getIcon={getIcon}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        <SkillsSection />
 
         {/* Projects Section */}
         <section id="projects" className="py-20 bg-white dark:bg-gray-900">
@@ -678,61 +685,7 @@ export default function Home({ projects, experiences, skills, homeData = default
         </section>
 
         {/* Experience Section */}
-        <section id="experience" className="py-20 bg-gray-50 dark:bg-gray-800">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className="text-center mb-12"
-            >
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                {t('home:experience.title')}
-              </h2>
-            </motion.div>
-            <div className="max-w-3xl mx-auto">
-              {experiences.map((experience, index) => (
-                <motion.div
-                  key={experience._id}
-                  initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="relative mb-8"
-                >
-                  <div className="bg-white dark:bg-gray-700 rounded-lg p-6 shadow-sm hover:shadow-lg transition-shadow duration-300">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                        {experience.title}
-                      </h3>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {experience.startDate} - {experience.endDate || 'Present'}
-                      </span>
-                    </div>
-                    <p className="text-gray-600 dark:text-gray-300 mb-2">
-                      {experience.company} • {experience.location}
-                    </p>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4">
-                      {experience.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {experience.technologies.map((tech) => (
-                        <motion.span
-                          key={tech}
-                          whileHover={{ scale: 1.1 }}
-                          className="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-full text-sm font-medium"
-                        >
-                          {tech}
-                        </motion.span>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
+        <ExperienceSection experiences={experiences} />
 
         {/* Contact Section */}
         <section id="contact" className="py-8 sm:py-12 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">
@@ -920,10 +873,12 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       _id: category._id,
       name: category.name,
       displayOrder: category.displayOrder,
-      skills: skills.filter(skill => 
+      skills: skills.filter(skill => (
         skill.categoryId && 
-        skill.categoryId.name === category.name // Utiliser le nom au lieu de l'ID
-      )
+        typeof skill.categoryId === 'object' &&
+        'name' in skill.categoryId &&
+        (skill.categoryId as Category).name === category.name
+      )).sort((a, b) => a.displayOrder - b.displayOrder)
     })).sort((a, b) => a.displayOrder - b.displayOrder);
 
     return {

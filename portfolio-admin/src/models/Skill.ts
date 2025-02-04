@@ -1,27 +1,31 @@
 import mongoose from 'mongoose';
 
-const SkillSchema = new mongoose.Schema({
+const skillSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Please provide a name for this skill.'],
-    maxlength: [60, 'Name cannot be more than 60 characters'],
+    required: true,
+    unique: true
   },
-  level: {
-    type: Number,
-    required: [true, 'Please provide a level for this skill.'],
-    min: [0, 'Level cannot be less than 0'],
-    max: [100, 'Level cannot be more than 100'],
-    default: 50,
-  },
-  categoryId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'SkillCategory',
-    required: true
-  },
-  isHidden: {
+  isVisible: {
     type: Boolean,
-    default: false
+    default: true
+  },
+  displayOrder: {
+    type: Number,
+    default: 0
+  },
+  category: {
+    type: String,
+    enum: [
+      "Langages de programmation",
+      "Frameworks & Librairies",
+      "Base de données",
+      "Outils & DevOps",
+      "Design"
+    ]
   }
 });
 
-export default mongoose.models.Skill || mongoose.model('Skill', SkillSchema);
+const Skill = mongoose.models.Skill || mongoose.model('Skill', skillSchema);
+
+export default Skill;
