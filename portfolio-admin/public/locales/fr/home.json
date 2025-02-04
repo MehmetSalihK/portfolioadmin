@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "title": "Mes Projets"
+  },
+  "experience": {
+    "title": "Mes Expériences"
+  },
+  "contact": {
+    "title": "Me Contacter",
+    "subtitle": "Une idée de projet ? N'hésitez pas à me contacter !"
+  }
+} 

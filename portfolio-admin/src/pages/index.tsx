@@ -214,7 +214,7 @@ interface Skill {
 }
 
 export default function Home({ projects, experiences, skills, homeData = defaultHomeData, skillsByCategory }: HomePageProps) {
-  const { t } = useTranslation(['common', 'home']);
+  const { t } = useTranslation('home');
   const { scrollYProgress } = useScroll();
   const mainRef = useRef<HTMLDivElement>(null);
   const [showBanner, setShowBanner] = useState(true);
@@ -609,7 +609,7 @@ export default function Home({ projects, experiences, skills, homeData = default
               className="text-center mb-12"
             >
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                {t('home:projects.title')}
+                {t('projects.title')}
               </h2>
             </motion.div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -694,7 +694,7 @@ export default function Home({ projects, experiences, skills, homeData = default
               className="text-center mb-12"
             >
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                {t('home:experience.title')}
+                {t('experience.title')}
               </h2>
             </motion.div>
             <div className="max-w-3xl mx-auto">
@@ -756,10 +756,10 @@ export default function Home({ projects, experiences, skills, homeData = default
               className="text-center mb-6 sm:mb-8"
             >
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                Me Contacter
+                {t('contact.title')}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm max-w-xl mx-auto">
-                Une idée de projet ? N'hésitez pas à me contacter !
+                {t('contact.subtitle')}
               </p>
             </motion.div>
 
