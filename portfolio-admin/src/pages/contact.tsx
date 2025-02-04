@@ -193,9 +193,9 @@ export default function ContactPage({ settings = { email: '', github: '', linked
                 {/* Google Maps */}
                 <div className="bg-[#1e293b] rounded-xl p-2">
                   <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d20731.581942608595!2d2.4527891!3d49.2778097!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e649c629d3dd31%3A0x40af13e81646da0!2s60180%20Nogent-sur-Oise!5e0!3m2!1sfr!2sfr!4v1709913047943!5m2!1sfr!2sfr"
+                    src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d35034.27598397238!2d2.4825724346456397!3d49.2586183631009!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e64a38b9d28da5%3A0x1c0af141f1252070!2s60180%20Nogent-sur-Oise!5e0!3m2!1sfr!2sfr!4v1738647148138!5m2!1sfr!2sfr"
                     width="100%"
-                    height="200"
+                    height="262"
                     style={{ border: 0 }}
                     allowFullScreen={false}
                     loading="lazy"

@@ -4,6 +4,7 @@ import { authOptions } from '../auth/[...nextauth]';
 import connectDB from '@/lib/db';
 import Settings from '@/models/Settings';
 import HomePage from '@/models/HomePage';
+import Setting from '@/models/Setting';
 
 export default async function handler(
   req: NextApiRequest,
@@ -62,29 +63,25 @@ export default async function handler(
     try {
       await connectDB();
       
-      // Récupérer les données des deux collections
-      const settings = await Settings.findOne() || {};
-      const homePage = await HomePage.findOne() || {};
+      // Récupérer les settings ou créer des valeurs par défaut si elles n'existent pas
+      let settings = await Setting.findOne();
+      
+      if (!settings) {
+        settings = {
+          email: 'contact@mehmetsalihk.fr',
+          github: 'https://github.com/mehmetsalihk',
+          linkedin: 'https://www.linkedin.com/in/mehmetsalihk/',
+          siteTitle: 'Portfolio',
+          siteDescription: 'Mon portfolio professionnel',
+        };
+      }
 
-      // Combiner les données avec la bonne structure
-      const combinedData = {
-        siteTitle: settings.siteTitle || homePage.title || '',
-        siteDescription: settings.siteDescription || homePage.siteDescription || '',
-        email: settings.email || homePage.email || '',
-        phone: settings.phone || homePage.phone || '',
-        github: settings.github || homePage.socialLinks?.github || '',
-        linkedin: settings.linkedin || homePage.socialLinks?.linkedin || '',
-        twitter: settings.twitter || homePage.socialLinks?.twitter || '',
-        whatsapp: settings.whatsapp || homePage.socialLinks?.whatsapp || '',
-        telegram: settings.telegram || homePage.socialLinks?.telegram || ''
-      };
-
-      return res.status(200).json(combinedData);
+      return res.status(200).json(settings);
     } catch (error) {
-      console.error('Settings fetch error:', error);
+      console.error('Error fetching settings:', error);
       return res.status(500).json({ error: 'Failed to fetch settings' });
     }
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+  return res.status(405).json({ message: 'Method not allowed' });
 } 

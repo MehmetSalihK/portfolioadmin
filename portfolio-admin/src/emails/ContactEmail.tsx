@@ -147,4 +147,6 @@ export const ContactEmail: React.FC<Readonly<EmailTemplateProps>> = ({
       </Tailwind>
     </Html>
   );
-}; 
+};
+
+export default ContactEmail; 

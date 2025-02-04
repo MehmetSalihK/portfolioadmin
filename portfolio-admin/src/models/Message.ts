@@ -1,13 +1,13 @@
 import mongoose from 'mongoose';
 
-const MessageSchema = new mongoose.Schema({
+const messageSchema = new mongoose.Schema({
   firstName: {
     type: String,
-    required: [true, 'Le prénom est requis'],
+    required: true,
   },
   lastName: {
     type: String,
-    required: [true, 'Le nom est requis'],
+    required: true,
   },
   company: {
     type: String,
@@ -17,20 +17,19 @@ const MessageSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: [true, 'L\'email est requis'],
-    match: [/^\S+@\S+\.\S+$/, 'Email invalide'],
+    required: true,
   },
   subject: {
     type: String,
-    required: [true, 'Le sujet est requis'],
+    required: true,
   },
   message: {
     type: String,
-    required: [true, 'Le message est requis'],
+    required: true,
   },
   status: {
     type: String,
-    enum: ['unread', 'read', 'replied'],
+    enum: ['unread', 'read', 'archived'],
     default: 'unread',
   },
   createdAt: {
@@ -39,4 +38,6 @@ const MessageSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.models.Message || mongoose.model('Message', MessageSchema); 
+const Message = mongoose.models.Message || mongoose.model('Message', messageSchema);
+
+export default Message; 
