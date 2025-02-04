@@ -56,7 +56,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { AnimatePresence } from 'framer-motion';
 import SkillsSection from '@/components/home/SkillsSection';
-import ExperienceSection from '@/components/experiences/ExperienceSection';
 
 interface HomePageProps {
   projects: Array<{
@@ -685,7 +684,61 @@ export default function Home({ projects, experiences, skills, homeData = default
         </section>
 
         {/* Experience Section */}
-        <ExperienceSection experiences={experiences} />
+        <section id="experience" className="py-20 bg-gray-50 dark:bg-gray-800">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                {t('home:experience.title')}
+              </h2>
+            </motion.div>
+            <div className="max-w-3xl mx-auto">
+              {experiences.map((experience, index) => (
+                <motion.div
+                  key={experience._id}
+                  initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="relative mb-8"
+                >
+                  <div className="bg-white dark:bg-gray-700 rounded-lg p-6 shadow-sm hover:shadow-lg transition-shadow duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                        {experience.title}
+                      </h3>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        {experience.startDate} - {experience.endDate || 'Present'}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-300 mb-2">
+                      {experience.company} • {experience.location}
+                    </p>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">
+                      {experience.description}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {experience.technologies.map((tech) => (
+                        <motion.span
+                          key={tech}
+                          whileHover={{ scale: 1.1 }}
+                          className="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-full text-sm font-medium"
+                        >
+                          {tech}
+                        </motion.span>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
 
         {/* Contact Section */}
         <section id="contact" className="py-8 sm:py-12 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">

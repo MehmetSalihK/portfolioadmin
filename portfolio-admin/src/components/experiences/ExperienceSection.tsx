@@ -1,6 +1,7 @@
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { FiBriefcase, FiMapPin, FiCalendar, FiExternalLink } from 'react-icons/fi';
+import { motion } from 'framer-motion';
 
 interface Experience {
   _id: string;
@@ -24,75 +25,95 @@ export default function ExperienceSection({ experiences }: ExperienceSectionProp
   };
 
   return (
-    <section className="py-20 bg-[#111827]">
-      <div className="container mx-auto px-4">
-        <h2 className="text-4xl font-bold text-white text-center mb-12">
-          Expérience Professionnelle
-        </h2>
-        
-        <div className="max-w-4xl mx-auto">
-          <div className="relative">
-            {/* Ligne verticale de timeline */}
-            <div className="absolute left-0 md:left-1/2 transform -translate-x-px h-full w-0.5 bg-blue-500/30" />
+    <section className="py-20 bg-gradient-to-b from-gray-900 to-black relative">
+      {/* Effet de grille en arrière-plan */}
+      <div className="absolute inset-0 opacity-[0.05]">
+        <div className="absolute inset-0 bg-grid-white/[0.1]" />
+      </div>
 
-            {experiences.map((experience, index) => (
-              <div key={experience._id} className="relative mb-12">
-                {/* Point sur la timeline */}
-                <div className="absolute left-0 md:left-1/2 transform -translate-x-1/2 w-4 h-4 bg-blue-500 rounded-full border-4 border-[#111827]" />
-                
-                <div className={`md:w-1/2 ${index % 2 === 0 ? 'md:pr-12 md:ml-auto' : 'md:pl-12'}`}>
-                  <div className="bg-[#1E1E1E] rounded-xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:transform hover:-translate-y-1">
-                    <div className="flex flex-col space-y-4">
-                      {/* En-tête */}
-                      <div>
-                        <h3 className="text-xl font-bold text-white mb-2">{experience.title}</h3>
-                        <div className="flex items-center gap-2 text-gray-400 mb-1">
-                          <FiBriefcase className="flex-shrink-0" />
-                          <span className="font-medium">
-                            {experience.company}
-                            {experience.companyUrl && (
-                              <a 
-                                href={experience.companyUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center ml-2 text-blue-400 hover:text-blue-300"
-                              >
-                                <FiExternalLink className="w-4 h-4" />
-                              </a>
-                            )}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-400">
-                          <FiMapPin className="flex-shrink-0" />
-                          <span>{experience.location}</span>
-                        </div>
-                      </div>
+      <div className="container mx-auto px-4 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-4xl font-bold text-white mb-4">
+            Expérience Professionnelle
+          </h2>
+          <div className="w-20 h-1 bg-blue-500 mx-auto rounded-full" />
+        </motion.div>
 
-                      {/* Période */}
+        <div className="max-w-5xl mx-auto space-y-8">
+          {experiences.map((experience, index) => (
+            <motion.div
+              key={experience._id}
+              initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              viewport={{ once: true }}
+              className="group"
+            >
+              <div className="bg-[#1A1A1A] rounded-2xl p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-800 hover:border-blue-500/30 relative overflow-hidden">
+                {/* Effet de gradient au survol */}
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                <div className="relative z-10">
+                  {/* Badge de date */}
+                  <div className="inline-flex items-center gap-2 bg-blue-500/10 text-blue-400 px-4 py-1.5 rounded-full text-sm mb-4">
+                    <FiCalendar className="w-4 h-4" />
+                    <span>
+                      {formatDate(experience.startDate)}
+                      {' - '}
+                      {experience.isCurrentPosition 
+                        ? 'Présent'
+                        : experience.endDate 
+                          ? formatDate(experience.endDate)
+                          : ''
+                      }
+                    </span>
+                  </div>
+
+                  {/* Titre et Entreprise */}
+                  <div className="mb-4">
+                    <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
+                      {experience.title}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-4">
                       <div className="flex items-center gap-2 text-gray-400">
-                        <FiCalendar className="flex-shrink-0" />
-                        <span>
-                          {formatDate(experience.startDate)}
-                          {' - '}
-                          {experience.isCurrentPosition 
-                            ? 'Présent'
-                            : experience.endDate 
-                              ? formatDate(experience.endDate)
-                              : ''
-                          }
+                        <FiBriefcase className="w-5 h-5 text-gray-500" />
+                        <span className="font-medium">
+                          {experience.company}
+                          {experience.companyUrl && (
+                            <a 
+                              href={experience.companyUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center ml-2 text-blue-400 hover:text-blue-300"
+                            >
+                              <FiExternalLink className="w-4 h-4" />
+                            </a>
+                          )}
                         </span>
                       </div>
-
-                      {/* Description */}
-                      <p className="text-gray-300 whitespace-pre-line">
-                        {experience.description}
-                      </p>
+                      <div className="flex items-center gap-2 text-gray-400">
+                        <FiMapPin className="w-5 h-5 text-gray-500" />
+                        <span>{experience.location}</span>
+                      </div>
                     </div>
+                  </div>
+
+                  {/* Description */}
+                  <div className="prose prose-invert max-w-none">
+                    <p className="text-gray-300 leading-relaxed">
+                      {experience.description}
+                    </p>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
