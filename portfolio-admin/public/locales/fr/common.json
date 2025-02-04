@@ -1,21 +1,8 @@
 {
-  "navigation": {
-    "home": "Accueil",
-    "about": "À propos",
-    "projects": "Projets",
-    "skills": "Compétences",
-    "experience": "Expérience",
-    "contact": "Contact"
+  "projects": {
+    "title": "Mes Projets"
   },
-  "home": {
-    "title": "Bienvenue sur mon Portfolio",
-    "subtitle": "Développeur Full Stack passionné par la création d'applications web modernes et performantes",
-    "cta": {
-      "projects": "Voir mes projets",
-      "contact": "Me contacter"
-    }
-  },
-  "footer": {
-    "rights": "Tous droits réservés."
+  "experience": {
+    "title": "Mes Expériences"
   }
-}
+} 
