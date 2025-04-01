@@ -1,0 +1,30 @@
+{
+  "biography": {
+    "title": "À Propos de Moi",
+    "introduction": "Développeur passionné avec une expertise en développement web et une soif d'apprentissage continue.",
+    "education": {
+      "title": "Formation",
+      "content": "Formation en développement web et mobile, spécialisé dans les technologies modernes comme React, Next.js et Node.js."
+    },
+    "experience": {
+      "title": "Expérience",
+      "content": "Plus de 3 ans d'expérience dans le développement web, travaillant sur des projets variés et innovants."
+    },
+    "skills": {
+      "title": "Compétences",
+      "content": "Expertise en React, Next.js, TypeScript, Node.js, et autres technologies web modernes. Fort intérêt pour l'UI/UX et les performances."
+    },
+    "interests": {
+      "title": "Centres d'Intérêt",
+      "content": "Passionné par les nouvelles technologies, l'open source, et l'amélioration continue des compétences techniques."
+    },
+    "values": {
+      "title": "Mes Valeurs",
+      "list": {
+        "0": "Qualité et attention aux détails dans chaque projet",
+        "1": "Apprentissage continu et adaptation aux nouvelles technologies",
+        "2": "Collaboration efficace et communication transparente"
+      }
+    }
+  }
+}

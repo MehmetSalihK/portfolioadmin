@@ -11,18 +11,12 @@ export default function About() {
   return (
     <Layout>
       <Head>
-        <title>{t('title')} - Portfolio</title>
+        <title>{t('biography.title')} - Portfolio</title>
         <meta name="description" content="En savoir plus sur mon parcours, mes valeurs et mes objectifs professionnels" />
       </Head>
 
       <main className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-center text-gray-900 dark:text-white mb-12">
-            {t('title')}
-          </h1>
-
-          <BiographySection />
-        </div>
+        <BiographySection />
       </main>
     </Layout>
   );
