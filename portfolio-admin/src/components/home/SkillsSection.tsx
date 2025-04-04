@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
 const skillCategories = [
   {
@@ -25,7 +26,14 @@ const skillCategories = [
 ];
 
 export default function SkillsSection() {
-  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const { theme, systemTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const currentTheme = mounted ? (theme === 'system' ? systemTheme : theme) : 'light';
 
   return (
     <section className="py-20">
@@ -54,7 +62,7 @@ export default function SkillsSection() {
                   {category.title}
                 </h3>
                 <div className={`h-1 w-full rounded-full mb-4 overflow-hidden
-                  ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`}
+                  ${currentTheme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`}
                 >
                   <motion.div
                     initial={{ width: 0 }}
@@ -69,7 +77,7 @@ export default function SkillsSection() {
                     <span
                       key={skill}
                       className={`px-3 py-1 rounded-full text-sm
-                        ${theme === 'dark' 
+                        ${currentTheme === 'dark' 
                           ? 'bg-gray-800 text-gray-300' 
                           : 'bg-gray-100 text-gray-700'}`}
                     >

@@ -6,6 +6,7 @@ import { appWithTranslation } from 'next-i18next';
 import { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import Navbar from '@/components/layout/Navbar';
+import AutoSync from '@/components/admin/AutoSync';
 
 function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const router = useRouter();
@@ -14,6 +15,7 @@ function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
     <SessionProvider session={session}>
       <ThemeProvider attribute="class">
+        <AutoSync />
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
           {!isAdminPage && <Navbar />}
           <div className={!isAdminPage ? "" : ""}>

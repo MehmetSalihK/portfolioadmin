@@ -1,6 +1,21 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+import { formatDate, formatDateShort } from '@/utils/date';
+
+interface IAdmin {
+  email: string;
+  password: string;
+  name: string;
+  role: string;
+  lastLogin: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  formattedCreatedAt: string;
+  formattedUpdatedAt: string;
+  formattedLastLogin: string;
+}
+
 const AdminSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -28,7 +43,27 @@ const AdminSchema = new mongoose.Schema({
     default: null,
   },
 }, {
-  timestamps: true,
+  timestamps: {
+    currentTime: () => {
+      const now = new Date();
+      return new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
+    }
+  },
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Virtuals pour les dates formatées
+AdminSchema.virtual('formattedCreatedAt').get(function() {
+  return formatDate(this.createdAt);
+});
+
+AdminSchema.virtual('formattedUpdatedAt').get(function() {
+  return formatDate(this.updatedAt);
+});
+
+AdminSchema.virtual('formattedLastLogin').get(function() {
+  return this.lastLogin ? formatDate(this.lastLogin) : 'Jamais';
 });
 
 // Hash password before saving

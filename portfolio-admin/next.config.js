@@ -14,16 +14,19 @@ const nextConfig = {
       'via.placeholder.com'
     ],
   },
+  // Optimisations pour le développement
+  webpack: (config) => {
+    config.watchOptions = {
+      poll: 1000,
+      aggregateTimeout: 300,
+    };
+    return config;
+  },
   // Désactiver les logs du terminal
   logging: {
     fetches: {
       fullUrl: false,
     },
-  },
-  onDemandEntries: {
-    // Désactiver les logs de compilation
-    maxInactiveAge: 25 * 1000,
-    pagesBufferLength: 2,
   },
 };
 
