@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import initializeAdmin from './init-admin';
+import initializeAdmin from '../src/lib/init-admin';
 import { startEnvWatcher } from '../src/lib/env-watcher';
 
 interface GlobalWithMongoose extends Global {
