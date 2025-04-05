@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/layouts/AdminLayout';
@@ -38,13 +38,7 @@ export default function MessagesPage() {
     }
   }, [status, router]);
 
-  useEffect(() => {
-    if (status === 'authenticated') {
-      fetchMessages();
-    }
-  }, [status, filter]);
-
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/admin/messages?filter=${filter}`);
@@ -63,7 +57,13 @@ export default function MessagesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetchMessages();
+    }
+  }, [status, fetchMessages]);
 
   const updateMessageStatus = async (messageId: string, newStatus: 'read' | 'archived') => {
     try {
