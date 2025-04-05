@@ -219,43 +219,15 @@ export default function ContactPage({ settings = { email: '', github: '', linked
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  try {
-    // URL absolue en développement
-    const baseUrl = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:3000' 
-      : process.env.NEXT_PUBLIC_API_URL;
-
-    const res = await fetch(`${baseUrl}/api/admin/settings`);
-    
-    if (!res.ok) {
-      throw new Error('Failed to fetch settings');
-    }
-
-    const settings = await res.json();
-
-    // Vérification des données reçues
-    console.log('Settings fetched:', settings);
-
-    return {
-      props: {
-        settings: {
-          email: settings.email || '',
-          github: settings.github || '',
-          linkedin: settings.linkedin || ''
-        }
-      },
-      revalidate: 60
-    };
-  } catch (error) {
-    console.error('Erreur lors de la récupération des paramètres:', error);
-    return {
-      props: {
-        settings: {
-          email: 'contact@mehmetsalihk.fr',  // Valeurs par défaut
-          github: 'https://github.com/mehmetsalihk',
-          linkedin: 'https://www.linkedin.com/in/mehmetsalihk/'
-        }
+  // Retourner directement les valeurs par défaut sans accéder à la base de données
+  return {
+    props: {
+      settings: {
+        email: 'contact@mehmetsalihk.fr',
+        github: 'https://github.com/mehmetsalihk',
+        linkedin: 'https://www.linkedin.com/in/mehmetsalihk/'
       }
-    };
-  }
+    },
+    revalidate: 60
+  };
 };

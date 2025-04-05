@@ -1,22 +1,23 @@
-import mongoose from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 import { formatDate, formatDateShort } from '@/utils/date';
 
-interface IAdmin {
+interface IAdmin extends Document {
   email: string;
   password: string;
   name: string;
-  role: string;
+  role: 'admin' | 'super-admin';
   lastLogin: Date;
   createdAt: Date;
   updatedAt: Date;
   formattedCreatedAt: string;
   formattedUpdatedAt: string;
   formattedLastLogin: string;
+  comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-const AdminSchema = new mongoose.Schema({
+const AdminSchema = new Schema<IAdmin>({
   email: {
     type: String,
     required: [true, 'Please provide an email'],
@@ -43,26 +44,21 @@ const AdminSchema = new mongoose.Schema({
     default: null,
   },
 }, {
-  timestamps: {
-    currentTime: () => {
-      const now = new Date();
-      return new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
-    }
-  },
+  timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
 });
 
 // Virtuals pour les dates formatées
-AdminSchema.virtual('formattedCreatedAt').get(function() {
+AdminSchema.virtual('formattedCreatedAt').get(function(this: IAdmin) {
   return formatDate(this.createdAt);
 });
 
-AdminSchema.virtual('formattedUpdatedAt').get(function() {
+AdminSchema.virtual('formattedUpdatedAt').get(function(this: IAdmin) {
   return formatDate(this.updatedAt);
 });
 
-AdminSchema.virtual('formattedLastLogin').get(function() {
+AdminSchema.virtual('formattedLastLogin').get(function(this: IAdmin) {
   return this.lastLogin ? formatDate(this.lastLogin) : 'Jamais';
 });
 
@@ -90,4 +86,4 @@ AdminSchema.methods.comparePassword = async function(candidatePassword: string) 
   }
 };
 
-export default mongoose.models.Admin || mongoose.model('Admin', AdminSchema);
+export default mongoose.models.Admin || mongoose.model<IAdmin>('Admin', AdminSchema);

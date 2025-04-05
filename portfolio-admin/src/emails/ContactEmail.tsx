@@ -46,7 +46,7 @@ export const ContactEmail: React.FC<Readonly<EmailTemplateProps>> = ({
   return (
     <Html>
       <Head />
-      <Preview>✨ Nouveau message de {firstName} {lastName} - {subject}</Preview>
+      <Preview>✨ Nouveau message de {firstName} {lastName} sur votre portfolio</Preview>
       <Tailwind>
         <Body className="bg-[#0A0A0A]">
           <Container className="mx-auto py-8 px-4">
@@ -56,7 +56,7 @@ export const ContactEmail: React.FC<Readonly<EmailTemplateProps>> = ({
                 <Row>
                   <Column>
                     <Heading className="text-white text-2xl m-0 font-bold">
-                      📬 Nouveau Message
+                      🎉 Nouveau Message sur votre Portfolio
                     </Heading>
                     <Text className="text-blue-100 m-0 mt-1 text-sm">
                       Reçu le {currentDate}
@@ -98,21 +98,21 @@ export const ContactEmail: React.FC<Readonly<EmailTemplateProps>> = ({
                       </Text>
                       <Text className="text-gray-300 mb-3">
                         <strong className="text-gray-200">Email :</strong>{" "}
-                        <Link href={`mailto:${email}`} className="text-blue-400 hover:text-blue-300">
+                        <Link href={`mailto:${email}`} className="text-blue-400 hover:underline">
                           {email}
                         </Link>
                       </Text>
                       {phone && (
                         <Text className="text-gray-300 mb-3">
                           <strong className="text-gray-200">Téléphone :</strong>{" "}
-                          <Link href={`tel:${phone}`} className="text-blue-400 hover:text-blue-300">
+                          <Link href={`tel:${phone}`} className="text-blue-400 hover:underline">
                             {phone}
                           </Link>
                         </Text>
                       )}
                       {company && (
                         <Text className="text-gray-300 mb-3">
-                          <strong className="text-gray-200">Société :</strong>{" "}
+                          <strong className="text-gray-200">Entreprise :</strong>{" "}
                           {company}
                         </Text>
                       )}
@@ -120,25 +120,21 @@ export const ContactEmail: React.FC<Readonly<EmailTemplateProps>> = ({
                   </Row>
                 </Section>
 
-                {/* Call to Action */}
+                {/* Bouton de réponse */}
                 <Section className="text-center">
                   <Link
-                    href={`mailto:${email}`}
-                    className="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                    href={`mailto:${email}?subject=Re: ${subject}`}
+                    className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium inline-block hover:bg-blue-700 transition-colors"
                   >
-                    Répondre au message →
+                    Répondre à {firstName}
                   </Link>
                 </Section>
               </Section>
 
               {/* Pied de page */}
-              <Hr className="border-gray-800 my-0" />
-              <Section className="px-8 py-6 bg-[#151515]">
-                <Text className="text-gray-400 text-sm text-center">
-                  Message envoyé via le formulaire de contact de votre portfolio
-                </Text>
-                <Text className="text-gray-500 text-xs text-center mt-2">
-                  © {new Date().getFullYear()} Portfolio - Tous droits réservés
+              <Section className="px-8 py-6 border-t border-gray-800">
+                <Text className="text-gray-400 text-sm text-center m-0">
+                  Cet email a été envoyé depuis le formulaire de contact de votre portfolio.
                 </Text>
               </Section>
             </Section>

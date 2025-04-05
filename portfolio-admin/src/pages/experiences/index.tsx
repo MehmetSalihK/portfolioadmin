@@ -148,33 +148,11 @@ export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  try {
-    // Si vous êtes en local, utilisez l'URL absolue
-    const apiUrl = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:3000/api/experiences'
-      : '/api/experiences';
-
-    const response = await fetch(apiUrl);
-    
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des données');
-    }
-
-    const experiences = await response.json();
-
-    return {
-      props: {
-        experiences,
-      },
-      revalidate: 60,
-    };
-  } catch (error) {
-    console.error('Erreur lors de la récupération des expériences:', error);
-    return {
-      props: {
-        experiences: [],
-      },
-      revalidate: 60,
-    };
-  }
+  // Retourner directement un tableau vide sans accéder à la base de données
+  return {
+    props: {
+      experiences: []
+    },
+    revalidate: 60
+  };
 }; 

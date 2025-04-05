@@ -1,4 +1,16 @@
-import mongoose from 'mongoose';
+import mongoose, { Document } from 'mongoose';
+
+export interface ISetting extends Document {
+  siteTitle: string;
+  siteDescription: string;
+  email: string;
+  phone: string;
+  github: string;
+  linkedin: string;
+  twitter: string;
+  whatsapp: string;
+  telegram: string;
+}
 
 const settingSchema = new mongoose.Schema({
   siteTitle: {
@@ -39,6 +51,6 @@ const settingSchema = new mongoose.Schema({
   }
 });
 
-const Setting = mongoose.models.Setting || mongoose.model('Setting', settingSchema);
+const Setting = mongoose.models.Setting || mongoose.model<ISetting>('Setting', settingSchema);
 
 export default Setting; 
