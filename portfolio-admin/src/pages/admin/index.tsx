@@ -4,9 +4,10 @@ import AdminLayout from '@/components/layouts/AdminLayout';
 import { motion } from 'framer-motion';
 import { FiMail, FiBriefcase, FiCode, FiFolder } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 interface DashboardStats {
-  messages: number;
+  unreadMessages: number;
   projects: number;
   skills: number;
   experiences: number;
@@ -16,69 +17,81 @@ export default function AdminDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [stats, setStats] = useState<DashboardStats>({
-    messages: 0,
+    unreadMessages: 0,
     projects: 0,
     skills: 0,
     experiences: 0
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/admin/login');
+    } else if (status === 'authenticated') {
+      fetchStats();
     }
   }, [status, router]);
 
   const fetchStats = async () => {
     try {
+      setLoading(true);
       // Fetch actual stats from your API endpoints
-      const [messages, projects, skills, experiences] = await Promise.all([
-        fetch('/api/messages').then(res => res.json()),
-        fetch('/api/projects').then(res => res.json()),
-        fetch('/api/skills').then(res => res.json()),
-        fetch('/api/experiences').then(res => res.json())
+      const [messagesResponse, projectsResponse, skillsResponse, experiencesResponse] = await Promise.all([
+        fetch('/api/admin/messages?filter=unread'),
+        fetch('/api/projects'),
+        fetch('/api/skills'),
+        fetch('/api/experiences')
       ]);
 
+      const messages = await messagesResponse.json();
+      const projects = await projectsResponse.json();
+      const skills = await skillsResponse.json();
+      const experiences = await experiencesResponse.json();
+
       setStats({
-        messages: messages?.length || 0,
+        unreadMessages: messages?.messages?.length || 0,
         projects: projects?.length || 0,
         skills: skills?.length || 0,
         experiences: experiences?.length || 0
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
+      toast.error('Erreur lors du chargement des statistiques');
+    } finally {
+      setLoading(false);
     }
   };
 
   const cards = [
     {
-      title: 'Unread Messages',
-      value: stats.messages,
+      title: 'Messages non lus',
+      value: loading ? '...' : stats.unreadMessages,
       icon: FiMail,
-      description: 'New messages from visitors',
+      description: 'Nouveaux messages des visiteurs',
       color: 'from-blue-400 to-blue-600',
       link: '/admin/messages'
     },
     {
-      title: 'Total Projects',
-      value: stats.projects,
+      title: 'Total Projets',
+      value: loading ? '...' : stats.projects,
       icon: FiFolder,
-      description: 'Projects in your portfolio',
+      description: 'Projets dans votre portfolio',
       color: 'from-purple-400 to-purple-600',
       link: '/admin/projects'
     },
     {
-      title: 'Total Skills',
-      value: stats.skills,
+      title: 'Total Compétences',
+      value: loading ? '...' : stats.skills,
       icon: FiCode,
-      description: 'Skills and technologies',
+      description: 'Compétences et technologies',
       color: 'from-green-400 to-green-600',
       link: '/admin/skills'
     },
     {
-      title: 'Total Experiences',
-      value: stats.experiences,
+      title: 'Total Expériences',
+      value: loading ? '...' : stats.experiences,
       icon: FiBriefcase,
-      description: 'Work and education experiences',
+      description: 'Expériences professionnelles et formations',
       color: 'from-orange-400 to-orange-600',
       link: '/admin/experience'
     }
@@ -142,11 +155,11 @@ export default function AdminDashboard() {
 
           {/* Recent Activity Section */}
           <div className="mt-8">
-            <h2 className="text-xl font-semibold text-white mb-4">Recent Activity</h2>
+            <h2 className="text-xl font-semibold text-white mb-4">Activité récente</h2>
             <div className="bg-[#1E1E1E] rounded-lg p-6">
               <div className="space-y-4">
                 {/* Activity items would go here */}
-                <p className="text-gray-400">No recent activity to display</p>
+                <p className="text-gray-400">Aucune activité récente à afficher</p>
               </div>
             </div>
           </div>
