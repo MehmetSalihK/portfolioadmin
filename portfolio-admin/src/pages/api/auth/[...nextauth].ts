@@ -3,6 +3,14 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import connectDB from '@/lib/db';
 import Admin from '@/models/Admin';
 
+if (!process.env.NEXTAUTH_SECRET) {
+  throw new Error('NEXTAUTH_SECRET is not defined');
+}
+
+if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
+  throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD must be defined');
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -12,35 +20,59 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Please provide both email and password');
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            console.error('Missing credentials');
+            throw new Error('Veuillez fournir un email et un mot de passe');
+          }
+
+          await connectDB();
+          console.log('Connected to database');
+          console.log('Attempting login for:', credentials.email);
+          
+          // Vérifier si c'est l'admin par défaut
+          if (credentials.email === process.env.ADMIN_EMAIL && 
+              credentials.password === process.env.ADMIN_PASSWORD) {
+            console.log('Using default admin credentials');
+            return {
+              id: 'default-admin',
+              email: process.env.ADMIN_EMAIL,
+              name: 'Admin',
+              role: 'admin',
+            };
+          }
+
+          const admin = await Admin.findOne({ email: credentials.email }).select('+password');
+          
+          if (!admin) {
+            console.error('Admin not found:', credentials.email);
+            throw new Error('Email ou mot de passe invalide');
+          }
+
+          const isPasswordValid = await admin.comparePassword(credentials.password);
+          
+          if (!isPasswordValid) {
+            console.error('Invalid password for:', credentials.email);
+            throw new Error('Email ou mot de passe invalide');
+          }
+
+          console.log('Login successful for:', credentials.email);
+
+          // Update last login
+          await Admin.findByIdAndUpdate(admin._id, {
+            lastLogin: new Date(),
+          });
+
+          return {
+            id: admin._id.toString(),
+            email: admin.email,
+            name: admin.name,
+            role: admin.role,
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
+          throw error;
         }
-
-        await connectDB();
-        
-        const admin = await Admin.findOne({ email: credentials.email }).select('+password');
-        
-        if (!admin) {
-          throw new Error('Invalid email or password');
-        }
-
-        const isPasswordValid = await admin.comparePassword(credentials.password);
-        
-        if (!isPasswordValid) {
-          throw new Error('Invalid email or password');
-        }
-
-        // Update last login
-        await Admin.findByIdAndUpdate(admin._id, {
-          lastLogin: new Date(),
-        });
-
-        return {
-          id: admin._id.toString(),
-          email: admin.email,
-          name: admin.name,
-          role: admin.role,
-        };
       }
     })
   ],
@@ -66,6 +98,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+  debug: process.env.NODE_ENV === 'development',
 };
 
 export default NextAuth(authOptions);

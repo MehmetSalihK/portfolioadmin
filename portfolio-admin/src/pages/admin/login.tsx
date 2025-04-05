@@ -35,19 +35,29 @@ export default function AdminLogin() {
     const password = formData.get('password') as string;
 
     try {
+      console.log('Attempting to sign in...');
       const result = await signIn('credentials', {
         redirect: false,
         email,
         password,
+        callbackUrl: '/admin'
       });
 
+      console.log('Sign in result:', result);
+
       if (result?.error) {
+        console.error('Sign in error:', result.error);
         setError(result.error);
-      } else {
+      } else if (result?.ok) {
+        console.log('Sign in successful, redirecting...');
         router.push('/admin');
+      } else {
+        console.error('Unexpected result:', result);
+        setError('Une erreur inattendue s\'est produite');
       }
     } catch (error) {
-      setError('An unexpected error occurred');
+      console.error('Sign in error:', error);
+      setError('Une erreur inattendue s\'est produite. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
