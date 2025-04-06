@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "migrate:homepage": "npx ts-node -P scripts/tsconfig.json scripts/migrate-homepage.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -72,6 +73,7 @@
     "dotenv": "^16.4.7",
     "eslint": "^8.0.0",
     "eslint-config-next": "^14.0.0",
-    "mongodb": "^6.11.0"
+    "mongodb": "^6.11.0",
+    "ts-node": "^10.9.2"
   }
 }

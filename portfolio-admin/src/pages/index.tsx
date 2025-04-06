@@ -31,7 +31,7 @@ import {
   FaCode
 } from 'react-icons/fa';
 import { HiArrowDown } from 'react-icons/hi';
-import { FiExternalLink, FiGithub, FiSettings, FiCode, FiStar, FiAlertTriangle, FiX } from 'react-icons/fi';
+import { FiExternalLink, FiGithub, FiSettings, FiCode, FiStar, FiAlertTriangle, FiX, FiArrowRight, FiDownload } from 'react-icons/fi';
 import parse from 'html-react-parser';
 import { 
   SiTypescript, 
@@ -56,6 +56,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { AnimatePresence } from 'framer-motion';
 import SkillsSection from '@/components/home/SkillsSection';
+import SocialLinks from '@/components/home/SocialLinks';
+import HeroSection from '@/components/home/HeroSection';
 
 interface HomePageProps {
   projects: Array<{
@@ -93,6 +95,12 @@ interface HomePageProps {
       github: string;
       linkedin: string;
       twitter: string;
+      instagram: string;
+      whatsapp: string;
+      snapchat: string;
+      telegram: string;
+      phone: string;
+      email: string;
     };
   };
   skillsByCategory: Array<{
@@ -121,7 +129,13 @@ const defaultHomeData = {
   socialLinks: {
     github: '',
     linkedin: '',
-    twitter: ''
+    twitter: '',
+    instagram: '',
+    whatsapp: '',
+    snapchat: '',
+    telegram: '',
+    phone: '',
+    email: ''
   }
 };
 
@@ -465,217 +479,111 @@ export default function Home({ projects, experiences, skills, homeData = default
   return (
     <Layout>
       <Head>
-        <title>Portfolio - Accueil</title>
-        <meta name="description" content="Portfolio professionnel - Développeur Full Stack" />
-        <link rel="icon" href="/favicon.ico" />
+        <title>Portfolio - Développeur Full Stack</title>
+        <meta name="description" content={homeData.subtitle} />
       </Head>
 
-      <AnimatePresence>
-        {showBanner && (
-          <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            className="fixed top-20 left-0 right-0 z-50 flex justify-center px-4"
-          >
-            <div className="flex items-center gap-3 bg-amber-500/90 text-amber-900 px-4 py-3 rounded-lg shadow-lg backdrop-blur-sm max-w-2xl">
-              <FiAlertTriangle className="w-5 h-5 flex-shrink-0" />
-              <p className="text-sm">
-                Ce site est actuellement en cours de développement (version bêta). 
-                Certaines fonctionnalités peuvent ne pas fonctionner correctement.
-              </p>
-              <button
-                onClick={() => setShowBanner(false)}
-                className="flex-shrink-0 text-amber-900 hover:text-amber-950 transition-colors"
-              >
-                <FiX className="w-5 h-5" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Progress bar */}
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-primary-500 origin-left z-50"
-        style={{ scaleX: scrollYProgress }}
+      {/* Section Héro */}
+      <HeroSection
+        title={homeData.title}
+        subtitle={homeData.subtitle}
+        socialLinks={homeData.socialLinks}
+        onScrollClick={scrollToContent}
       />
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-        <ParticlesBackground />
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-center z-10 px-4"
-        >
-          <motion.h1
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="text-5xl md:text-7xl font-bold text-gray-900 dark:text-white mb-6"
-          >
-            {homeData.title}
-          </motion.h1>
+      <main ref={mainRef} className="bg-white dark:bg-gray-900">
+        {/* Section À propos */}
+        <section id="about" className="relative py-16 md:py-24 overflow-hidden">
+          {/* Cercles décoratifs */}
+          <div className="absolute -left-40 -top-40 w-80 h-80 bg-primary-500/10 rounded-full blur-3xl" />
+          <div className="absolute -right-40 -bottom-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl" />
           
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-12 max-w-2xl mx-auto"
-          >
-            {homeData.subtitle}
-          </motion.p>
-
-          <div className="flex gap-4 justify-center mt-8">
-            <Link
-              href="/projects"
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 border border-transparent hover:border-blue-400"
-            >
-              Voir mes projets
-            </Link>
-            
-            <Link
-              href="/contact"
-              className="px-6 py-3 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg transition-colors duration-200"
-            >
-              Me contacter
-            </Link>
-          </div>
-
-          {/* Social Links */}
-          <div className="flex gap-4 justify-center mt-8">
-            <a
-              href={homeData.socialLinks.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
-            >
-              <FaGithub className="w-6 h-6" />
-            </a>
-            <a
-              href={homeData.socialLinks.linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
-            >
-              <FaLinkedin className="w-6 h-6" />
-            </a>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 1.1 }}
-          className="absolute bottom-8"
-        >
-          <motion.button
-            onClick={scrollToContent}
-            whileHover={{ y: 5 }}
-            animate={{ y: [0, 10, 0] }}
-            transition={{ repeat: Infinity, duration: 2 }}
-            className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
-          >
-            <HiArrowDown className="w-8 h-8" />
-          </motion.button>
-        </motion.div>
-      </section>
-
-      <main ref={mainRef}>
-        {/* About Section */}
-        <section id="about" className="w-full py-20 px-4">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold mb-8">{homeData.aboutTitle}</h2>
-            <div className="text-lg text-gray-400 prose prose-invert max-w-none">
-              {parse(homeData.aboutText)}
-            </div>
-          </div>
-        </section>
-
-        {/* Skills Section */}
-        <SkillsSection />
-
-        {/* Projects Section */}
-        <section id="projects" className="py-20 bg-white dark:bg-gray-900">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="max-w-4xl mx-auto"
+            >
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-8 text-center">
+                {homeData.aboutTitle}
+              </h2>
+              <div className="prose prose-lg dark:prose-invert max-w-none">
+                {parse(homeData.aboutText)}
+              </div>
+              <div className="mt-8 flex justify-center">
+                <Button href="/cv.pdf" variant="secondary" size="lg" className="group">
+                  <span>Télécharger mon CV</span>
+                  <FiDownload className="ml-2 group-hover:translate-y-0.5 transition-transform" />
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Section Compétences */}
+        <SkillsSection skillsByCategory={skillsByCategory} />
+
+        {/* Section Expériences */}
+        <section id="experiences" className="py-16 md:py-24 bg-gray-50 dark:bg-gray-800/50">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
               viewport={{ once: true }}
               className="text-center mb-12"
             >
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                Mes Projets
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                Mes Expériences
               </h2>
+              <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                Découvrez mon parcours professionnel
+              </p>
             </motion.div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {formattedProjects.map((project) => (
+
+            <div className="max-w-4xl mx-auto">
+              {experiences.map((experience, index) => (
                 <motion.div
-                  key={project._id}
-                  data-project-id={project._id}
+                  key={experience._id}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="group relative bg-gradient-to-br from-[#1E1E1E] to-[#252525] rounded-xl overflow-hidden"
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="relative pl-8 pb-12 last:pb-0"
                 >
-                  <div className="relative aspect-video">
-                    <Image
-                      src={project.imageUrl}
-                      alt={project.title}
-                      width={500}
-                      height={300}
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    {project.featured && (
-                      <div className="absolute top-2 right-2 bg-yellow-500/90 text-white px-2 py-1 rounded-md text-sm font-medium flex items-center gap-1">
-                        <FiStar className="w-4 h-4" />
-                        <span>Featured</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-white mb-2">
-                      {project.title}
+                  {/* Ligne verticale */}
+                  {index !== experiences.length - 1 && (
+                    <div className="absolute left-[11px] top-3 bottom-0 w-px bg-gray-200 dark:bg-gray-700" />
+                  )}
+                  
+                  {/* Point */}
+                  <div className="absolute left-0 top-3 w-6 h-6 rounded-full border-4 border-primary-500 bg-white dark:bg-gray-900" />
+                  
+                  <div className="bg-white dark:bg-gray-900/50 rounded-xl p-6 shadow-lg dark:shadow-gray-900/10">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                      {experience.title}
                     </h3>
-                    <p className="text-gray-400 mb-4">
-                      {project.description}
+                    <p className="text-gray-600 dark:text-gray-400 mb-2">
+                      {experience.company} • {experience.location}
                     </p>
-
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {project.technologies.map((tech, index) => (
+                    <p className="text-sm text-gray-500 dark:text-gray-500 mb-4">
+                      {experience.startDate} - {experience.endDate || 'Présent'}
+                    </p>
+                    <p className="text-gray-700 dark:text-gray-300 mb-4">
+                      {experience.description}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {experience.technologies.map((tech) => (
                         <span
-                          key={index}
-                          className="px-3 py-1 bg-[#2A2A2A] text-gray-300 rounded-full text-sm"
+                          key={tech}
+                          className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full"
                         >
                           {tech}
                         </span>
                       ))}
                     </div>
-
-                    <div className="flex items-center gap-4">
-                      {project.demoUrl && (
-                        <button
-                          onClick={() => project.demoUrl && handleDemoClick(project._id, project.demoUrl)}
-                          className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors duration-200"
-                        >
-                          <FiExternalLink className="w-5 h-5" />
-                          <span>Demo</span>
-                        </button>
-                      )}
-                      {project.githubUrl && (
-                        <button
-                          onClick={() => project.githubUrl && handleGithubClick(project._id, project.githubUrl)}
-                          className="flex items-center gap-2 text-gray-400 hover:text-gray-300 transition-colors duration-200"
-                        >
-                          <FiGithub className="w-5 h-5" />
-                          <span>GitHub</span>
-                        </button>
-                      )}
-                    </div>
                   </div>
                 </motion.div>
               ))}
@@ -683,200 +591,157 @@ export default function Home({ projects, experiences, skills, homeData = default
           </div>
         </section>
 
-        {/* Experience Section */}
-        <section id="experience" className="py-20 bg-gray-50 dark:bg-gray-800">
+        {/* Section Projets */}
+        <section id="projects" className="py-16 md:py-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.8 }}
               viewport={{ once: true }}
               className="text-center mb-12"
             >
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                Mes Expériences
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                Mes Projets
               </h2>
+              <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                Découvrez une sélection de mes projets les plus récents et significatifs
+              </p>
             </motion.div>
-            <div className="max-w-3xl mx-auto">
-              {experiences.map((experience, index) => (
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {projects.map((project, index) => (
                 <motion.div
-                  key={experience._id}
-                  initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+                  key={project._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className="relative mb-8"
                 >
-                  <div className="bg-white dark:bg-gray-700 rounded-lg p-6 shadow-sm hover:shadow-lg transition-shadow duration-300">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                        {experience.title}
-                      </h3>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {experience.startDate} - {experience.endDate || 'Present'}
-                      </span>
-                    </div>
-                    <p className="text-gray-600 dark:text-gray-300 mb-2">
-                      {experience.company} • {experience.location}
-                    </p>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4">
-                      {experience.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {experience.technologies.map((tech) => (
-                        <motion.span
-                          key={tech}
-                          whileHover={{ scale: 1.1 }}
-                          className="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-full text-sm font-medium"
-                        >
-                          {tech}
-                        </motion.span>
-                      ))}
-                    </div>
-                  </div>
+                  <EnhancedProjectCard project={project} />
                 </motion.div>
               ))}
             </div>
-          </div>
-        </section>
 
-        {/* Contact Section */}
-        <section id="contact" className="py-8 sm:py-12 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black relative overflow-hidden">
-          {/* Effet de grille en arrière-plan */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0 bg-grid-black/[0.1] dark:bg-grid-white/[0.1]" />
-          </div>
-
-          <div className="container mx-auto px-4 relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
-              className="text-center mb-6 sm:mb-8"
+              className="text-center mt-12"
             >
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                Me Contacter
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm max-w-xl mx-auto">
-                Une idée de projet ? N'hésitez pas à me contacter !
-              </p>
+              <Button href="/projects" variant="secondary" size="lg" className="group">
+                <span>Voir tous les projets</span>
+                <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
             </motion.div>
+          </div>
+        </section>
 
-            <div className="max-w-xl mx-auto">
+        {/* Section Contact */}
+        <section id="contact" className="py-16 md:py-24 bg-[#0f172a]">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+                className="text-center mb-6"
+              >
+                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                  Me Contacter
+                </h2>
+                <p className="text-gray-400 mb-8">
+                  Une idée de projet ? N'hésitez pas à me contacter !
+                </p>
+              </motion.div>
+
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="bg-white dark:bg-white/10 backdrop-blur-xl rounded-xl p-4 sm:p-6 shadow-xl border border-gray-100 dark:border-gray-800"
+                className="bg-[#1d2432] rounded-xl p-6 md:p-8 shadow-xl"
               >
-                <form onSubmit={handleContactSubmit} className="space-y-4">
-                  {/* Nom et Prénom */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <form className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Prénom *
-                      </label>
+                      <label className="block text-sm text-gray-400 mb-1">Prénom *</label>
                       <input
                         type="text"
-                        name="firstName"
-                        className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
                         placeholder="John"
+                        className="w-full px-4 py-2 bg-[#2a3441] text-white placeholder-gray-500 rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                         required
                       />
                     </div>
-
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Nom *
-                      </label>
+                      <label className="block text-sm text-gray-400 mb-1">Nom *</label>
                       <input
                         type="text"
-                        name="lastName"
-                        className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
                         placeholder="Doe"
+                        className="w-full px-4 py-2 bg-[#2a3441] text-white placeholder-gray-500 rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                         required
                       />
                     </div>
                   </div>
 
-                  {/* Société et Téléphone */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Société <span className="text-gray-500 text-xs">(optionnel)</span>
+                      <label className="block text-sm text-gray-400 mb-1">
+                        Société <span className="text-gray-500">(optionnel)</span>
                       </label>
                       <input
                         type="text"
-                        name="company"
-                        className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
                         placeholder="Entreprise SA"
+                        className="w-full px-4 py-2 bg-[#2a3441] text-white placeholder-gray-500 rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
-
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Téléphone <span className="text-gray-500 text-xs">(optionnel)</span>
+                      <label className="block text-sm text-gray-400 mb-1">
+                        Téléphone <span className="text-gray-500">(optionnel)</span>
                       </label>
                       <input
                         type="tel"
-                        name="phone"
-                        className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
                         placeholder="Téléphone"
+                        className="w-full px-4 py-2 bg-[#2a3441] text-white placeholder-gray-500 rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
                   </div>
 
-                  {/* Email */}
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Email *
-                    </label>
+                    <label className="block text-sm text-gray-400 mb-1">Email *</label>
                     <input
                       type="email"
-                      name="email"
-                      className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
                       placeholder="email@exemple.com"
+                      className="w-full px-4 py-2 bg-[#2a3441] text-white placeholder-gray-500 rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       required
                     />
                   </div>
 
-                  {/* Sujet */}
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Sujet *
-                    </label>
+                    <label className="block text-sm text-gray-400 mb-1">Sujet *</label>
                     <input
                       type="text"
-                      name="subject"
-                      className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-sm"
                       placeholder="Sujet de votre message"
+                      className="w-full px-4 py-2 bg-[#2a3441] text-white placeholder-gray-500 rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       required
                     />
                   </div>
 
-                  {/* Message */}
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Message *
-                    </label>
+                    <label className="block text-sm text-gray-400 mb-1">Message *</label>
                     <textarea
-                      name="message"
-                      rows={4}
-                      className="w-full px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 resize-none text-sm"
                       placeholder="Votre message..."
+                      rows={4}
+                      className="w-full px-4 py-2 bg-[#2a3441] text-white placeholder-gray-500 rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
                       required
                     ></textarea>
                   </div>
 
-                  {/* Bouton d'envoi */}
-                  <div className="text-center pt-2">
-                    <button
-                      type="submit"
-                      className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-                    >
+                  <div className="text-center">
+                    <Button type="submit" variant="primary" size="lg">
                       Envoyer
-                    </button>
+                    </Button>
                   </div>
                 </form>
               </motion.div>
