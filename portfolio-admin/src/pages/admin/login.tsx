@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GetServerSideProps } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { signIn } from 'next-auth/react';
@@ -36,21 +36,15 @@ export default function AdminLogin() {
 
     try {
       console.log('Tentative de connexion...');
-      const result = await Promise.race([
-        signIn('credentials', {
-          redirect: false,
-          email,
-          password,
-          callbackUrl: '/admin/dashboard'
-        }),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Délai d\'attente dépassé')), 15000)
-        )
-      ]);
+      const result = await signIn('credentials', {
+        redirect: false,
+        email,
+        password,
+      });
 
       if (result?.ok) {
         console.log('Connexion réussie, redirection...');
-        window.location.href = '/admin/dashboard';  // Utilisation de window.location au lieu de router
+        router.push('/admin/dashboard');
       } else if (result?.error) {
         console.error('Erreur de connexion:', result.error);
         setError(result.error);
@@ -62,6 +56,55 @@ export default function AdminLogin() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Suppression complète des erreurs de console
+    const originalConsole = {
+      error: console.error,
+      warn: console.warn,
+      log: console.log
+    };
+  
+    // Fonction de filtrage des messages
+    const shouldFilter = (message: any) => {
+      if (typeof message !== 'string') return false;
+      return (
+        message.includes('chrome-extension://') ||
+        message.includes('Denying load of') ||
+        message.includes('bis_skin_checked') ||
+        message.includes('Failed to load resource') ||
+        message.includes('React DevTools') ||
+        message.includes('[HMR]') ||
+        message.includes('Warning: Extra attributes')
+      );
+    };
+  
+    // Remplacement des fonctions de console
+    console.error = (...args: any[]) => {
+      if (!args.some(shouldFilter)) {
+        originalConsole.error.apply(console, args);
+      }
+    };
+  
+    console.warn = (...args: any[]) => {
+      if (!args.some(shouldFilter)) {
+        originalConsole.warn.apply(console, args);
+      }
+    };
+  
+    console.log = (...args: any[]) => {
+      if (!args.some(shouldFilter)) {
+        originalConsole.log.apply(console, args);
+      }
+    };
+  
+    // Nettoyage lors du démontage du composant
+    return () => {
+      console.error = originalConsole.error;
+      console.warn = originalConsole.warn;
+      console.log = originalConsole.log;
+    };
+  }, []);
 
   return (
     <>
@@ -78,7 +121,7 @@ export default function AdminLogin() {
             transition={{ duration: 0.6 }}
             className="w-full max-w-md"
           >
-            <div className="bg-[#242424] rounded-2xl p-8 shadow-xl border border-gray-800 relative overflow-hidden">
+            <div className="bg-[#242424] rounded-2xl p-8 shadow-xl border border-gray-800 relative overflow-hidden" suppressHydrationWarning>
               {/* Animated background gradient */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary-600/10 to-purple-600/10 animate-gradient" />
               
