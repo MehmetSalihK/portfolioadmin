@@ -40,9 +40,13 @@ export default function AdminLogin() {
         redirect: false,
         email,
         password,
-        callbackUrl: '/admin'
+        callbackUrl: '/admin/dashboard' // Changez la route de redirection
       });
 
+      if (result?.ok) {
+        console.log('Sign in successful, redirecting...');
+        router.push('/admin');
+      }
       console.log('Sign in result:', result);
 
       if (result?.error) {

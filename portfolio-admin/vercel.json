@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "build": {
+    "env": {
+      "ADMIN_EMAIL": "@admin_email",
+      "ADMIN_PASSWORD": "@admin_password"
+    }
+  }
+}
