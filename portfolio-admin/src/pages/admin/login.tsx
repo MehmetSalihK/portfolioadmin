@@ -35,33 +35,29 @@ export default function AdminLogin() {
     const password = formData.get('password') as string;
 
     try {
-      console.log('Attempting to sign in...');
-      const result = await signIn('credentials', {
-        redirect: false,
-        email,
-        password,
-        callbackUrl: '/admin/dashboard' // Changez la route de redirection
-      });
+      console.log('Tentative de connexion...');
+      const result = await Promise.race([
+        signIn('credentials', {
+          redirect: false,
+          email,
+          password,
+          callbackUrl: '/admin/dashboard'
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Délai d\'attente dépassé')), 15000)
+        )
+      ]);
 
       if (result?.ok) {
-        console.log('Sign in successful, redirecting...');
-        router.push('/admin');
-      }
-      console.log('Sign in result:', result);
-
-      if (result?.error) {
-        console.error('Sign in error:', result.error);
+        console.log('Connexion réussie, redirection...');
+        window.location.href = '/admin/dashboard';  // Utilisation de window.location au lieu de router
+      } else if (result?.error) {
+        console.error('Erreur de connexion:', result.error);
         setError(result.error);
-      } else if (result?.ok) {
-        console.log('Sign in successful, redirecting...');
-        router.push('/admin');
-      } else {
-        console.error('Unexpected result:', result);
-        setError('Une erreur inattendue s\'est produite');
       }
     } catch (error) {
-      console.error('Sign in error:', error);
-      setError('Une erreur inattendue s\'est produite. Veuillez réessayer.');
+      console.error('Erreur:', error);
+      setError('La connexion a échoué. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
