@@ -40,11 +40,12 @@ export default function AdminLogin() {
         redirect: false,
         email,
         password,
+        callbackUrl: '/admin'  // Modification ici pour rediriger vers /admin
       });
 
       if (result?.ok) {
         console.log('Connexion réussie, redirection...');
-        router.push('/admin/dashboard');
+        router.push('/admin');  // Modification ici pour rediriger vers /admin
       } else if (result?.error) {
         console.error('Erreur de connexion:', result.error);
         setError(result.error);
