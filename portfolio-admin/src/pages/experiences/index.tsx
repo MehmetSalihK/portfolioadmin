@@ -148,11 +148,23 @@ export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  // Retourner directement un tableau vide sans accéder à la base de données
-  return {
-    props: {
-      experiences: []
-    },
-    revalidate: 60
-  };
-}; 
+  try {
+    const response = await fetch(`http://localhost:3000/api/experiences`);
+    const experiences = await response.json();
+
+    return {
+      props: {
+        experiences
+      },
+      revalidate: 60
+    };
+  } catch (error) {
+    console.error('Erreur lors de la récupération des expériences:', error);
+    return {
+      props: {
+        experiences: []
+      },
+      revalidate: 60
+    };
+  }
+};
