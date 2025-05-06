@@ -135,16 +135,24 @@ yarn dev
 Créez un fichier `.env.local` avec les variables suivantes :
 
 ```env
-# MongoDB
-MONGODB_URI=votre_uri_mongodb
+# Database (MongoDB)
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/
 
-# NextAuth
+# Authentication (NextAuth.js)
 NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=votre_secret
+NEXTAUTH_SECRET=votre_secret_nextauth
+
+# Admin credentials
+ADMIN_EMAIL=votre_email_admin
+ADMIN_PASSWORD=votre_mot_de_passe_admin
 
 # GitHub OAuth
 GITHUB_ID=votre_github_id
 GITHUB_SECRET=votre_github_secret
+
+# Configuration de l'API Resend
+RESEND_API_KEY=votre_cle_api_resend
+RESEND_EMAIL=votre_email_resend
 ```
 
 ## 📁 Structure du projet
