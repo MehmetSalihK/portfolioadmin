@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { FiHome, FiUser, FiBriefcase, FiCode, FiFolder, FiLogOut, FiMenu, FiMail, FiSettings, FiList, FiBarChart2 } from 'react-icons/fi';
+import { FiHome, FiUser, FiBriefcase, FiCode, FiFolder, FiLogOut, FiMenu, FiMail, FiSettings, FiList, FiBarChart2, FiBookOpen } from 'react-icons/fi';
 import { signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
@@ -22,6 +22,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { href: '/admin/stats', label: 'Stats', icon: FiBarChart2 },
     { href: '/admin/projects', label: 'Projects', icon: FiFolder },
     { href: '/admin/skills', label: 'Skills', icon: FiCode },
+    { href: '/admin/education', label: 'Formation', icon: FiBookOpen },
     { href: '/admin/experience', label: 'Experience', icon: FiBriefcase },
     { href: '/admin/messages', label: 'Messages', icon: FiMail },
     { href: '/admin/settings', label: 'Settings', icon: FiSettings },
