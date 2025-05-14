@@ -52,7 +52,9 @@ const EducationSchema = new Schema({
     default: false,
   },
   diplomaFile: {
-    type: String,
+    filename: String,
+    contentType: String,
+    data: Buffer
   }
 }, {
   timestamps: true

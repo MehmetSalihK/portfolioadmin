@@ -77,24 +77,24 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
     try {
       const formData = new FormData();
       formData.append('image', file);
-
+  
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
-
+  
       if (!response.ok) {
         throw new Error('Failed to upload file');
       }
-
+  
       const data = await response.json();
-      setFormData(prev => ({
-        ...prev,
-        diplomaFile: data.url
+      setFormData((prevState) => ({
+        ...prevState,
+        diplomaFile: `${data.fileId}/${data.filename}`
       }));
     } catch (error) {
       console.error('Error uploading file:', error);
-      toast.error('Error uploading diploma file');
+      toast.error('Erreur lors du téléchargement du fichier');
     }
   };
 

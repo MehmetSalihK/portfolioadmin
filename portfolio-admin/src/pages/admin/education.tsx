@@ -75,12 +75,30 @@ export default function EducationPage() {
   const handleDeleteEducation = async (id: string) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cette formation ?')) {
       try {
+        // Récupérer l'éducation avant de la supprimer pour obtenir le chemin du fichier
+        const educationToDelete = educations.find((edu: any) => edu._id === id);
+        
         const response = await fetch(`/api/education/${id}`, {
           method: 'DELETE',
         });
 
         if (!response.ok) {
           throw new Error('Erreur lors de la suppression');
+        }
+
+        // Si l'éducation avait un fichier de diplôme, le supprimer aussi
+        if (educationToDelete && (educationToDelete as unknown as { diplomaFile?: string }).diplomaFile) {
+          const fileResponse = await fetch('/api/upload', {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ filePath: (educationToDelete as any).diplomaFile }),
+          });
+
+          if (!fileResponse.ok) {
+            console.error('Erreur lors de la suppression du fichier de diplôme');
+          }
         }
 
         // Mettre à jour l'état local immédiatement après une suppression réussie
@@ -126,6 +144,21 @@ export default function EducationPage() {
                   <p className="text-gray-300">{education.degree} - {education.field}</p>
                   <p className="text-gray-400 text-sm">{education.location}</p>
                   <p className="text-gray-400 text-sm mt-2">{education.description}</p>
+                  {education.isDiplomaPassed && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className="text-green-400 text-sm">✓ Diplôme obtenu</span>
+                      {education.diplomaFile && (
+                        <a 
+                          href={education.diplomaFile}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:text-blue-500 text-sm underline"
+                        >
+                          Voir le certificat
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <button
