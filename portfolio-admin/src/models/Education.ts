@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IEducation extends Document {
   school: string;
@@ -8,22 +8,52 @@ export interface IEducation extends Document {
   endDate?: Date;
   description: string;
   location: string;
-  isVisible: boolean;
   isCurrentlyStudying: boolean;
+  isDiplomaPassed: boolean;
+  diplomaFile?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const EducationSchema = new Schema({
-  school: { type: String, required: true },
-  degree: { type: String, required: true },
-  field: { type: String, required: true },
-  startDate: { type: Date, required: true },
-  endDate: { type: Date },
-  description: { type: String },
-  location: { type: String },
-  isVisible: { type: Boolean, default: true },
-  isCurrentlyStudying: { type: Boolean, default: false },
+  school: {
+    type: String,
+    required: true,
+  },
+  degree: {
+    type: String,
+    required: true,
+  },
+  field: {
+    type: String,
+    required: true,
+  },
+  startDate: {
+    type: Date,
+    required: true,
+  },
+  endDate: {
+    type: Date,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  location: {
+    type: String,
+    required: true,
+  },
+  isCurrentlyStudying: {
+    type: Boolean,
+    default: false,
+  },
+  isDiplomaPassed: {
+    type: Boolean,
+    default: false,
+  },
+  diplomaFile: {
+    type: String,
+  }
 }, {
   timestamps: true
 });

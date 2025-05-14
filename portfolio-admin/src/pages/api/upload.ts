@@ -2,8 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from './auth/[...nextauth]';
 import formidable from 'formidable';
-import fs from 'fs';
 import path from 'path';
+import fs from 'fs/promises';
 
 export const config = {
   api: {
@@ -13,56 +13,45 @@ export const config = {
 
 const uploadDir = path.join(process.cwd(), 'public', 'uploads');
 
-// Assurer que le dossier uploads existe
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
-
-  if (!session) {
-    return res.status(401).json({ error: 'Non autorisé' });
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Méthode non autorisée' });
-  }
-
   try {
+    // Check authentication
+    const session = await getServerSession(req, res, authOptions);
+    if (!session) {
+      return res.status(401).json({ error: 'Non autorisé' });
+    }
+
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Méthode non autorisée' });
+    }
+
+    // Ensure upload directory exists
+    await fs.mkdir(uploadDir, { recursive: true });
+
     const form = formidable({
       uploadDir,
       keepExtensions: true,
-      maxFileSize: 5 * 1024 * 1024, // 5MB
+      maxFileSize: 5 * 1024 * 1024, // 5MB limit
     });
 
-    const [fields, files] = await form.parse(req);
-    const file = files.image?.[0];
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        return res.status(400).json({ error: 'Erreur lors du téléchargement du fichier' });
+      }
 
-    if (!file) {
-      return res.status(400).json({ error: 'Aucun fichier fourni' });
-    }
+      const file = files.image?.[0];
+      if (!file) {
+        return res.status(400).json({ error: 'Aucun fichier trouvé' });
+      }
 
-    // Vérifier le type de fichier
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.mimetype || '')) {
-      fs.unlinkSync(file.filepath); // Supprimer le fichier non valide
-      return res.status(400).json({ error: 'Type de fichier non autorisé' });
-    }
+      // Generate public URL for the file
+      const fileName = file.newFilename;
+      const publicUrl = `/uploads/${fileName}`;
 
-    // Générer un nom de fichier unique
-    const fileName = `${Date.now()}-${file.originalFilename}`;
-    const newPath = path.join(uploadDir, fileName);
-
-    // Renommer le fichier
-    fs.renameSync(file.filepath, newPath);
-
-    // Retourner l'URL relative du fichier
-    const fileUrl = `/uploads/${fileName}`;
-    return res.status(200).json({ url: fileUrl });
-
+      res.status(200).json({ url: publicUrl });
+    });
   } catch (error) {
-    console.error('Erreur lors de l\'upload:', error);
-    return res.status(500).json({ error: 'Erreur lors de l\'upload du fichier' });
+    console.error('Error in upload handler:', error);
+    res.status(500).json({ error: 'Erreur serveur interne' });
   }
 }

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import { FiX, FiCalendar, FiBook, FiMapPin } from 'react-icons/fi';
+import { toast } from 'react-hot-toast';
 
 interface EducationModalProps {
   isOpen: boolean;
@@ -14,6 +15,9 @@ interface EducationModalProps {
     endDate?: string;
     description: string;
     location: string;
+    isCurrentlyStudying?: boolean;
+    isDiplomaPassed?: boolean;
+    diplomaFile?: string;
   };
 }
 
@@ -26,13 +30,72 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
     endDate: education?.endDate || '',
     description: education?.description || '',
     location: education?.location || '',
-    isCurrentlyStudying: false
+    isCurrentlyStudying: education?.isCurrentlyStudying || false,
+    isDiplomaPassed: education?.isDiplomaPassed || false,
+    diplomaFile: education?.diplomaFile || ''
   });
+
+  // Ajout de useEffect pour mettre à jour le formulaire quand education change
+  useEffect(() => {
+    if (education) {
+      setFormData({
+        school: education.school || '',
+        degree: education.degree || '',
+        field: education.field || '',
+        startDate: education.startDate || '',
+        endDate: education.endDate || '',
+        description: education.description || '',
+        location: education.location || '',
+        isCurrentlyStudying: education.isCurrentlyStudying || false,
+        isDiplomaPassed: education.isDiplomaPassed || false,
+        diplomaFile: education.diplomaFile || ''
+      });
+    } else {
+      // Réinitialiser le formulaire si pas d'éducation
+      setFormData({
+        school: '',
+        degree: '',
+        field: '',
+        startDate: '',
+        endDate: '',
+        description: '',
+        location: '',
+        isCurrentlyStudying: false,
+        isDiplomaPassed: false,
+        diplomaFile: ''
+      });
+    }
+  }, [education]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await onSubmit(formData);
     onClose();
+  };
+
+  const handleFileUpload = async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload file');
+      }
+
+      const data = await response.json();
+      setFormData(prev => ({
+        ...prev,
+        diplomaFile: data.url
+      }));
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast.error('Error uploading diploma file');
+    }
   };
 
   return (
@@ -84,18 +147,32 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <FiMapPin className="inline-block mr-2" />
-                  Localisation
+                  Domaine d'études
                 </label>
                 <input
                   type="text"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  value={formData.field}
+                  onChange={(e) => setFormData({ ...formData, field: e.target.value })}
                   className="w-full px-4 py-2 bg-[#2A2A2A] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="Ex: Paris, France"
+                  placeholder="Ex: Informatique"
                   required
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                <FiMapPin className="inline-block mr-2" />
+                Localisation
+              </label>
+              <input
+                type="text"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                className="w-full px-4 py-2 bg-[#2A2A2A] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                placeholder="Ex: Paris, France"
+                required
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -155,6 +232,52 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                 placeholder="Décrivez votre formation..."
                 required
               />
+            </div>
+
+            <div className="mt-4">
+              <div className="flex items-center gap-4">
+                <label className="inline-flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.isDiplomaPassed}
+                    onChange={(e) => setFormData({ ...formData, isDiplomaPassed: e.target.checked })}
+                    className="form-checkbox rounded bg-[#2A2A2A] text-blue-500 border-gray-700"
+                  />
+                  <span className="ml-2 text-sm text-gray-300">Diplôme obtenu</span>
+                </label>
+              </div>
+
+              {formData.isDiplomaPassed && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Certificat de diplôme
+                  </label>
+                  <input
+                    type="file"
+                    accept=".pdf,image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        // Ici, vous devrez implémenter la logique pour télécharger le fichier
+                        handleFileUpload(file);
+                      }
+                    }}
+                    className="w-full px-4 py-2 bg-[#2A2A2A] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                  {formData.diplomaFile && (
+                    <div className="mt-2">
+                      <a 
+                        href={formData.diplomaFile} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-500"
+                      >
+                        Voir le certificat
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
