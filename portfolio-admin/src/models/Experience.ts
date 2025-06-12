@@ -24,6 +24,10 @@ const experienceSchema = new mongoose.Schema({
     default: false,
   },
   description: String,
+  technologies: {
+    type: [String],
+    default: [],
+  },
   isVisible: {
     type: Boolean,
     default: true,

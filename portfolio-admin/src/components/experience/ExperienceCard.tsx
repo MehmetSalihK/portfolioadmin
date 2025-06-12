@@ -34,7 +34,7 @@ const ExperienceCard = ({ experience }: ExperienceCardProps) => {
   };
 
   const formatDate = (date: string) => {
-    return format(new Date(date), 'MMM yyyy', { locale: getLocale() });
+    return format(new Date(date), 'MMMM yyyy', { locale: getLocale() });
   };
 
   return (

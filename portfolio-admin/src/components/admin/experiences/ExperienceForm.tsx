@@ -15,6 +15,7 @@ interface ExperienceFormData {
   isVisible: boolean;
   companyUrl?: string;
   isCurrentPosition?: boolean;
+  technologies: string[];
 }
 
 export default function ExperienceForm({ onSubmit, initialData }: ExperienceFormProps) {
@@ -28,7 +29,10 @@ export default function ExperienceForm({ onSubmit, initialData }: ExperienceForm
     isVisible: initialData?.isVisible ?? true,
     companyUrl: initialData?.companyUrl || '',
     isCurrentPosition: initialData?.isCurrentPosition || false,
+    technologies: initialData?.technologies || [],
   });
+
+  const [newTechnology, setNewTechnology] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +67,56 @@ export default function ExperienceForm({ onSubmit, initialData }: ExperienceForm
             placeholder="Ex: Google"
             required
           />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Technologies
+        </label>
+        <div className="flex gap-2 mb-2 flex-wrap">
+          {formData.technologies.map((tech, index) => (
+            <span
+              key={index}
+              className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm flex items-center gap-2"
+            >
+              {tech}
+              <button
+                type="button"
+                onClick={() => setFormData({
+                  ...formData,
+                  technologies: formData.technologies.filter((_, i) => i !== index)
+                })}
+                className="hover:text-blue-200"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newTechnology}
+            onChange={(e) => setNewTechnology(e.target.value)}
+            className="flex-1 bg-[#2E2E2E] text-white rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
+            placeholder="Ajouter une technologie"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              if (newTechnology.trim()) {
+                setFormData({
+                  ...formData,
+                  technologies: [...formData.technologies, newTechnology.trim()]
+                });
+                setNewTechnology('');
+              }
+            }}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Ajouter
+          </button>
         </div>
       </div>
 
@@ -176,4 +230,4 @@ export default function ExperienceForm({ onSubmit, initialData }: ExperienceForm
       </div>
     </form>
   );
-} 
+}

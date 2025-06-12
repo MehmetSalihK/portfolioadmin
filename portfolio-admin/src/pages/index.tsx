@@ -713,7 +713,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                         {experience.title}
                       </h3>
                       <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {experience.startDate} - {experience.endDate || 'Present'}
+                        {new Date(experience.startDate).toLocaleDateString('fr-FR', { month: '2-digit', year: 'numeric' }).replace('/', '-')} - {experience.endDate ? new Date(experience.endDate).toLocaleDateString('fr-FR', { month: '2-digit', year: 'numeric' }).replace('/', '-') : 'Présent'}
                       </span>
                     </div>
                     <p className="text-gray-600 dark:text-gray-300 mb-2">
@@ -900,7 +900,12 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     }
 
     const projects = await Project.find({}).lean();
-    const experiences = await Experience.find({}).sort({ startDate: -1 }).lean();
+    const experiences = await Experience.find({}).sort({ startDate: -1 }).select('title company location startDate endDate description technologies').lean();
+    // Ensure technologies is an array, even if undefined
+    const experiencesWithTechnologies = experiences.map(exp => ({
+      ...exp,
+      technologies: exp.technologies || []
+    }));
     
     // Récupérer les catégories visibles sans doublons
     const allCategories = await SkillCategory.find({ isVisible: true })
@@ -937,7 +942,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     return {
       props: {
         projects: JSON.parse(JSON.stringify(projects)),
-        experiences: JSON.parse(JSON.stringify(experiences)),
+        experiences: JSON.parse(JSON.stringify(experiencesWithTechnologies)),
         skills: JSON.parse(JSON.stringify(skills)),
         homeData: JSON.parse(JSON.stringify(homeData)),
         skillsByCategory: JSON.parse(JSON.stringify(skillsByCategory)),

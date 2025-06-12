@@ -21,7 +21,7 @@ interface ExperienceSectionProps {
 
 export default function ExperienceSection({ experiences }: ExperienceSectionProps) {
   const formatDate = (date: string) => {
-    return format(new Date(date), 'MMM yyyy', { locale: fr });
+    return format(new Date(date), 'MMMM yyyy', { locale: fr });
   };
 
   return (
