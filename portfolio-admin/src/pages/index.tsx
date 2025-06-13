@@ -219,13 +219,43 @@ export default function Home({ projects, experiences, skills, homeData = default
   const [showBanner, setShowBanner] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const formattedProjects = projects.map(project => ({
-    ...project,
-    image: project.imageUrl
-  }));
+  // État pour la modale
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<any>(null);
+
+  // Limiter à 3 projets les plus visités (on peut utiliser featured ou un autre critère)
+  const formattedProjects = projects
+    .sort((a, b) => {
+      // Prioriser les projets featured, puis par ordre de création
+      if (a.featured && !b.featured) return -1;
+      if (!a.featured && b.featured) return 1;
+      return 0;
+    })
+    .slice(0, 3)
+    .map(project => ({
+      ...project,
+      image: project.imageUrl
+    }));
 
   const scrollToContent = () => {
     mainRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Fonctions pour gérer la modale
+  const openModal = (project: any) => {
+    setSelectedProject(project);
+    setIsModalOpen(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedProject(null);
+    document.body.style.overflow = 'unset';
+  };
+
+  const handleModalContentClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
   };
 
   const trackClick = async (projectId: string, type: 'demo' | 'github' | 'view') => {
@@ -859,7 +889,17 @@ export default function Home({ projects, experiences, skills, homeData = default
                       {project.title}
                     </h3>
                     <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
-                      {project.description}
+                      {project.description.length > 100 
+                        ? `${project.description.substring(0, 100)}...` 
+                        : project.description}
+                      {project.description.length > 100 && (
+                        <button
+                          onClick={() => openModal(project)}
+                          className="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium underline transition-colors duration-200"
+                        >
+                          lire plus
+                        </button>
+                      )}
                     </p>
 
                     <div className="flex flex-wrap gap-2 mb-6">
@@ -930,6 +970,101 @@ export default function Home({ projects, experiences, skills, homeData = default
                   De nouveaux projets passionnants arrivent bientôt. Restez connecté !
                 </p>
               </motion.div>
+            )}
+            
+            {/* Modal pour afficher les détails du projet */}
+            {isModalOpen && selectedProject && (
+              <div 
+                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+                onClick={closeModal}
+              >
+                <div 
+                  className="bg-white dark:bg-gray-800 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+                  onClick={handleModalContentClick}
+                >
+                  {/* Header avec bouton de fermeture */}
+                  <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {selectedProject.title}
+                    </h2>
+                    <button
+                      onClick={closeModal}
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors duration-200"
+                    >
+                      <FiX className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                    </button>
+                  </div>
+                  
+                  {/* Contenu de la modale */}
+                  <div className="p-6">
+                    {/* Image du projet */}
+                    <div className="mb-6">
+                      <Image
+                        src={selectedProject.imageUrl}
+                        alt={selectedProject.title}
+                        width={800}
+                        height={400}
+                        className="w-full h-64 object-cover rounded-lg"
+                      />
+                    </div>
+                    
+                    {/* Description complète */}
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                        Description
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                        {selectedProject.description}
+                      </p>
+                    </div>
+                    
+                    {/* Technologies */}
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                        Technologies utilisées
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedProject.technologies.map((tech: string, index: number) => (
+                          <span
+                            key={index}
+                            className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* Liens */}
+                    <div className="flex gap-4">
+                      {selectedProject.demoUrl && (
+                        <a
+                          href={selectedProject.demoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => handleDemoClick(selectedProject._id, selectedProject.demoUrl)}
+                          className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200"
+                        >
+                          <FiExternalLink className="w-5 h-5" />
+                          Voir la démo
+                        </a>
+                      )}
+                      {selectedProject.githubUrl && (
+                        <a
+                          href={selectedProject.githubUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => handleGithubClick(selectedProject._id, selectedProject.githubUrl)}
+                          className="flex items-center gap-2 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors duration-200"
+                        >
+                          <FiGithub className="w-5 h-5" />
+                          Voir le code
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </section>
