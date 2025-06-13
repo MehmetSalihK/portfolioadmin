@@ -1362,7 +1362,39 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       homeData = defaultHomeData;
     }
 
-    const projects = await Project.find({}).lean();
+    // Récupérer les projets sélectionnés pour la page d'accueil
+    const projects = await Project.aggregate([
+      {
+        $match: { 
+          archived: { $ne: true },
+          showOnHomepage: true
+        }
+      },
+      {
+        $addFields: {
+          totalClicks: {
+            $add: [
+              { $ifNull: ['$stats.demoClicks', 0] },
+              { $ifNull: ['$stats.githubClicks', 0] },
+              { $ifNull: ['$stats.views', 0] }
+            ]
+          }
+        }
+      },
+      {
+        $sort: { 
+          featured: -1,  // Projets featured en premier
+          totalClicks: -1,  // Puis par popularité
+          order: 1  // Puis par ordre défini
+        }
+      },
+      {
+        $limit: 6  // Augmenter la limite à 6 projets
+      }
+    ]);
+    
+    // Utiliser directement les 3 projets les plus populaires de la base de données
+    const allProjects = projects;
     const experiences = await Experience.find({}).sort({ startDate: -1 }).select('title company location startDate endDate description technologies').lean();
     // Ensure technologies is an array, even if undefined
     const experiencesWithTechnologies = experiences.map(exp => ({
@@ -1404,7 +1436,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
 
     return {
       props: {
-        projects: JSON.parse(JSON.stringify(projects)),
+        projects: JSON.parse(JSON.stringify(allProjects)),
         experiences: JSON.parse(JSON.stringify(experiencesWithTechnologies)),
         skills: JSON.parse(JSON.stringify(skills)),
         homeData: JSON.parse(JSON.stringify(homeData)),

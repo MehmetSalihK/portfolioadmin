@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiPlus, FiX, FiEye, FiGithub, FiExternalLink, FiStar, FiEdit2, FiTrash2, FiLoader, FiFolder, FiUpload } from 'react-icons/fi';
+import GitHubSync from '@/components/admin/github/GitHubSync';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 
@@ -22,6 +23,7 @@ interface Project {
   demoUrl?: string;
   githubUrl?: string;
   featured: boolean;
+  showOnHomepage: boolean;
 }
 
 export default function ProjectsPage() {
@@ -40,7 +42,8 @@ export default function ProjectsPage() {
     imageUrl: '',
     demoUrl: '',
     githubUrl: '',
-    featured: false
+    featured: false,
+    showOnHomepage: true
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -109,7 +112,8 @@ export default function ProjectsPage() {
       imageUrl: project.imageUrl,
       demoUrl: project.demoUrl || '',
       githubUrl: project.githubUrl || '',
-      featured: project.featured
+      featured: project.featured,
+      showOnHomepage: project.showOnHomepage ?? true
     });
     setSelectedSkills(project.technologies);
     setIsModalOpen(true);
@@ -138,6 +142,30 @@ export default function ProjectsPage() {
     }
   };
 
+  const handleToggleHomepage = async (projectId: string, currentStatus: boolean) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          showOnHomepage: !currentStatus,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update project');
+      }
+
+      await fetchProjects();
+      toast.success(`Projet ${!currentStatus ? 'affiché sur' : 'retiré de'} la page d'accueil`);
+    } catch (error) {
+      console.error('Error updating project:', error);
+      toast.error('Erreur lors de la mise à jour du projet');
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       title: '',
@@ -145,7 +173,8 @@ export default function ProjectsPage() {
       imageUrl: '',
       demoUrl: '',
       githubUrl: '',
-      featured: false
+      featured: false,
+      showOnHomepage: true
     });
     setSelectedSkills([]);
     setEditingProject(null);
@@ -270,13 +299,20 @@ export default function ProjectsPage() {
           </motion.button>
         </div>
 
+        {/* GitHub Synchronization */}
+        <div className="mb-8">
+          <GitHubSync />
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
             <motion.div
               key={project._id}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="group relative bg-gradient-to-br from-[#1E1E1E] to-[#252525] rounded-xl overflow-hidden"
+              className={`group relative bg-gradient-to-br from-[#1E1E1E] to-[#252525] rounded-xl overflow-hidden transition-all duration-300 ${
+                !project.showOnHomepage ? 'opacity-50 grayscale' : ''
+              }`}
             >
               {/* Image Container avec overlay */}
               <div className="relative aspect-video overflow-hidden">
@@ -293,6 +329,22 @@ export default function ProjectsPage() {
                 
                 {/* Boutons d'action flottants */}
                 <div className="absolute top-3 right-3 flex gap-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleToggleHomepage(project._id, project.showOnHomepage);
+                    }}
+                    disabled={isDeleting === project._id}
+                    className={`p-2.5 rounded-lg backdrop-blur-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      project.showOnHomepage 
+                        ? 'bg-green-500/20 hover:bg-green-500/30 text-green-400 hover:text-green-300'
+                        : 'bg-gray-500/20 hover:bg-gray-500/30 text-gray-400 hover:text-gray-300'
+                    }`}
+                    title={project.showOnHomepage ? 'Retirer de la page d\'accueil' : 'Afficher sur la page d\'accueil'}
+                  >
+                    <FiEye className="w-4 h-4" />
+                  </button>
                   <button
                     onClick={(e) => {
                       e.preventDefault();
@@ -321,15 +373,21 @@ export default function ProjectsPage() {
                   </button>
                 </div>
 
-                {/* Badge Featured */}
-                {project.featured && (
-                  <div className="absolute top-3 left-3 z-20">
+                {/* Badges */}
+                <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
+                  {project.featured && (
                     <div className="px-2.5 py-1 rounded-full bg-yellow-500/20 backdrop-blur-md text-yellow-300 text-xs font-medium flex items-center gap-1">
                       <FiStar className="w-3 h-3" />
                       Featured
                     </div>
-                  </div>
-                )}
+                  )}
+                  {project.showOnHomepage && (
+                    <div className="px-2.5 py-1 rounded-full bg-green-500/20 backdrop-blur-md text-green-300 text-xs font-medium flex items-center gap-1">
+                      <FiEye className="w-3 h-3" />
+                      Homepage
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Contenu */}
@@ -660,17 +718,31 @@ export default function ProjectsPage() {
                     />
                   </div>
 
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      name="featured"
-                      checked={formData.featured}
-                      onChange={handleChange}
-                      className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-500"
-                    />
-                    <label className="ml-2 text-sm text-gray-300">
-                      Featured Project
-                    </label>
+                  <div className="flex items-center gap-6">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="featured"
+                        checked={formData.featured}
+                        onChange={handleChange}
+                        className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-500"
+                      />
+                      <label className="ml-2 text-sm text-gray-300">
+                        Featured Project
+                      </label>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="showOnHomepage"
+                        checked={formData.showOnHomepage}
+                        onChange={handleChange}
+                        className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-500"
+                      />
+                      <label className="ml-2 text-sm text-gray-300">
+                        Afficher sur la page d'accueil
+                      </label>
+                    </div>
                   </div>
 
                   <div className="flex justify-end gap-3 pt-4">

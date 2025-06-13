@@ -52,6 +52,25 @@ const StatsSchema = new mongoose.Schema({
   dailyStats: [DailyStatsSchema],
 });
 
+const GitHubDataSchema = new mongoose.Schema({
+  language: {
+    type: String,
+    default: null,
+  },
+  stars: {
+    type: Number,
+    default: 0,
+  },
+  forks: {
+    type: Number,
+    default: 0,
+  },
+  lastUpdated: {
+    type: Date,
+    default: null,
+  },
+});
+
 const ProjectSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -80,6 +99,26 @@ const ProjectSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  isFromGitHub: {
+    type: Boolean,
+    default: false,
+  },
+  githubData: {
+    type: GitHubDataSchema,
+    default: null,
+  },
+  lastSyncedAt: {
+    type: Date,
+    default: null,
+  },
+  archived: {
+    type: Boolean,
+    default: false,
+  },
+  archivedAt: {
+    type: Date,
+    default: null,
+  },
   stats: {
     type: StatsSchema,
     default: () => ({
@@ -94,6 +133,10 @@ const ProjectSchema = new mongoose.Schema({
   order: {
     type: Number,
     default: 0,
+  },
+  showOnHomepage: {
+    type: Boolean,
+    default: true,
   },
 }, {
   timestamps: true,

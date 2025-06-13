@@ -44,6 +44,11 @@ Portfolio Admin est une solution "no-code" pour gérer votre portfolio en ligne.
   - Upload d'images avec prévisualisation
   - Organisation par drag & drop (à venir)
   - Gestion des catégories
+  - **Affichage modal interactif**
+    - Modales pour visualiser les détails complets
+    - Prévention de l'interaction avec l'arrière-plan
+    - Fermeture intuitive (clic extérieur ou bouton X)
+    - Animations fluides et design responsive
 
 - 📝 **Gestion du Contenu**
   - Éditeur de texte riche intuitif
@@ -161,6 +166,9 @@ RESEND_EMAIL=votre_email_resend
 portfolio-admin/
 ├── src/
 │   ├── components/      # Composants réutilisables
+│   │   ├── ProjectCard.tsx        # Carte de projet avec modal
+│   │   ├── EnhancedProjectCard.tsx # Version améliorée avec modal
+│   │   └── ...                    # Autres composants
 │   ├── pages/          # Pages et API routes
 │   ├── styles/         # Styles globaux
 │   ├── lib/           # Utilitaires et configurations
@@ -203,6 +211,16 @@ portfolio-admin/
   - Gestion des liens sociaux
 - Upload d'images basique
 - Structure de base de données MongoDB
+- **Affichage avancé des projets**
+  - Modales interactives pour les détails complets des projets
+  - Boutons "Lire plus" stylisés (bleu et soulignés)
+  - Affichage des images en grand format dans les modales
+  - Description complète avec technologies et liens
+  - Prévention de l'interaction avec l'arrière-plan
+  - Fermeture par clic extérieur ou bouton de fermeture
+  - Animations fluides et design responsive
+  - Support du mode sombre
+  - Blocage du défilement de la page lors de l'ouverture des modales
 
 ### 🔄 En Cours de Développement
 - Interface d'administration complète

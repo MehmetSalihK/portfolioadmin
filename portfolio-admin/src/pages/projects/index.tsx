@@ -54,7 +54,10 @@ export default function Projects({ projects }: ProjectsPageProps) {
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
   try {
     await connectDB();
-    const projects = await Project.find({}).sort({ order: 1 }).lean();
+    const projects = await Project.find({ 
+      showOnHomepage: true,
+      archived: { $ne: true }
+    }).sort({ order: 1 }).lean();
 
     return {
       props: {
