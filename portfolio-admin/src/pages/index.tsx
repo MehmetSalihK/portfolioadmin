@@ -1575,8 +1575,11 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       return acc;
     }, []);
 
-    // Récupérer les compétences non masquées
-    const skills = await Skill.find({ isHidden: false })
+    // Récupérer les compétences non masquées avec categoryId valide
+    const skills = await Skill.find({ 
+      isHidden: false,
+      categoryId: { $exists: true, $ne: null }
+    })
       .populate('categoryId')
       .lean();
 
