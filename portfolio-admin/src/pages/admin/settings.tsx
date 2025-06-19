@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/layouts/AdminLayout';
@@ -13,7 +13,8 @@ import {
   FiTwitter, 
   FiFileText,
   FiSettings,
-  FiPhone
+  FiPhone,
+  FiMapPin
 } from 'react-icons/fi';
 import { FaWhatsapp, FaTelegram } from 'react-icons/fa';
 
@@ -22,6 +23,7 @@ interface Settings {
   siteDescription: string;
   email: string;
   phone: string;
+  position: string;
   github: string;
   linkedin: string;
   twitter: string;
@@ -44,6 +46,7 @@ export default function SettingsPage() {
       siteDescription: '',
       email: '',
       phone: '',
+      position: '',
       github: '',
       linkedin: '',
       twitter: '',
@@ -52,6 +55,11 @@ export default function SettingsPage() {
     };
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [positionSuggestions, setPositionSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const positionInputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -80,7 +88,63 @@ export default function SettingsPage() {
     };
     setSettings(newSettings);
     localStorage.setItem('adminSettings', JSON.stringify(newSettings));
+    
+    // Auto-complétion pour le champ position
+    if (name === 'position' && value.length >= 2) {
+      searchAddresses(value);
+    } else if (name === 'position' && value.length < 2) {
+      setPositionSuggestions([]);
+      setShowSuggestions(false);
+    }
   };
+
+  // Fonction pour rechercher des adresses
+  const searchAddresses = async (query: string) => {
+    setIsLoadingSuggestions(true);
+    try {
+      const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5`);
+      const data = await response.json();
+      
+      if (data.features) {
+        const suggestions = data.features.map((feature: any) => {
+          const city = feature.properties.city;
+          const postcode = feature.properties.postcode;
+          return `${city}, ${postcode}`;
+        });
+        setPositionSuggestions(suggestions);
+        setShowSuggestions(true);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la recherche d\'adresses:', error);
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  };
+
+  // Sélectionner une suggestion
+  const selectSuggestion = (suggestion: string) => {
+    const newSettings = {
+      ...settings,
+      position: suggestion
+    };
+    setSettings(newSettings);
+    localStorage.setItem('adminSettings', JSON.stringify(newSettings));
+    setShowSuggestions(false);
+    setPositionSuggestions([]);
+  };
+
+  // Fermer les suggestions quand on clique ailleurs
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node) &&
+          positionInputRef.current && !positionInputRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -197,6 +261,55 @@ export default function SettingsPage() {
                   onChange={handleChange}
                   className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
+              </motion.div>
+
+              <motion.div
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.55 }}
+                className="relative"
+              >
+                <label className="block text-gray-400 text-sm font-medium mb-2">
+                  <div className="flex items-center gap-2">
+                    <FiMapPin className="text-blue-500" />
+                    Position
+                    {isLoadingSuggestions && (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                    )}
+                  </div>
+                </label>
+                <input
+                  ref={positionInputRef}
+                  type="text"
+                  name="position"
+                  value={settings.position}
+                  onChange={handleChange}
+                  placeholder="Ex: Nogent-sur-Oise, 60180"
+                  className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  autoComplete="off"
+                />
+                {showSuggestions && positionSuggestions.length > 0 && (
+                  <div
+                    ref={suggestionsRef}
+                    className="absolute z-10 w-full mt-1 bg-[#252525] border border-[#2A2A2A] rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                  >
+                    {positionSuggestions.map((suggestion, index) => (
+                      <div
+                        key={index}
+                        onClick={() => selectSuggestion(suggestion)}
+                        className="px-3 py-2 text-white hover:bg-[#2A2A2A] cursor-pointer border-b border-[#2A2A2A] last:border-b-0"
+                      >
+                        <div className="flex items-center gap-2">
+                          <FiMapPin className="text-blue-500 text-sm" />
+                          <span className="text-sm">{suggestion}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Tapez au moins 2 caractères pour voir les suggestions d'adresses françaises
+                </p>
               </motion.div>
 
               <motion.div

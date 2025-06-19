@@ -9,7 +9,8 @@ const SettingsSchema = new mongoose.Schema({
   linkedin: String,
   twitter: String,
   whatsapp: String,
-  telegram: String
+  telegram: String,
+  position: String
 }, { timestamps: true });
 
-export default mongoose.models.Settings || mongoose.model('Settings', SettingsSchema); 
+export default mongoose.models.Settings || mongoose.model('Settings', SettingsSchema);

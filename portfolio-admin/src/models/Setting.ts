@@ -5,6 +5,7 @@ export interface ISetting extends Document {
   siteDescription: string;
   email: string;
   phone: string;
+  position: string;
   github: string;
   linkedin: string;
   twitter: string;
@@ -26,6 +27,10 @@ const settingSchema = new mongoose.Schema({
     default: 'contact@mehmetsalihk.fr'
   },
   phone: {
+    type: String,
+    default: ''
+  },
+  position: {
     type: String,
     default: ''
   },
@@ -53,4 +58,4 @@ const settingSchema = new mongoose.Schema({
 
 const Setting = mongoose.models.Setting || mongoose.model<ISetting>('Setting', settingSchema);
 
-export default Setting; 
+export default Setting;

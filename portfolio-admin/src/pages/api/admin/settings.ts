@@ -20,14 +20,28 @@ export default async function handler(
       await connectDB();
       console.log('Received data:', req.body);
 
-      // Créer ou mettre à jour les settings
+      // Créer ou mettre à jour les settings dans le modèle Setting (utilisé par la page contact)
+      await Setting.findOneAndUpdate(
+        {},
+        {
+          ...req.body,
+          phone: req.body.phone || '',
+          whatsapp: req.body.whatsapp || '',
+          telegram: req.body.telegram || '',
+          position: req.body.position || ''
+        },
+        { upsert: true, new: true }
+      );
+
+      // Créer ou mettre à jour les settings dans le modèle Settings (pour compatibilité)
       const settings = await Settings.findOneAndUpdate(
         {},
         {
           ...req.body,
           phone: req.body.phone || '',
           whatsapp: req.body.whatsapp || '',
-          telegram: req.body.telegram || ''
+          telegram: req.body.telegram || '',
+          position: req.body.position || ''
         },
         { upsert: true, new: true }
       );
@@ -84,4 +98,4 @@ export default async function handler(
   }
 
   return res.status(405).json({ message: 'Method not allowed' });
-} 
+}
