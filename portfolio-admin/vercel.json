@@ -4,10 +4,8 @@
       "maxDuration": 30
     }
   },
-  "build": {
-    "env": {
-      "ADMIN_EMAIL": "@admin_email",
-      "ADMIN_PASSWORD": "@admin_password"
-    }
+  "env": {
+    "ADMIN_EMAIL": "sketur60@admin.msk",
+    "ADMIN_PASSWORD": "EdaMirray.1302/&"
   }
 }
