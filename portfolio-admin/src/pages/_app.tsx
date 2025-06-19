@@ -5,6 +5,7 @@ import { SessionProvider } from 'next-auth/react';
 import { appWithTranslation } from 'next-i18next';
 import { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/router';
+import { Analytics } from '@vercel/analytics/next';
 import Navbar from '@/components/layout/Navbar';
 import AutoSync from '@/components/admin/AutoSync';
 
@@ -24,6 +25,7 @@ function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
         </div>
       </ThemeProvider>
       <Toaster position="bottom-right" />
+      <Analytics />
     </SessionProvider>
   );
 }
