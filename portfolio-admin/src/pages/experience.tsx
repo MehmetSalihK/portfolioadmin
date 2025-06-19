@@ -1,5 +1,5 @@
-import { GetStaticProps } from 'next';
 import Head from 'next/head';
+import { GetStaticProps } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
 import Layout from '@/components/layout/Layout';
@@ -23,7 +23,7 @@ interface ExperiencePageProps {
   }>;
 }
 
-export default function Experiences({ experiences }: ExperiencePageProps) {
+export default function Experiences({ experiences = [] }: ExperiencePageProps) {
   const { t } = useTranslation('experience');
 
   return (
@@ -46,7 +46,7 @@ export default function Experiences({ experiences }: ExperiencePageProps) {
 
               {/* Experience cards */}
               <div className="space-y-12">
-                {experiences.map((experience) => (
+                {experiences && experiences.length > 0 ? experiences.map((experience) => (
                   <div
                     key={experience._id}
                     className="relative"
@@ -58,7 +58,11 @@ export default function Experiences({ experiences }: ExperiencePageProps) {
                       <ExperienceCard experience={experience} />
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <div className="text-center py-12">
+                    <p className="text-gray-600 dark:text-gray-400">{t('noExperiences', 'Aucune expérience disponible pour le moment.')}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

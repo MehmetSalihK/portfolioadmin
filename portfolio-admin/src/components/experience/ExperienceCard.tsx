@@ -1,8 +1,8 @@
-import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useTranslation } from 'next-i18next';
 import { format } from 'date-fns';
 import { fr, enUS, tr } from 'date-fns/locale';
+import { motion } from 'framer-motion';
 
 interface ExperienceCardProps {
   experience: {
@@ -76,7 +76,7 @@ const ExperienceCard = ({ experience }: ExperienceCardProps) => {
             {experience.description}
           </p>
 
-          {experience.achievements.length > 0 && (
+          {experience.achievements && experience.achievements.length > 0 && (
             <div className="mb-4">
               <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
                 {t('achievements')}:
@@ -89,7 +89,7 @@ const ExperienceCard = ({ experience }: ExperienceCardProps) => {
             </div>
           )}
 
-          {experience.technologies.length > 0 && (
+          {experience.technologies && experience.technologies.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {experience.technologies.map((tech, index) => (
                 <span

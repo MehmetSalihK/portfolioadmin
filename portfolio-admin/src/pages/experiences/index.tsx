@@ -1,9 +1,11 @@
-import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import Layout from '@/components/layouts/Layout';
 import { FiBriefcase, FiMapPin, FiCalendar, FiLink, FiClock } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { useTheme } from 'next-themes';
+import { GetStaticProps } from 'next';
+import connectDB from '@/lib/db';
+import Experience from '@/models/Experience';
 
 interface Experience {
   _id: string;
@@ -149,12 +151,14 @@ export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
 
 export const getStaticProps: GetStaticProps = async () => {
   try {
-    const response = await fetch(`http://localhost:3000/api/experiences`);
-    const experiences = await response.json();
+    await connectDB();
+    const experiences = await Experience.find({})
+      .sort({ startDate: -1, order: -1 })
+      .lean();
 
     return {
       props: {
-        experiences
+        experiences: JSON.parse(JSON.stringify(experiences))
       },
       revalidate: 60
     };
