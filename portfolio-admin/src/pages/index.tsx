@@ -7,6 +7,7 @@ import Layout from '@/components/layout/Layout';
 import Button from '@/components/ui/Button';
 import EnhancedProjectCard from '@/components/projects/EnhancedProjectCard';
 import ParticlesBackground from '@/components/effects/ParticlesBackground';
+import CVModal from '@/components/modals/CVModal';
 import connectDB from '@/lib/db';
 import Project from '@/models/Project';
 import Experience from '@/models/Experience';
@@ -32,7 +33,7 @@ import {
   FaCode
 } from 'react-icons/fa';
 import { HiArrowDown } from 'react-icons/hi';
-import { FiExternalLink, FiGithub, FiSettings, FiCode, FiStar, FiAlertTriangle, FiX } from 'react-icons/fi';
+import { FiExternalLink, FiGithub, FiSettings, FiCode, FiStar, FiAlertTriangle, FiX, FiDownload, FiFileText } from 'react-icons/fi';
 import parse from 'html-react-parser';
 import { 
   SiTypescript, 
@@ -232,6 +233,7 @@ export default function Home({ projects, experiences, skills, homeData = default
   // État pour la modale
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [isCVModalOpen, setIsCVModalOpen] = useState(false);
 
   // Limiter à 3 projets les plus visités (on peut utiliser featured ou un autre critère)
   const formattedProjects = projects
@@ -623,6 +625,20 @@ export default function Home({ projects, experiences, skills, homeData = default
               >
                 Me contacter
               </Link>
+            </motion.div>
+            
+            <motion.div
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <button
+                onClick={() => setIsCVModalOpen(true)}
+                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform"
+              >
+                <FiFileText className="mr-2 w-5 h-5" />
+                <span>Voir mon CV</span>
+              </button>
             </motion.div>
           </motion.div>
 
@@ -1499,6 +1515,12 @@ export default function Home({ projects, experiences, skills, homeData = default
           </div>
         </section>
       </main>
+      
+      {/* CV Modal */}
+      <CVModal 
+        isOpen={isCVModalOpen} 
+        onClose={() => setIsCVModalOpen(false)} 
+      />
     </Layout>
   );
 }
