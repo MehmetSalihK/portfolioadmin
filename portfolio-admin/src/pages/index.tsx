@@ -7,6 +7,7 @@ import Layout from '@/components/layout/Layout';
 import Button from '@/components/ui/Button';
 import EnhancedProjectCard from '@/components/projects/EnhancedProjectCard';
 import ParticlesBackground from '@/components/effects/ParticlesBackground';
+import { Analytics } from "@vercel/analytics/next"
 import CVModal from '@/components/modals/CVModal';
 import connectDB from '@/lib/db';
 import Project from '@/models/Project';
