@@ -1,19 +1,15 @@
-import { useTranslation } from 'next-i18next';
-
 interface ProjectFiltersProps {
   currentFilter: string;
   onFilterChange: (filter: string) => void;
 }
 
 const ProjectFilters = ({ currentFilter, onFilterChange }: ProjectFiltersProps) => {
-  const { t } = useTranslation('projects');
-
   const filters = [
-    { id: 'all', label: t('filters.all') },
-    { id: 'featured', label: t('filters.featured') },
-    { id: 'web', label: t('filters.web') },
-    { id: 'mobile', label: t('filters.mobile') },
-    { id: 'other', label: t('filters.other') },
+    { id: 'all', label: 'Tous' },
+    { id: 'featured', label: 'Mis en avant' },
+    { id: 'web', label: 'Web' },
+    { id: 'mobile', label: 'Mobile' },
+    { id: 'other', label: 'Autres' },
   ];
 
   return (

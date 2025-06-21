@@ -1,4 +1,3 @@
-import { useTranslation } from 'next-i18next';
 import SkillCard from './SkillCard';
 
 interface Skill {
@@ -14,12 +13,10 @@ interface SkillCategoryProps {
 }
 
 const SkillCategory = ({ category, skills }: SkillCategoryProps) => {
-  const { t } = useTranslation('skills');
-
   return (
     <div className="mb-12">
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-        {t(`categories.${category}`)}
+        {category}
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {skills.map((skill) => (

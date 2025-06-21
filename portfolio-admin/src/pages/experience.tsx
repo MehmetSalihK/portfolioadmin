@@ -1,7 +1,5 @@
 import Head from 'next/head';
 import { GetStaticProps } from 'next';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { useTranslation } from 'next-i18next';
 import Layout from '@/components/layout/Layout';
 import ExperienceCard from '@/components/experience/ExperienceCard';
 import connectDB from '@/lib/db';
@@ -24,19 +22,17 @@ interface ExperiencePageProps {
 }
 
 export default function Experiences({ experiences = [] }: ExperiencePageProps) {
-  const { t } = useTranslation('experience');
-
   return (
     <Layout>
       <Head>
-        <title>{t('title')} - Portfolio</title>
-        <meta name="description" content={t('description')} />
+        <title>Expériences - Portfolio</title>
+        <meta name="description" content="Découvrez mon parcours professionnel et mes expériences" />
       </Head>
 
       <div className="min-h-screen bg-gradient-to-b from-primary-50 to-white dark:from-gray-900 dark:to-gray-800">
         <div className="container mx-auto px-4 py-24">
           <h1 className="text-4xl md:text-5xl font-bold text-center text-gray-900 dark:text-white mb-12">
-            {t('title')}
+            Mes Expériences
           </h1>
 
           <div className="max-w-4xl mx-auto">
@@ -60,7 +56,7 @@ export default function Experiences({ experiences = [] }: ExperiencePageProps) {
                   </div>
                 )) : (
                   <div className="text-center py-12">
-                    <p className="text-gray-600 dark:text-gray-400">{t('noExperiences', 'Aucune expérience disponible pour le moment.')}</p>
+                    <p className="text-gray-600 dark:text-gray-400">Aucune expérience disponible pour le moment.</p>
                   </div>
                 )}
               </div>
@@ -81,7 +77,6 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
 
     return {
       props: {
-        ...(await serverSideTranslations(locale ?? 'fr', ['common', 'experience'])),
         experiences: JSON.parse(JSON.stringify(experiences)),
       },
       revalidate: 60,
@@ -90,7 +85,6 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     console.error('Error fetching experiences:', error);
     return {
       props: {
-        ...(await serverSideTranslations(locale ?? 'fr', ['common', 'experience'])),
         experiences: [],
       },
       revalidate: 60,

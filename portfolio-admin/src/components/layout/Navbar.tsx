@@ -8,7 +8,7 @@ const navItems = [
   { name: 'Accueil', path: '/', icon: FiHome },
   { name: 'À propos', path: '/about', icon: FiUser },
   { name: 'Projets', path: '/projects', icon: FiCode },
-  { name: 'Compétences', path: '/skills', icon: FiAward },
+  { name: 'Formations', path: '/formations', icon: FiAward },
   { name: 'Expériences', path: '/experiences', icon: FiBriefcase },
   { name: 'Contact', path: '/contact', icon: FiMail },
 ];
@@ -116,4 +116,4 @@ export default function Navbar() {
       </nav>
     </div>
   );
-} 
+}

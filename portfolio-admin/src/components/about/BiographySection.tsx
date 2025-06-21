@@ -1,30 +1,27 @@
 import { motion } from 'framer-motion';
-import { useTranslation } from 'next-i18next';
 import { FaGraduationCap, FaBriefcase, FaCode, FaHeart } from 'react-icons/fa';
 
 const BiographySection = () => {
-  const { t } = useTranslation('about');
-
   const sections = [
     {
       icon: <FaGraduationCap className="w-6 h-6" />,
-      title: t('biography.education.title'),
-      content: t('biography.education.content')
+      title: "Formation",
+      content: "Diplômé en informatique avec une spécialisation en développement web et mobile."
     },
     {
       icon: <FaBriefcase className="w-6 h-6" />,
-      title: t('biography.experience.title'),
-      content: t('biography.experience.content')
+      title: "Expérience",
+      content: "Plusieurs années d'expérience dans le développement d'applications web modernes."
     },
     {
       icon: <FaCode className="w-6 h-6" />,
-      title: t('biography.skills.title'),
-      content: t('biography.skills.content')
+      title: "Compétences",
+      content: "Maîtrise des technologies front-end et back-end, avec une passion pour l'innovation."
     },
     {
       icon: <FaHeart className="w-6 h-6" />,
-      title: t('biography.interests.title'),
-      content: t('biography.interests.content')
+      title: "Passions",
+      content: "Passionné par la technologie, l'apprentissage continu et la création de solutions innovantes."
     }
   ];
 
@@ -42,7 +39,7 @@ const BiographySection = () => {
           transition={{ delay: 0.2 }}
           className="text-4xl font-bold text-gray-900 dark:text-white mb-4"
         >
-          {t('biography.title')}
+          Biographie
         </motion.h1>
         <motion.p
           initial={{ opacity: 0 }}
@@ -50,7 +47,7 @@ const BiographySection = () => {
           transition={{ delay: 0.4 }}
           className="text-xl text-gray-600 dark:text-gray-300"
         >
-          {t('biography.introduction')}
+          Découvrez mon parcours, mes compétences et mes passions
         </motion.p>
       </div>
 
@@ -85,16 +82,16 @@ const BiographySection = () => {
         className="mt-12 text-center"
       >
         <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-6">
-          {t('biography.values.title')}
+          Mes Valeurs
         </h3>
         <div className="grid md:grid-cols-3 gap-6">
-          {Array.from({ length: 3 }).map((_, index) => (
+          {['Innovation', 'Qualité', 'Collaboration'].map((value, index) => (
             <div
               key={index}
               className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg"
             >
               <p className="text-gray-600 dark:text-gray-300">
-                {t(`biography.values.list.${index}`)}
+                {value}
               </p>
             </div>
           ))}

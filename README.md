@@ -56,6 +56,13 @@ Portfolio Admin est une solution "no-code" pour gérer votre portfolio en ligne.
   - Modification des sections de la page d'accueil
   - Personnalisation des liens sociaux
 
+- 📄 **Affichage du CV**
+  - **Modale CV interactive** : Visualisation du CV directement sur la page d'accueil
+  - **Aperçu intégré** : Affichage du PDF dans une iframe sans quitter la page
+  - **Actions rapides** : Boutons pour télécharger ou ouvrir dans un nouvel onglet
+  - **Design responsive** : Interface adaptée à tous les écrans
+  - **Expérience utilisateur optimisée** : Animations fluides et fermeture intuitive
+
 ## 💻 Interface d'Administration
 
 L'interface d'administration vous permet de :
@@ -86,6 +93,27 @@ Notre éditeur de texte riche permet de :
 - Optimisation des images
 - Gestion de la galerie
 
+### 5. Affichage du CV
+- **Modale interactive** : Le CV s'affiche dans une modale élégante
+- **Visualisation directe** : Aperçu du PDF sans quitter la page d'accueil
+- **Actions utilisateur** : Téléchargement et ouverture dans un nouvel onglet
+- **Interface moderne** : Design cohérent avec le thème du site
+- **Accessibilité** : Navigation au clavier et fermeture intuitive
+
+### 6. Gestion de la Position Géographique
+- **Auto-complétion intelligente** : Suggestions d'adresses françaises en temps réel
+- **Interface intuitive** : Saisie facilitée avec suggestions contextuelles
+- **Validation automatique** : Format d'adresse standardisé
+- **Affichage dynamique** : Position mise à jour instantanément sur le site
+- **Géolocalisation** : Support des codes postaux et villes françaises
+
+### 7. Analytics et Suivi
+- **Vercel Analytics** : Suivi automatique des visiteurs et pages vues
+- **Données en temps réel** : Statistiques de trafic instantanées
+- **Respect de la vie privée** : Analytics sans cookies tiers
+- **Performance optimisée** : Impact minimal sur les performances du site
+- **Intégration transparente** : Configuration automatique sans intervention
+
 Toutes ces modifications se font directement depuis l'interface d'administration, sans avoir besoin de toucher au code !
 
 ## 🛠 Technologies
@@ -102,6 +130,9 @@ Le projet utilise les technologies suivantes :
   - MongoDB
   - NextAuth.js
   - API Routes Next.js
+
+- **Analytics**
+  - Vercel Analytics
 
 - **Outils**
   - ESLint
@@ -168,6 +199,8 @@ portfolio-admin/
 │   ├── components/      # Composants réutilisables
 │   │   ├── ProjectCard.tsx        # Carte de projet avec modal
 │   │   ├── EnhancedProjectCard.tsx # Version améliorée avec modal
+│   │   ├── modals/
+│   │   │   └── CVModal.tsx        # Modale d'affichage du CV
 │   │   └── ...                    # Autres composants
 │   ├── pages/          # Pages et API routes
 │   ├── styles/         # Styles globaux

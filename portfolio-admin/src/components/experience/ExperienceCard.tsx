@@ -1,7 +1,6 @@
 import Image from 'next/image';
-import { useTranslation } from 'next-i18next';
 import { format } from 'date-fns';
-import { fr, enUS, tr } from 'date-fns/locale';
+import { fr } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 
 interface ExperienceCardProps {
@@ -20,17 +19,8 @@ interface ExperienceCardProps {
 }
 
 const ExperienceCard = ({ experience }: ExperienceCardProps) => {
-  const { t, i18n } = useTranslation('experience');
-
   const getLocale = () => {
-    switch (i18n.language) {
-      case 'fr':
-        return fr;
-      case 'tr':
-        return tr;
-      default:
-        return enUS;
-    }
+    return fr;
   };
 
   const formatDate = (date: string) => {
@@ -69,7 +59,7 @@ const ExperienceCard = ({ experience }: ExperienceCardProps) => {
           
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             {experience.location} • {formatDate(experience.startDate)} - {' '}
-            {experience.current ? t('present') : formatDate(experience.endDate!)}
+            {experience.current ? 'Présent' : formatDate(experience.endDate!)}
           </p>
 
           <p className="text-gray-700 dark:text-gray-300 mb-4">
@@ -79,7 +69,7 @@ const ExperienceCard = ({ experience }: ExperienceCardProps) => {
           {experience.achievements && experience.achievements.length > 0 && (
             <div className="mb-4">
               <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                {t('achievements')}:
+                Réalisations:
               </h4>
               <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
                 {experience.achievements.map((achievement, index) => (

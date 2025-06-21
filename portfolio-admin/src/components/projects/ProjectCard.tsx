@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { FaGithub, FaExternalLinkAlt, FaTimes } from 'react-icons/fa';
-import { useTranslation } from 'next-i18next';
 import { useState } from 'react';
 
 interface ProjectCardProps {
@@ -16,7 +15,6 @@ interface ProjectCardProps {
 }
 
 const ProjectCard = ({ project }: ProjectCardProps) => {
-  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Fonction pour tronquer le texte

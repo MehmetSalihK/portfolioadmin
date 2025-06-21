@@ -14,10 +14,7 @@ import {
   FiFileText,
   FiSettings,
   FiPhone,
-  FiMapPin,
-  FiUpload,
-  FiDownload,
-  FiTrash2
+  FiMapPin
 } from 'react-icons/fi';
 import { FaWhatsapp, FaTelegram } from 'react-icons/fa';
 
@@ -63,17 +60,10 @@ export default function SettingsPage() {
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const positionInputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
-  const [currentCV, setCurrentCV] = useState<any>(null);
-  const [isUploadingCV, setIsUploadingCV] = useState(false);
-  const [selectedCVFile, setSelectedCVFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/admin/login');
-    } else {
-      fetchSettings();
-      fetchCurrentCV();
     }
   }, [status, router]);
 
@@ -90,77 +80,6 @@ export default function SettingsPage() {
     }
   };
 
-  const fetchCurrentCV = async () => {
-    try {
-      const response = await fetch('/api/admin/cv');
-      if (response.ok) {
-        const data = await response.json();
-        setCurrentCV(data);
-      }
-    } catch (error) {
-      console.error('Error fetching CV:', error);
-    }
-  };
-
-  const handleCVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Vérifier le type de fichier
-    if (!['application/pdf', 'image/png', 'image/jpeg'].includes(file.type)) {
-      toast.error('Seuls les fichiers PDF, PNG et JPEG sont acceptés');
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      return;
-    }
-
-    // Vérifier la taille (10MB max)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('Le fichier ne doit pas dépasser 10MB');
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      return;
-    }
-
-    // Stocker le fichier sélectionné sans l'uploader
-    setSelectedCVFile(file);
-    toast('Fichier sélectionné. Cliquez sur "Save Changes" pour sauvegarder.', {
-      icon: 'ℹ️',
-      style: {
-        background: '#3b82f6',
-        color: '#ffffff',
-      },
-    });
-  };
-
-  const handleCVDelete = async () => {
-    if (!currentCV) return;
-
-    try {
-      const response = await fetch('/api/admin/cv', {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setCurrentCV(null);
-        toast.success('CV supprimé avec succès!');
-      } else {
-        toast.error('Erreur lors de la suppression');
-      }
-    } catch (error) {
-      console.error('Error deleting CV:', error);
-      toast.error('Erreur lors de la suppression');
-    }
-  };
-
-  const handleCVDownload = () => {
-    if (currentCV) {
-      window.open(`/uploads/cv/${currentCV.filename}`, '_blank');
-    }
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     const newSettings = {
@@ -168,6 +87,7 @@ export default function SettingsPage() {
       [name]: value
     };
     setSettings(newSettings);
+    localStorage.setItem('adminSettings', JSON.stringify(newSettings));
     
     // Auto-complétion pour le champ position
     if (name === 'position' && value.length >= 2) {
@@ -208,6 +128,7 @@ export default function SettingsPage() {
       position: suggestion
     };
     setSettings(newSettings);
+    localStorage.setItem('adminSettings', JSON.stringify(newSettings));
     setShowSuggestions(false);
     setPositionSuggestions([]);
   };
@@ -228,55 +149,25 @@ export default function SettingsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    
     try {
-      // Sauvegarder les paramètres
-      const settingsResponse = await fetch('/api/admin/settings', {
+      const response = await fetch('/api/admin/settings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(settings),
       });
-      
-      if (!settingsResponse.ok) {
+      if (response.ok) {
+        localStorage.setItem('adminSettings', JSON.stringify(settings));
+        toast.success('Settings updated successfully!');
+      } else {
         toast.error('Failed to update settings');
-        return;
       }
-      
-      // Uploader le CV si un fichier a été sélectionné
-      if (selectedCVFile) {
-        setIsUploadingCV(true);
-        const formData = new FormData();
-        formData.append('cv', selectedCVFile);
-        
-        const cvResponse = await fetch('/api/admin/cv', {
-          method: 'POST',
-          body: formData,
-        });
-        
-        if (cvResponse.ok) {
-          const data = await cvResponse.json();
-          setCurrentCV(data.cv);
-          setSelectedCVFile(null);
-          if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-          }
-        } else {
-          toast.error('Erreur lors de l\'upload du CV');
-          return;
-        }
-      }
-      
-      localStorage.setItem('adminSettings', JSON.stringify(settings));
-      toast.success('Settings updated successfully!');
-      
     } catch (error) {
       console.error('Error updating settings:', error);
       toast.error('An error occurred while saving');
     } finally {
       setIsSaving(false);
-      setIsUploadingCV(false);
     }
   };
 
@@ -540,139 +431,6 @@ export default function SettingsPage() {
                 rows={4}
                 className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
-            </motion.div>
-
-            {/* Section CV */}
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.9 }}
-              className="col-span-1 md:col-span-2"
-            >
-              <label className="block text-gray-400 text-sm font-medium mb-4">
-                <div className="flex items-center gap-2">
-                  <FiFileText className="text-blue-500" />
-                  CV / Curriculum Vitae
-                </div>
-              </label>
-              
-              <div className="bg-[#2A2A2A] rounded-lg p-4 border border-[#3A3A3A]">
-                {/* CV actuel */}
-                {currentCV && (
-                  <div className="mb-4">
-                    <p className="text-gray-400 text-sm mb-2">CV actuel :</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                          <FiFileText className="text-white" />
-                        </div>
-                        <div>
-                          <p className="text-white font-medium">{currentCV.originalName}</p>
-                          <p className="text-gray-400 text-sm">
-                            {(currentCV.size / 1024 / 1024).toFixed(2)} MB • 
-                            {new Date(currentCV.uploadDate).toLocaleDateString('fr-FR')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={handleCVDownload}
-                          className="p-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-                          title="Télécharger"
-                        >
-                          <FiDownload className="w-4 h-4" />
-                        </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={handleCVDelete}
-                          className="p-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-                          title="Supprimer"
-                        >
-                          <FiTrash2 className="w-4 h-4" />
-                        </motion.button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Fichier sélectionné en attente */}
-                {selectedCVFile && (
-                  <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded">
-                    <p className="text-yellow-400 text-sm mb-2">Nouveau fichier sélectionné (en attente de sauvegarde) :</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
-                          <FiFileText className="text-white text-sm" />
-                        </div>
-                        <div>
-                          <p className="text-white font-medium">{selectedCVFile.name}</p>
-                          <p className="text-gray-400 text-sm">
-                            {(selectedCVFile.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                        </div>
-                      </div>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => {
-                          setSelectedCVFile(null);
-                          if (fileInputRef.current) {
-                            fileInputRef.current.value = '';
-                          }
-                        }}
-                        className="p-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-                        title="Annuler la sélection"
-                      >
-                        <FiTrash2 className="w-3 h-3" />
-                      </motion.button>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Bouton de sélection */}
-                {!currentCV && !selectedCVFile ? (
-                  <div className="text-center py-8">
-                    <FiUpload className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                    <p className="text-gray-400 mb-4">Aucun CV uploadé</p>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                    >
-                      Choisir un fichier
-                    </motion.button>
-                  </div>
-                ) : (
-                  <div className={currentCV ? "pt-4 border-t border-[#3A3A3A]" : ""}>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                    >
-                      {selectedCVFile ? 'Choisir un autre fichier' : (currentCV ? 'Remplacer le CV' : 'Choisir un fichier')}
-                    </motion.button>
-                  </div>
-                )}
-                
-
-                
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf,.png,.jpg,.jpeg"
-                  onChange={handleCVUpload}
-                  className="hidden"
-                />
-                
-                <p className="text-gray-500 text-xs mt-2">
-                  Formats acceptés: PDF, PNG, JPEG • Taille max: 10MB
-                </p>
-              </div>
             </motion.div>
           </form>
         </motion.div>

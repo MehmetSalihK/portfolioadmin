@@ -1,8 +1,6 @@
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Head from 'next/head';
 import { GetStaticProps } from 'next';
-import { useTranslation } from 'next-i18next';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Layout from '@/components/layout/Layout';
 import Button from '@/components/ui/Button';
 import EnhancedProjectCard from '@/components/projects/EnhancedProjectCard';
@@ -225,7 +223,6 @@ interface Skill {
 }
 
 export default function Home({ projects, experiences, skills, homeData = defaultHomeData, skillsByCategory, settings }: HomePageProps) {
-  const { t } = useTranslation(['common', 'home']);
   const { scrollYProgress } = useScroll();
   const mainRef = useRef<HTMLDivElement>(null);
   const [showBanner, setShowBanner] = useState(true);
@@ -1627,7 +1624,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
         homeData: JSON.parse(JSON.stringify(homeData)),
         skillsByCategory: JSON.parse(JSON.stringify(skillsByCategory)),
         settings: JSON.parse(JSON.stringify(settings)),
-        ...(await serverSideTranslations(currentLocale, ['common', 'home', 'projects', 'experiences'])),
+
       },
       revalidate: 1,
     };
@@ -1641,7 +1638,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
         homeData: defaultHomeData,
         skillsByCategory: [],
         settings: { email: '', linkedin: '', phone: '' },
-        ...(await serverSideTranslations(currentLocale, ['common', 'home', 'projects', 'experiences'])),
+
       },
       revalidate: 1,
     };
