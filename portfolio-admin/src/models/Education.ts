@@ -10,6 +10,7 @@ export interface IEducation extends Document {
   location: string;
   isCurrentlyStudying: boolean;
   isDiplomaPassed: boolean;
+  isDiplomaNotObtained: boolean;
   diplomaFile?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -51,10 +52,12 @@ const EducationSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  isDiplomaNotObtained: {
+    type: Boolean,
+    default: false,
+  },
   diplomaFile: {
-    filename: String,
-    contentType: String,
-    data: Buffer
+    type: String
   }
 }, {
   timestamps: true

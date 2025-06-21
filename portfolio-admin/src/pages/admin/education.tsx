@@ -15,6 +15,12 @@ export default function EducationPage() {
 
   const handleAddEducation = async (formData: any) => {
     try {
+      // Debug: Afficher les données envoyées
+      console.log('Données envoyées à l\'API:', formData);
+      console.log('isDiplomaNotObtained:', formData.isDiplomaNotObtained);
+      console.log('isDiplomaPassed:', formData.isDiplomaPassed);
+      console.log('isCurrentlyStudying:', formData.isCurrentlyStudying);
+      
       // Si nous avons un selectedEducation, c'est une modification
       if (selectedEducation) {
         const response = await fetch(`/api/education/${(selectedEducation as any)._id}`, {
@@ -64,6 +70,16 @@ export default function EducationPage() {
       const response = await fetch('/api/education');  // Retiré le 's'
       if (response.ok) {
         const data = await response.json();
+        console.log('Données récupérées de la DB:', data);
+        // Debug: Vérifier les statuts de chaque formation
+        data.forEach((edu: any, index: number) => {
+          console.log(`Formation ${index}:`, {
+            school: edu.school,
+            isDiplomaNotObtained: edu.isDiplomaNotObtained,
+            isDiplomaPassed: edu.isDiplomaPassed,
+            isCurrentlyStudying: edu.isCurrentlyStudying
+          });
+        });
         setEducations(data);
       }
     } catch (error) {
@@ -143,22 +159,41 @@ export default function EducationPage() {
                   <h3 className="text-lg font-semibold text-white">{education.school}</h3>
                   <p className="text-gray-300">{education.degree} - {education.field}</p>
                   <p className="text-gray-400 text-sm">{education.location}</p>
+                  <div className="text-gray-400 text-sm mt-1">
+                    {education.startDate && (
+                      <span>
+                        {new Date(education.startDate).toLocaleDateString('fr-FR', { month: '2-digit', year: 'numeric' })}
+                        {education.endDate && !education.isCurrentlyStudying && (
+                          <span> - {new Date(education.endDate).toLocaleDateString('fr-FR', { month: '2-digit', year: 'numeric' })}</span>
+                        )}
+                        {education.isCurrentlyStudying && <span> - En cours</span>}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-gray-400 text-sm mt-2">{education.description}</p>
-                  {education.isDiplomaPassed && (
-                    <div className="mt-2 flex items-center gap-2">
-                      <span className="text-green-400 text-sm">✓ Diplôme obtenu</span>
-                      {education.diplomaFile && (
-                        <a 
-                          href={education.diplomaFile}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-400 hover:text-blue-500 text-sm underline"
-                        >
-                          Voir le certificat
-                        </a>
-                      )}
-                    </div>
-                  )}
+                  <div className="mb-2">
+                    {education.isCurrentlyStudying ? (
+                      <span className="text-blue-400 text-sm animate-pulse bg-yellow-400/20 px-2 py-1 rounded-md shadow-lg shadow-yellow-400/30">📚 En cours</span>
+                    ) : education.isDiplomaPassed ? (
+                      <>
+                        <span className="text-green-400 text-sm animate-pulse bg-yellow-400/20 px-2 py-1 rounded-md shadow-lg shadow-yellow-400/30">✓ Diplôme obtenu</span>
+                        {education.diplomaFile && (
+                          <a 
+                            href={education.diplomaFile}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 hover:text-blue-500 text-sm underline ml-2"
+                          >
+                            Voir le certificat
+                          </a>
+                        )}
+                      </>
+                    ) : education.isDiplomaNotObtained ? (
+                      <span className="text-red-400 text-sm animate-pulse bg-yellow-400/20 px-2 py-1 rounded-md shadow-lg shadow-yellow-400/30">✗ Diplôme non obtenu</span>
+                    ) : (
+                      <span className="text-gray-400 text-sm">Statut non défini</span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <button

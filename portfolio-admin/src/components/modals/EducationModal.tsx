@@ -17,21 +17,32 @@ interface EducationModalProps {
     location: string;
     isCurrentlyStudying?: boolean;
     isDiplomaPassed?: boolean;
+    isDiplomaNotObtained?: boolean;
     diplomaFile?: string;
   };
 }
 
 export default function EducationModal({ isOpen, onClose, onSubmit, education }: EducationModalProps) {
+  // Fonction pour formater une date en format YYYY-MM pour les inputs de type month
+  const formatDateForInput = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  };
+
   const [formData, setFormData] = useState({
     school: education?.school || '',
     degree: education?.degree || '',
     field: education?.field || '',
-    startDate: education?.startDate || '',
-    endDate: education?.endDate || '',
+    startDate: formatDateForInput(education?.startDate || '') || '',
+    endDate: formatDateForInput(education?.endDate || '') || '',
     description: education?.description || '',
     location: education?.location || '',
     isCurrentlyStudying: education?.isCurrentlyStudying || false,
     isDiplomaPassed: education?.isDiplomaPassed || false,
+    isDiplomaNotObtained: education?.isDiplomaNotObtained || false,
     diplomaFile: education?.diplomaFile || ''
   });
 
@@ -42,12 +53,13 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
         school: education.school || '',
         degree: education.degree || '',
         field: education.field || '',
-        startDate: education.startDate || '',
-        endDate: education.endDate || '',
+        startDate: formatDateForInput(education.startDate) || '',
+        endDate: formatDateForInput(education.endDate || '') || '',
         description: education.description || '',
         location: education.location || '',
         isCurrentlyStudying: education.isCurrentlyStudying || false,
         isDiplomaPassed: education.isDiplomaPassed || false,
+        isDiplomaNotObtained: education.isDiplomaNotObtained || false,
         diplomaFile: education.diplomaFile || ''
       });
     } else {
@@ -62,6 +74,7 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
         location: '',
         isCurrentlyStudying: false,
         isDiplomaPassed: false,
+        isDiplomaNotObtained: false,
         diplomaFile: ''
       });
     }
@@ -182,7 +195,7 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                   Date de début
                 </label>
                 <input
-                  type="date"
+                  type="month"
                   value={formData.startDate}
                   onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                   className="w-full px-4 py-2 bg-[#2A2A2A] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
@@ -195,7 +208,7 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                   Date de fin
                 </label>
                 <input
-                  type="date"
+                  type="month"
                   value={formData.endDate}
                   onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                   className="w-full px-4 py-2 bg-[#2A2A2A] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
@@ -206,16 +219,19 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                     <input
                       type="checkbox"
                       checked={formData.isCurrentlyStudying}
+                      disabled={formData.isDiplomaPassed || formData.isDiplomaNotObtained}
                       onChange={(e) => {
                         setFormData({
                           ...formData,
                           isCurrentlyStudying: e.target.checked,
-                          endDate: e.target.checked ? '' : formData.endDate
+                          endDate: e.target.checked ? '' : formData.endDate,
+                          isDiplomaPassed: e.target.checked ? false : formData.isDiplomaPassed,
+                          isDiplomaNotObtained: e.target.checked ? false : formData.isDiplomaNotObtained
                         });
                       }}
-                      className="form-checkbox rounded bg-[#2A2A2A] text-blue-500 border-gray-700"
+                      className="form-checkbox rounded bg-[#2A2A2A] text-blue-500 border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
-                    <span className="ml-2 text-sm text-gray-300">En cours</span>
+                    <span className={`ml-2 text-sm ${(formData.isDiplomaPassed || formData.isDiplomaNotObtained) ? 'text-gray-500' : 'text-gray-300'}`}>En cours</span>
                   </label>
                 </div>
               </div>
@@ -235,16 +251,38 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
             </div>
 
             <div className="mt-4">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 flex-wrap">
                 <label className="inline-flex items-center">
                   <input
                     type="checkbox"
                     checked={formData.isDiplomaPassed}
-                    onChange={(e) => setFormData({ ...formData, isDiplomaPassed: e.target.checked })}
-                    className="form-checkbox rounded bg-[#2A2A2A] text-blue-500 border-gray-700"
+                    disabled={formData.isCurrentlyStudying || formData.isDiplomaNotObtained}
+                    onChange={(e) => setFormData({ 
+                      ...formData, 
+                      isDiplomaPassed: e.target.checked,
+                      isCurrentlyStudying: e.target.checked ? false : formData.isCurrentlyStudying,
+                      isDiplomaNotObtained: e.target.checked ? false : formData.isDiplomaNotObtained
+                    })}
+                    className="form-checkbox rounded bg-[#2A2A2A] text-blue-500 border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
-                  <span className="ml-2 text-sm text-gray-300">Diplôme obtenu</span>
+                  <span className={`ml-2 text-sm ${(formData.isCurrentlyStudying || formData.isDiplomaNotObtained) ? 'text-gray-500' : 'text-gray-300'}`}>Diplôme obtenu</span>
                 </label>
+                
+                <label className="inline-flex items-center">
+                   <input
+                     type="checkbox"
+                     checked={formData.isDiplomaNotObtained}
+                     disabled={formData.isCurrentlyStudying || formData.isDiplomaPassed}
+                     onChange={(e) => setFormData({ 
+                       ...formData, 
+                       isDiplomaNotObtained: e.target.checked,
+                       isCurrentlyStudying: e.target.checked ? false : formData.isCurrentlyStudying,
+                       isDiplomaPassed: e.target.checked ? false : formData.isDiplomaPassed
+                     })}
+                     className="form-checkbox rounded bg-[#2A2A2A] text-blue-500 border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                   />
+                   <span className={`ml-2 text-sm ${(formData.isCurrentlyStudying || formData.isDiplomaPassed) ? 'text-gray-500' : 'text-gray-300'}`}>Diplôme non obtenu</span>
+                 </label>
               </div>
 
               {formData.isDiplomaPassed && (

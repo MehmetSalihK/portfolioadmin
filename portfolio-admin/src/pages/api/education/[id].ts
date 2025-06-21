@@ -18,11 +18,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   switch (req.method) {
     case 'PUT':
       try {
+        // Debug: Afficher les données reçues
+        console.log('Données reçues dans l\'API PUT:', req.body);
+        
         const updatedEducation = await Education.findByIdAndUpdate(
           id,
           req.body,
           { new: true }
         );
+        
+        // Debug: Afficher ce qui a été sauvegardé
+        console.log('Formation mise à jour:', updatedEducation);
+        
         if (!updatedEducation) {
           return res.status(404).json({ error: 'Formation non trouvée' });
         }
