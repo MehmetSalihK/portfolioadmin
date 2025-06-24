@@ -124,7 +124,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const form = formidable({
         uploadDir: isVercel ? '/tmp' : certificatesDir,
         keepExtensions: true,
-        maxFileSize: isVercel ? 8 * 1024 * 1024 : 50 * 1024 * 1024, // 8MB sur Vercel, 50MB en local
+        maxFileSize: isVercel ? 12 * 1024 * 1024 : 50 * 1024 * 1024, // 12MB sur Vercel, 50MB en local
         filter: ({ mimetype }) => {
           return mimetype === 'application/pdf' || 
                  mimetype === 'image/png' || 

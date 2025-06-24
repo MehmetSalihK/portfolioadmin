@@ -118,10 +118,10 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
       return;
     }
 
-    // Validation de la taille (max 8MB pour compatibilité Vercel)
-    const maxSize = 8 * 1024 * 1024; // 8MB
+    // Validation de la taille (max 12MB pour compatibilité Vercel)
+    const maxSize = 12 * 1024 * 1024; // 12MB
     if (file.size > maxSize) {
-      toast.error('Le fichier est trop volumineux. Taille maximale : 8MB.');
+      toast.error('Le fichier est trop volumineux. Taille maximale : 12MB.');
       return;
     }
 
