@@ -6,7 +6,14 @@ import mongoose from 'mongoose';
 import path from 'path';
 import fs from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
-import sharp from 'sharp';
+// Import sharp de manière optionnelle
+let sharp: any;
+try {
+  sharp = require('sharp');
+} catch (error) {
+  console.warn('Sharp non disponible, le floutage sera désactivé');
+  sharp = null;
+}
 import connectDB from '@/lib/db';
 
 export const config = {
@@ -31,6 +38,13 @@ interface BlurZone {
 // Fonction pour traiter l'image avec floutage automatique des zones sensibles
 async function processImageWithBlur(inputPath: string, outputPath: string, customZones?: BlurZone[]) {
   try {
+    // Si sharp n'est pas disponible, copier le fichier original
+    if (!sharp) {
+      console.warn('Sharp non disponible, copie du fichier original sans floutage');
+      await fs.rename(inputPath, outputPath);
+      return;
+    }
+
     const image = sharp(inputPath);
     const { width, height } = await image.metadata();
     
