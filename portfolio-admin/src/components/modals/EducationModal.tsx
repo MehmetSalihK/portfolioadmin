@@ -118,12 +118,12 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
       return;
     }
 
-    // Validation de la taille (max 12MB pour compatibilité Vercel)
-    const maxSize = 12 * 1024 * 1024; // 12MB
-    if (file.size > maxSize) {
-      toast.error('Le fichier est trop volumineux. Taille maximale : 12MB.');
-      return;
-    }
+    // Validation de la taille (max 4MB pour compatibilité Vercel)
+     const maxSize = 4 * 1024 * 1024; // 4MB
+     if (file.size > maxSize) {
+       toast.error('Le fichier est trop volumineux. Taille maximale : 4MB.');
+       return;
+     }
 
     // Supprimer l'ancien fichier s'il existe
     if (formData.diplomaFilePath) {
