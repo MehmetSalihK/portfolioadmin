@@ -2,6 +2,14 @@
   "functions": {
     "src/pages/api/**/*.ts": {
       "maxDuration": 30
+    },
+    "src/pages/api/upload.ts": {
+      "maxDuration": 60
+    }
+  },
+  "api": {
+    "bodyParser": {
+      "sizeLimit": "10mb"
     }
   },
   "env": {
