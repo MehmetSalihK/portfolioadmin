@@ -23,6 +23,7 @@ interface EducationModalProps {
     diplomaFile?: string;
     diplomaFileName?: string;
     diplomaFilePath?: string;
+    diplomaData?: string;
     isBlurred?: boolean;
   };
 }
@@ -51,6 +52,7 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
     diplomaFile: education?.diplomaFile || '',
     diplomaFileName: education?.diplomaFileName || '',
     diplomaFilePath: education?.diplomaFilePath || '',
+    diplomaData: education?.diplomaData || '',
     isBlurred: education?.isBlurred || false
   });
   const [showBlurPreview, setShowBlurPreview] = useState(false);
@@ -73,6 +75,7 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
         diplomaFile: education.diplomaFile || '',
         diplomaFileName: education.diplomaFileName || '',
         diplomaFilePath: education.diplomaFilePath || '',
+        diplomaData: education.diplomaData || '',
         isBlurred: education.isBlurred || false
       });
     } else {
@@ -91,6 +94,7 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
         diplomaFile: '',
         diplomaFileName: '',
         diplomaFilePath: '',
+        diplomaData: '',
         isBlurred: false
       });
     }
@@ -133,6 +137,7 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
       diplomaFile: '',
       diplomaFileName: '',
       diplomaFilePath: '',
+      diplomaData: '',
       isBlurred: false 
     }));
     
@@ -196,7 +201,8 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
          ...prev,
          diplomaFile: data.filePath,
          diplomaFileName: data.filename,
-         diplomaFilePath: data.filePath
+         diplomaFilePath: data.filePath,
+         diplomaData: data.fileData
        }));
 
       toast.success('Certificat téléchargé avec succès!');
@@ -517,6 +523,7 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                                 diplomaFile: '',
                                 diplomaFileName: '',
                                 diplomaFilePath: '',
+                                diplomaData: '',
                                 isBlurred: false
                               }));
                             }}

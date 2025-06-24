@@ -178,18 +178,9 @@ export default function EducationPage() {
                     ) : education.isDiplomaPassed ? (
                       <>
                         <span className="text-green-400 text-sm animate-pulse bg-yellow-400/20 px-2 py-1 rounded-md shadow-lg shadow-yellow-400/30">✓ Diplôme obtenu</span>
-                        {(education.diplomaFilePath || education.diplomaFile) && (
+                        {(education.diplomaFilePath || education.diplomaFile || education.diplomaData) && (
                           <a 
-                            href={(() => {
-                              const filePath = education.diplomaFilePath || education.diplomaFile;
-                              // Si le chemin commence par /uploads/, l'utiliser tel quel
-                              if (filePath.startsWith('/uploads/')) {
-                                return filePath;
-                              }
-                              // Sinon, construire le bon chemin
-                              const filename = education.diplomaFileName || filePath.split('/').pop();
-                              return `/uploads/certificates/${filename}`;
-                            })()} 
+                            href={`/api/certificate/${education._id}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-400 hover:text-blue-500 text-sm underline ml-2 flex items-center gap-1"

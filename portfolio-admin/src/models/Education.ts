@@ -14,6 +14,7 @@ export interface IEducation extends Document {
   diplomaFile?: string;
   diplomaFileName?: string;
   diplomaFilePath?: string;
+  diplomaData?: string;
   isBlurred?: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -66,6 +67,9 @@ const EducationSchema = new Schema({
     type: String
   },
   diplomaFilePath: {
+    type: String
+  },
+  diplomaData: {
     type: String
   },
   isBlurred: {

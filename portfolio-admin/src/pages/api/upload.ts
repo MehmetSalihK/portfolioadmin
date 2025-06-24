@@ -25,6 +25,9 @@ export const config = {
 const uploadDir = path.join(process.cwd(), 'public', 'uploads');
 const certificatesDir = path.join(uploadDir, 'certificates');
 
+// Détecter si on est sur Vercel
+const isVercel = process.env.VERCEL === '1';
+
 // Interface pour les zones de floutage
 interface BlurZone {
   id: string;
@@ -108,16 +111,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (req.method === 'POST') {
-      // Créer les dossiers s'ils n'existent pas
-      if (!existsSync(uploadDir)) {
-        await fs.mkdir(uploadDir, { recursive: true });
-      }
-      if (!existsSync(certificatesDir)) {
-        await fs.mkdir(certificatesDir, { recursive: true });
+      // Créer les dossiers s'ils n'existent pas (seulement en local)
+      if (!isVercel) {
+        if (!existsSync(uploadDir)) {
+          await fs.mkdir(uploadDir, { recursive: true });
+        }
+        if (!existsSync(certificatesDir)) {
+          await fs.mkdir(certificatesDir, { recursive: true });
+        }
       }
 
       const form = formidable({
-        uploadDir: certificatesDir,
+        uploadDir: isVercel ? '/tmp' : certificatesDir,
         keepExtensions: true,
         maxFileSize: 50 * 1024 * 1024, // 50MB
         filter: ({ mimetype }) => {
@@ -147,30 +152,59 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const fileId = new mongoose.Types.ObjectId();
         const fileExtension = path.extname(file.originalFilename || '');
         const uniqueFilename = `${fileId}${fileExtension}`;
-        const finalPath = path.join(certificatesDir, uniqueFilename);
+        
+        let fileData = null;
+        let webPath = null;
 
-        // Traitement spécial pour les images (floutage des données sensibles)
-        if (file.mimetype?.startsWith('image/')) {
-          // Récupérer les zones de floutage personnalisées si fournies
-          const blurZones = fields.blurZones ? JSON.parse(fields.blurZones[0] as string) : undefined;
-          await processImageWithBlur(file.filepath, finalPath, blurZones);
+        if (isVercel) {
+          // Sur Vercel, lire le fichier et le convertir en base64
+          let processedFilePath = file.filepath;
+          
+          // Traitement spécial pour les images (floutage des données sensibles)
+          if (file.mimetype?.startsWith('image/')) {
+            const tempProcessedPath = path.join('/tmp', `processed_${uniqueFilename}`);
+            const blurZones = fields.blurZones ? JSON.parse(fields.blurZones[0] as string) : undefined;
+            await processImageWithBlur(file.filepath, tempProcessedPath, blurZones);
+            processedFilePath = tempProcessedPath;
+          }
+          
+          // Lire le fichier et le convertir en base64
+          const fileBuffer = await fs.readFile(processedFilePath);
+          fileData = fileBuffer.toString('base64');
+          
+          // Nettoyer les fichiers temporaires
+          try {
+            await fs.unlink(file.filepath);
+            if (processedFilePath !== file.filepath) {
+              await fs.unlink(processedFilePath);
+            }
+          } catch (error) {
+            console.warn('Erreur lors du nettoyage des fichiers temporaires:', error);
+          }
         } else {
-          // Pour les PDF, déplacer directement
-          await fs.rename(file.filepath, finalPath);
+          // En local, traiter et sauvegarder physiquement
+          const finalPath = path.join(certificatesDir, uniqueFilename);
+          
+          // Traitement spécial pour les images (floutage des données sensibles)
+          if (file.mimetype?.startsWith('image/')) {
+            // Récupérer les zones de floutage personnalisées si fournies
+            const blurZones = fields.blurZones ? JSON.parse(fields.blurZones[0] as string) : undefined;
+            await processImageWithBlur(file.filepath, finalPath, blurZones);
+          } else {
+            // Pour les PDF, déplacer directement
+            await fs.rename(file.filepath, finalPath);
+          }
+          
+          webPath = `/uploads/certificates/${uniqueFilename}`;
         }
-
-        // Ne plus sauvegarder automatiquement comme CV
-        // Les certificats d'éducation restent dans le dossier certificates
-
-        // Retourner le chemin relatif pour l'accès web
-        const webPath = `/uploads/certificates/${uniqueFilename}`;
 
         res.status(200).json({ 
           success: true,
           message: 'Certificat uploadé avec succès',
           fileId: fileId.toString(),
           filename: file.originalFilename,
-          filePath: webPath
+          filePath: webPath,
+          fileData: fileData
         });
       });
     } else if (req.method === 'DELETE') {
@@ -178,9 +212,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { filePath } = req.body;
       if (filePath) {
         try {
-          const fullPath = path.join(process.cwd(), 'public', filePath);
-          if (existsSync(fullPath)) {
-            await fs.unlink(fullPath);
+          // Supprimer le fichier physique seulement en local
+          if (!isVercel) {
+            const fullPath = path.join(process.cwd(), 'public', filePath);
+            if (existsSync(fullPath)) {
+              await fs.unlink(fullPath);
+            }
           }
           res.status(200).json({ message: 'Fichier supprimé avec succès' });
         } catch (error) {
