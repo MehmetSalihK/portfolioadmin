@@ -26,11 +26,20 @@ export default async function handler(
 
   if (req.method === 'POST') {
     try {
-      const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'cv');
+      // Sur Vercel, utiliser le dossier temporaire
+      const isVercel = process.env.VERCEL || process.env.NODE_ENV === 'production';
+      const uploadDir = isVercel 
+        ? '/tmp' 
+        : path.join(process.cwd(), 'public', 'uploads', 'cv');
       
-      // Créer le dossier s'il n'existe pas
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
+      // Créer le dossier s'il n'existe pas (seulement en local)
+      if (!isVercel && !fs.existsSync(uploadDir)) {
+        try {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        } catch (error) {
+          console.error('Erreur création dossier:', error);
+          return res.status(500).json({ error: 'Impossible de créer le dossier d\'upload' });
+        }
       }
 
       const form = formidable({
@@ -54,10 +63,12 @@ export default async function handler(
       // Récupérer et supprimer l'ancien CV
       const oldCV = await CV.findOne({ isActive: true });
       if (oldCV) {
-        // Supprimer le fichier physique de l'ancien CV
-        const oldFilePath = path.join(uploadDir, oldCV.filename);
-        if (fs.existsSync(oldFilePath)) {
-          fs.unlinkSync(oldFilePath);
+        // Supprimer le fichier physique de l'ancien CV (seulement en local)
+        if (!isVercel) {
+          const oldFilePath = path.join(uploadDir, oldCV.filename);
+          if (fs.existsSync(oldFilePath)) {
+            fs.unlinkSync(oldFilePath);
+          }
         }
         // Supprimer l'ancien CV de la base
         await CV.findByIdAndDelete(oldCV._id);
@@ -67,19 +78,38 @@ export default async function handler(
       const timestamp = Date.now();
       const extension = path.extname(file.originalFilename || '');
       const newFilename = `cv_${timestamp}${extension}`;
-      const newPath = path.join(uploadDir, newFilename);
-
-      // Déplacer le fichier
-      fs.renameSync(file.filepath, newPath);
+      
+      let cvData = {};
+      
+      if (isVercel) {
+        // Sur Vercel, stocker le fichier en base64
+        const fileBuffer = fs.readFileSync(file.filepath);
+        const base64Data = fileBuffer.toString('base64');
+        
+        cvData = {
+          filename: newFilename,
+          originalName: file.originalFilename,
+          mimeType: file.mimetype,
+          size: file.size,
+          data: base64Data, // Stocker en base64
+          isActive: true
+        };
+      } else {
+        // En local, déplacer le fichier
+        const newPath = path.join(uploadDir, newFilename);
+        fs.renameSync(file.filepath, newPath);
+        
+        cvData = {
+          filename: newFilename,
+          originalName: file.originalFilename,
+          mimeType: file.mimetype,
+          size: file.size,
+          isActive: true
+        };
+      }
 
       // Sauvegarder en base
-      const cvRecord = new CV({
-        filename: newFilename,
-        originalName: file.originalFilename,
-        mimeType: file.mimetype,
-        size: file.size,
-        isActive: true
-      });
+      const cvRecord = new CV(cvData);
 
       await cvRecord.save();
 
@@ -107,10 +137,13 @@ export default async function handler(
     try {
       const activeCV = await CV.findOne({ isActive: true });
       if (activeCV) {
-        // Supprimer le fichier physique
-        const filePath = path.join(process.cwd(), 'public', 'uploads', 'cv', activeCV.filename);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
+        // Supprimer le fichier physique (seulement en local)
+        const isVercel = process.env.VERCEL || process.env.NODE_ENV === 'production';
+        if (!isVercel) {
+          const filePath = path.join(process.cwd(), 'public', 'uploads', 'cv', activeCV.filename);
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
         }
         
         // Supprimer de la base

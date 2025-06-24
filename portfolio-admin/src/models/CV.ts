@@ -7,6 +7,7 @@ interface ICV {
   size: number;
   uploadDate: Date;
   isActive: boolean;
+  data?: string; // Pour stocker le fichier en base64 sur Vercel
 }
 
 const CVSchema = new mongoose.Schema<ICV>({
@@ -34,6 +35,10 @@ const CVSchema = new mongoose.Schema<ICV>({
   isActive: {
     type: Boolean,
     default: true
+  },
+  data: {
+    type: String,
+    required: false // Optionnel, utilisé seulement sur Vercel
   }
 }, {
   timestamps: true

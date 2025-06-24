@@ -21,18 +21,26 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
       };
     }
 
-    // Construire le chemin du fichier
-    const filePath = path.join(process.cwd(), 'public', 'uploads', 'cv', cv.filename);
+    const isVercel = process.env.VERCEL || process.env.NODE_ENV === 'production';
+    let fileBuffer: Buffer;
     
-    // Vérifier si le fichier existe
-    if (!fs.existsSync(filePath)) {
-      return {
-        notFound: true
-      };
+    if (isVercel && cv.data) {
+      // Sur Vercel, récupérer depuis la base64
+      fileBuffer = Buffer.from(cv.data, 'base64');
+    } else {
+      // En local, lire depuis le fichier
+      const filePath = path.join(process.cwd(), 'public', 'uploads', 'cv', cv.filename);
+      
+      // Vérifier si le fichier existe
+      if (!fs.existsSync(filePath)) {
+        return {
+          notFound: true
+        };
+      }
+      
+      // Lire le fichier
+      fileBuffer = fs.readFileSync(filePath);
     }
-
-    // Lire le fichier
-    const fileBuffer = fs.readFileSync(filePath);
     
     // Définir les en-têtes appropriés
     res.setHeader('Content-Type', cv.mimeType || 'application/pdf');
