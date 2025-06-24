@@ -4,12 +4,8 @@
       "maxDuration": 30
     },
     "src/pages/api/upload.ts": {
-      "maxDuration": 60
-    }
-  },
-  "api": {
-    "bodyParser": {
-      "sizeLimit": "10mb"
+      "maxDuration": 60,
+      "memory": 1024
     }
   },
   "env": {

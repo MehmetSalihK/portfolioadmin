@@ -10,6 +10,11 @@ const nextConfig = {
       'via.placeholder.com'
     ],
   },
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
   // Optimisations pour le développement
   webpack: (config) => {
     config.watchOptions = {
