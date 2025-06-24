@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import connectDB from '@/lib/db';
 import Education from '@/models/Education';
+import path from 'path';
+import fs from 'fs';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
@@ -20,6 +22,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       try {
         // Debug: Afficher les données reçues
         console.log('Données reçues dans l\'API PUT:', req.body);
+        
+        // Si un nouveau diplôme est uploadé, supprimer l'ancien
+        if (req.body.diplomaFilePath || req.body.diplomaFile) {
+          const existingEducation = await Education.findById(id);
+          if (existingEducation && (existingEducation.diplomaFilePath || existingEducation.diplomaFile)) {
+            const oldFilePath = existingEducation.diplomaFilePath || existingEducation.diplomaFile;
+            if (oldFilePath && oldFilePath.startsWith('/uploads/')) {
+              const fullPath = path.join(process.cwd(), 'public', oldFilePath);
+              if (fs.existsSync(fullPath)) {
+                fs.unlinkSync(fullPath);
+              }
+            }
+          }
+        }
         
         const updatedEducation = await Education.findByIdAndUpdate(
           id,

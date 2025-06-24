@@ -3,7 +3,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import EducationModal from '@/components/modals/EducationModal';
-import { FiPlus, FiBook, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiPlus, FiBook, FiEdit2, FiTrash2, FiExternalLink } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 export default function EducationPage() {
@@ -103,13 +103,14 @@ export default function EducationPage() {
         }
 
         // Si l'éducation avait un fichier de diplôme, le supprimer aussi
-        if (educationToDelete && (educationToDelete as unknown as { diplomaFile?: string }).diplomaFile) {
+        if (educationToDelete && ((educationToDelete as any).diplomaFilePath || (educationToDelete as any).diplomaFile)) {
+          const filePath = (educationToDelete as any).diplomaFilePath || (educationToDelete as any).diplomaFile;
           const fileResponse = await fetch('/api/upload', {
             method: 'DELETE',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ filePath: (educationToDelete as any).diplomaFile }),
+            body: JSON.stringify({ filePath }),
           });
 
           if (!fileResponse.ok) {
@@ -177,14 +178,24 @@ export default function EducationPage() {
                     ) : education.isDiplomaPassed ? (
                       <>
                         <span className="text-green-400 text-sm animate-pulse bg-yellow-400/20 px-2 py-1 rounded-md shadow-lg shadow-yellow-400/30">✓ Diplôme obtenu</span>
-                        {education.diplomaFile && (
+                        {(education.diplomaFilePath || education.diplomaFile) && (
                           <a 
-                            href={education.diplomaFile}
+                            href={(() => {
+                              const filePath = education.diplomaFilePath || education.diplomaFile;
+                              // Si le chemin commence par /uploads/, l'utiliser tel quel
+                              if (filePath.startsWith('/uploads/')) {
+                                return filePath;
+                              }
+                              // Sinon, construire le bon chemin
+                              const filename = education.diplomaFileName || filePath.split('/').pop();
+                              return `/uploads/certificates/${filename}`;
+                            })()} 
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-400 hover:text-blue-500 text-sm underline ml-2"
+                            className="text-blue-400 hover:text-blue-500 text-sm underline ml-2 flex items-center gap-1"
                           >
-                            Voir le certificat
+                            <FiExternalLink size={12} />
+                            {education.diplomaFileName ? `Voir ${education.diplomaFileName}` : 'Voir le certificat'}
                           </a>
                         )}
                       </>

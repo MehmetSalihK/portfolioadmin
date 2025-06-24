@@ -12,6 +12,8 @@ export interface IEducation extends Document {
   isDiplomaPassed: boolean;
   isDiplomaNotObtained: boolean;
   diplomaFile?: string;
+  diplomaFileName?: string;
+  diplomaFilePath?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -57,6 +59,12 @@ const EducationSchema = new Schema({
     default: false,
   },
   diplomaFile: {
+    type: String
+  },
+  diplomaFileName: {
+    type: String
+  },
+  diplomaFilePath: {
     type: String
   }
 }, {

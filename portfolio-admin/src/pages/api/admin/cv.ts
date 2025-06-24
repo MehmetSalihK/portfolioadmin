@@ -51,8 +51,17 @@ export default async function handler(
         return res.status(400).json({ error: 'Aucun fichier fourni' });
       }
 
-      // Désactiver l'ancien CV
-      await CV.updateMany({}, { isActive: false });
+      // Récupérer et supprimer l'ancien CV
+      const oldCV = await CV.findOne({ isActive: true });
+      if (oldCV) {
+        // Supprimer le fichier physique de l'ancien CV
+        const oldFilePath = path.join(uploadDir, oldCV.filename);
+        if (fs.existsSync(oldFilePath)) {
+          fs.unlinkSync(oldFilePath);
+        }
+        // Supprimer l'ancien CV de la base
+        await CV.findByIdAndDelete(oldCV._id);
+      }
 
       // Créer un nouveau nom de fichier unique
       const timestamp = Date.now();

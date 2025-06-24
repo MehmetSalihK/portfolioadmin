@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
-import { FiX, FiCalendar, FiBook, FiMapPin } from 'react-icons/fi';
+import { FiX, FiCalendar, FiBook, FiMapPin, FiFileText, FiExternalLink, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
+import BlurPreview from '../BlurPreview';
 
 interface EducationModalProps {
   isOpen: boolean;
@@ -19,6 +20,8 @@ interface EducationModalProps {
     isDiplomaPassed?: boolean;
     isDiplomaNotObtained?: boolean;
     diplomaFile?: string;
+    diplomaFileName?: string;
+    diplomaFilePath?: string;
   };
 }
 
@@ -43,8 +46,12 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
     isCurrentlyStudying: education?.isCurrentlyStudying || false,
     isDiplomaPassed: education?.isDiplomaPassed || false,
     isDiplomaNotObtained: education?.isDiplomaNotObtained || false,
-    diplomaFile: education?.diplomaFile || ''
+    diplomaFile: education?.diplomaFile || '',
+    diplomaFileName: education?.diplomaFileName || '',
+    diplomaFilePath: education?.diplomaFilePath || ''
   });
+  const [showBlurPreview, setShowBlurPreview] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   // Ajout de useEffect pour mettre à jour le formulaire quand education change
   useEffect(() => {
@@ -60,7 +67,9 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
         isCurrentlyStudying: education.isCurrentlyStudying || false,
         isDiplomaPassed: education.isDiplomaPassed || false,
         isDiplomaNotObtained: education.isDiplomaNotObtained || false,
-        diplomaFile: education.diplomaFile || ''
+        diplomaFile: education.diplomaFile || '',
+        diplomaFileName: education.diplomaFileName || '',
+        diplomaFilePath: education.diplomaFilePath || ''
       });
     } else {
       // Réinitialiser le formulaire si pas d'éducation
@@ -75,7 +84,9 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
         isCurrentlyStudying: false,
         isDiplomaPassed: false,
         isDiplomaNotObtained: false,
-        diplomaFile: ''
+        diplomaFile: '',
+        diplomaFileName: '',
+        diplomaFilePath: ''
       });
     }
   }, [education]);
@@ -86,32 +97,77 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
     onClose();
   };
 
-  const handleFileUpload = async (file: File) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validation du type de fichier
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Type de fichier non autorisé. Seuls PDF, JPEG et PNG sont acceptés.');
+      return;
+    }
+
+    // Validation de la taille (max 50MB)
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    if (file.size > maxSize) {
+      toast.error('Le fichier est trop volumineux. Taille maximale : 50MB.');
+      return;
+    }
+
+    // Stocker le fichier sans ouvrir automatiquement le BlurPreview
+    setPendingFile(file);
+  };
+
+  const uploadFile = async (file: File, blurZones?: any[]) => {
     try {
       const formData = new FormData();
       formData.append('image', file);
-  
+      
+      // Ajouter les zones de floutage si c'est une image
+      if (blurZones && file.type.startsWith('image/')) {
+        formData.append('blurZones', JSON.stringify(blurZones));
+      }
+
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
-  
+
       if (!response.ok) {
-        throw new Error('Failed to upload file');
+        throw new Error('Erreur lors du téléchargement');
       }
-  
+
       const data = await response.json();
-      setFormData((prevState) => ({
-        ...prevState,
-        diplomaFile: `${data.fileId}/${data.filename}`
-      }));
+      
+      setFormData(prev => ({
+         ...prev,
+         diplomaFile: data.filePath,
+         diplomaFileName: data.filename,
+         diplomaFilePath: data.filePath
+       }));
+
+      toast.success('Certificat téléchargé avec succès!');
     } catch (error) {
-      console.error('Error uploading file:', error);
-      toast.error('Erreur lors du téléchargement du fichier');
+      console.error('Erreur:', error);
+      toast.error('Erreur lors du téléchargement du certificat');
     }
   };
 
+  const handleBlurConfirm = async (blurZones: any[]) => {
+    if (pendingFile) {
+      await uploadFile(pendingFile, blurZones);
+      setPendingFile(null);
+    }
+    setShowBlurPreview(false);
+  };
+
+  const handleBlurCancel = () => {
+    setShowBlurPreview(false);
+  };
+
   return (
+    <>
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/70" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
@@ -286,32 +342,106 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
               </div>
 
               {formData.isDiplomaPassed && (
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                <div className="mt-4 space-y-3">
+                  <label className="block text-sm font-medium text-gray-300">
                     Certificat de diplôme
                   </label>
-                  <input
-                    type="file"
-                    accept=".pdf,image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        // Ici, vous devrez implémenter la logique pour télécharger le fichier
-                        handleFileUpload(file);
-                      }
-                    }}
-                    className="w-full px-4 py-2 bg-[#2A2A2A] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  />
-                  {formData.diplomaFile && (
-                    <div className="mt-2">
-                      <a 
-                        href={formData.diplomaFile} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-blue-400 hover:text-blue-500"
-                      >
-                        Voir le certificat
-                      </a>
+                  
+                  {/* Zone de téléchargement */}
+                  <div className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center hover:border-gray-500 transition-colors bg-[#1A1A1A]">
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={handleFileUpload}
+                      className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                    />
+                    <p className="text-xs text-gray-500 mt-2">
+                      PDF, JPEG, PNG acceptés (max 50MB)
+                    </p>
+                  </div>
+
+                  {/* Affichage du fichier en attente */}
+                  {pendingFile && (
+                    <div className="bg-yellow-900/20 border border-yellow-700 rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <FiFileText className="text-yellow-400" />
+                          <span className="text-sm font-medium text-yellow-300">
+                            {pendingFile.name} (en attente)
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => setShowBlurPreview(true)}
+                            className="text-orange-400 hover:text-orange-300 text-sm flex items-center space-x-1"
+                          >
+                            <span>Flouter</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => uploadFile(pendingFile)}
+                            className="text-green-400 hover:text-green-300 text-sm flex items-center space-x-1"
+                          >
+                            <span>Télécharger sans floutage</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPendingFile(null)}
+                            className="text-red-400 hover:text-red-300 text-sm flex items-center space-x-1"
+                          >
+                            <FiTrash2 size={14} />
+                            <span>Annuler</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Affichage du fichier actuel */}
+                  {formData.diplomaFileName && formData.diplomaFilePath && (
+                    <div className="bg-green-900/20 border border-green-700 rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <FiFileText className="text-green-400" />
+                          <span className="text-sm font-medium text-green-300">
+                            {formData.diplomaFileName}
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => setShowBlurPreview(true)}
+                            className="text-orange-400 hover:text-orange-300 text-sm flex items-center space-x-1"
+                          >
+                            <span>Flouter</span>
+                          </button>
+                          <a
+                            href={formData.diplomaFilePath}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 hover:text-blue-300 text-sm flex items-center space-x-1"
+                          >
+                            <FiExternalLink size={14} />
+                            <span>Voir</span>
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData(prev => ({
+                                ...prev,
+                                diplomaFile: '',
+                                diplomaFileName: '',
+                                diplomaFilePath: ''
+                              }));
+                            }}
+                            className="text-red-400 hover:text-red-300 text-sm flex items-center space-x-1"
+                          >
+                            <FiTrash2 size={14} />
+                            <span>Supprimer</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -336,6 +466,17 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
           </form>
         </Dialog.Panel>
       </div>
+      
     </Dialog>
+    
+    {showBlurPreview && (pendingFile || formData.diplomaFilePath) && (
+       <BlurPreview
+         file={pendingFile || (formData.diplomaFilePath ? new File([], formData.diplomaFileName || 'file') : null)}
+         fileUrl={pendingFile ? undefined : formData.diplomaFilePath}
+         onConfirm={handleBlurConfirm}
+         onCancel={handleBlurCancel}
+       />
+     )}
+    </>
   );
 }
