@@ -52,6 +52,7 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
   });
   const [showBlurPreview, setShowBlurPreview] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [isBlurConfirmed, setIsBlurConfirmed] = useState(false);
 
   // Ajout de useEffect pour mettre à jour le formulaire quand education change
   useEffect(() => {
@@ -89,7 +90,9 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
         diplomaFilePath: ''
       });
     }
-  }, [education]);
+    // Réinitialiser l'état de confirmation à chaque ouverture
+    setIsBlurConfirmed(false);
+  }, [education, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,6 +120,7 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
 
     // Stocker le fichier sans ouvrir automatiquement le BlurPreview
     setPendingFile(file);
+    setIsBlurConfirmed(false); // Réinitialiser l'état de confirmation
   };
 
   const uploadFile = async (file: File, blurZones?: any[]) => {
@@ -159,6 +163,7 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
       await uploadFile(pendingFile, blurZones);
       setPendingFile(null);
     }
+    setIsBlurConfirmed(true);
     setShowBlurPreview(false);
   };
 
@@ -374,9 +379,14 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                           <button
                             type="button"
                             onClick={() => setShowBlurPreview(true)}
-                            className="text-orange-400 hover:text-orange-300 text-sm flex items-center space-x-1"
+                            disabled={isBlurConfirmed}
+                            className={`text-sm flex items-center space-x-1 ${
+                              isBlurConfirmed 
+                                ? 'text-gray-500 cursor-not-allowed' 
+                                : 'text-orange-400 hover:text-orange-300'
+                            }`}
                           >
-                            <span>Flouter</span>
+                            <span>{isBlurConfirmed ? 'Flou appliqué' : 'Flouter'}</span>
                           </button>
                           <button
                             type="button"
@@ -412,9 +422,14 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                           <button
                             type="button"
                             onClick={() => setShowBlurPreview(true)}
-                            className="text-orange-400 hover:text-orange-300 text-sm flex items-center space-x-1"
+                            disabled={isBlurConfirmed}
+                            className={`text-sm flex items-center space-x-1 ${
+                              isBlurConfirmed 
+                                ? 'text-gray-500 cursor-not-allowed' 
+                                : 'text-orange-400 hover:text-orange-300'
+                            }`}
                           >
-                            <span>Flouter</span>
+                            <span>{isBlurConfirmed ? 'Flou appliqué' : 'Flouter'}</span>
                           </button>
                           <a
                             href={formData.diplomaFilePath}

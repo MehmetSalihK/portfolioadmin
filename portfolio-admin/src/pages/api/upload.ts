@@ -8,7 +8,6 @@ import fs from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
 import sharp from 'sharp';
 import connectDB from '@/lib/db';
-import CV from '@/models/CV';
 
 export const config = {
   api: {
@@ -18,7 +17,6 @@ export const config = {
 
 const uploadDir = path.join(process.cwd(), 'public', 'uploads');
 const certificatesDir = path.join(uploadDir, 'certificates');
-const cvUploadDir = path.join(process.cwd(), 'public', 'uploads', 'cv');
 
 // Interface pour les zones de floutage
 interface BlurZone {
@@ -147,52 +145,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           await fs.rename(file.filepath, finalPath);
         }
 
-        // Sauvegarder automatiquement comme CV dans MongoDB
-        await connectDB();
-        
-        // Récupérer et supprimer l'ancien CV
-        const oldCV = await CV.findOne({ isActive: true });
-        if (oldCV) {
-          // Supprimer le fichier physique de l'ancien CV
-          const oldCVPath = path.join(cvUploadDir, oldCV.filename);
-          if (existsSync(oldCVPath)) {
-            await fs.unlink(oldCVPath);
-          }
-          // Supprimer l'ancien CV de la base
-          await CV.findByIdAndDelete(oldCV._id);
-        }
-        
-        // Créer le dossier CV s'il n'existe pas
-         if (!existsSync(cvUploadDir)) {
-           mkdirSync(cvUploadDir, { recursive: true });
-         }
-         
-         const cvFilename = `cv_${Date.now()}${path.extname(uniqueFilename)}`;
-         const cvPath = path.join(cvUploadDir, cvFilename);
-         await fs.copyFile(finalPath, cvPath);
-        
-        // Créer l'enregistrement CV
-        const cvRecord = new CV({
-          filename: cvFilename,
-          originalName: file.originalFilename,
-          mimeType: file.mimetype,
-          size: file.size,
-          isActive: true
-        });
-        
-        await cvRecord.save();
+        // Ne plus sauvegarder automatiquement comme CV
+        // Les certificats d'éducation restent dans le dossier certificates
 
         // Retourner le chemin relatif pour l'accès web
         const webPath = `/uploads/certificates/${uniqueFilename}`;
 
         res.status(200).json({ 
           success: true,
-          message: 'Fichier uploadé avec succès et sauvegardé comme CV',
+          message: 'Certificat uploadé avec succès',
           fileId: fileId.toString(),
           filename: file.originalFilename,
-          filePath: webPath,
-          cvSaved: true,
-          cvId: cvRecord._id
+          filePath: webPath
         });
       });
     } else if (req.method === 'DELETE') {
