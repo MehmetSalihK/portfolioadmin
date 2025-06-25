@@ -22,7 +22,6 @@ export default async function handler(
         let homePage = await HomePage.findOne().lean();
         
         if (!homePage) {
-          // Créer une page d'accueil par défaut si elle n'existe pas
           homePage = await HomePage.create({});
         }
         
@@ -37,7 +36,6 @@ export default async function handler(
           { new: true, upsert: true }
         );
 
-        // Revalider la page d'accueil
         try {
           await res.revalidate('/');
         } catch (err) {

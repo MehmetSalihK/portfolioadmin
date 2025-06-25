@@ -11,11 +11,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await connectDB();
     
-    // Hash the new password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD!, salt);
 
-    // Update or create admin
     await Admin.findOneAndUpdate(
       { email: { $exists: true } },
       {

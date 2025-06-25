@@ -21,7 +21,6 @@ export default async function handler(
       case 'GET':
         const projects = await Project.find({}).lean();
         
-        // Initialiser les stats si elles n'existent pas
         const projectsWithStats = projects.map(project => {
           if (!project.stats) {
             project.stats = {

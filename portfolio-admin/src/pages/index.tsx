@@ -67,7 +67,6 @@ interface Project {
   githubUrl?: string;
   featured?: boolean;
 }
-
 interface Experience {
   _id: string;
   title: string;
@@ -78,7 +77,6 @@ interface Experience {
   description: string;
   technologies: string[];
 }
-
 interface HomePageProps {
   projects: Project[];
   experiences: Experience[];
@@ -228,15 +226,11 @@ export default function Home({ projects, experiences, skills, homeData = default
   const [showBanner, setShowBanner] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // État pour la modale
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [isCVModalOpen, setIsCVModalOpen] = useState(false);
-
-  // Limiter à 3 projets les plus visités (on peut utiliser featured ou un autre critère)
   const formattedProjects = projects
     .sort((a, b) => {
-      // Prioriser les projets featured, puis par ordre de création
       if (a.featured && !b.featured) return -1;
       if (!a.featured && b.featured) return 1;
       return 0;
@@ -251,7 +245,6 @@ export default function Home({ projects, experiences, skills, homeData = default
     mainRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Fonctions pour gérer la modale
   const openModal = (project: any) => {
     setSelectedProject(project);
     setIsModalOpen(true);
@@ -284,7 +277,6 @@ export default function Home({ projects, experiences, skills, homeData = default
 
       await response.json();
     } catch (error) {
-      // Silently handle error
     }
   };
 
@@ -327,8 +319,6 @@ export default function Home({ projects, experiences, skills, homeData = default
     const formData = new FormData(form);
 
     setIsSubmitting(true);
-
-    // Afficher une notification de chargement
     const loadingToastId = toast.loading(
       <div className="flex items-center space-x-2">
         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
@@ -354,7 +344,6 @@ export default function Home({ projects, experiences, skills, homeData = default
       });
 
       if (response.ok) {
-        // Succès : Remplacer la notification de chargement par une notification de succès
         toast.dismiss(loadingToastId);
         toast.custom((t) => (
           <motion.div
@@ -426,11 +415,9 @@ export default function Home({ projects, experiences, skills, homeData = default
           duration: 5000,
         });
 
-        // Réinitialiser le formulaire
         form.reset();
         setIsSubmitting(false);
       } else {
-        // Erreur : Afficher une notification d'erreur
         toast.dismiss(loadingToastId);
         setIsSubmitting(false);
         toast.custom((t) => (
@@ -500,7 +487,6 @@ export default function Home({ projects, experiences, skills, homeData = default
         });
       }
     } catch (error) {
-      // Gérer l'erreur comme ci-dessus
       toast.dismiss(loadingToastId);
       toast.error('Erreur lors de l\'envoi du message');
       setIsSubmitting(false);
@@ -1534,14 +1520,12 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       homeData = defaultHomeData;
     }
 
-    // Récupérer les settings
     const settingsFromDB = await Setting.findOne().lean();
     const settings = settingsFromDB || {
       email: 'contact@mehmetsalihk.fr',
       linkedin: 'https://www.linkedin.com/in/mehmetsalihk'
     };
 
-    // Récupérer les projets sélectionnés pour la page d'accueil
     const projects = await Project.aggregate([
       {
         $match: { 
@@ -1572,21 +1556,17 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       }
     ]);
     
-    // Utiliser directement les 3 projets les plus populaires de la base de données
     const allProjects = projects;
     const experiences = await Experience.find({}).sort({ startDate: -1 }).select('title company location startDate endDate description technologies').lean();
-    // Ensure technologies is an array, even if undefined
     const experiencesWithTechnologies = experiences.map(exp => ({
       ...exp,
       technologies: exp.technologies || []
     }));
     
-    // Récupérer les catégories visibles sans doublons
     const allCategories = await SkillCategory.find({ isVisible: true })
       .sort('displayOrder')
       .lean();
 
-    // Filtrer les catégories pour n'avoir que des noms uniques
     const uniqueCategories = allCategories.reduce<typeof allCategories>((acc, current) => {
       const exists = acc.find(cat => cat.name === current.name);
       if (!exists) {
@@ -1595,7 +1575,6 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       return acc;
     }, []);
 
-    // Récupérer les compétences non masquées avec categoryId valide
     const skills = await Skill.find({ 
       isHidden: false,
       categoryId: { $exists: true, $ne: null }
@@ -1603,7 +1582,6 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       .populate('categoryId')
       .lean();
 
-    // Associer les compétences aux catégories uniques
     const skillsByCategory = uniqueCategories.map(category => ({
       _id: category._id,
       name: category.name,

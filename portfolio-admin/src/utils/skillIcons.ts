@@ -16,19 +16,16 @@ import {
 import { FiCode } from 'react-icons/fi';
 
 const skillIconMap: Record<string, IconType> = {
-  // Adobe Suite
   'adobe after effects': SiAdobeaftereffects,
   'adobe photoshop': SiAdobephotoshop,
   'adobe premiere pro': SiAdobepremierepro,
   'adobe illustrator': SiAdobeillustrator,
 
-  // Microsoft & Windows
   'microsoft excel': SiMicrosoftexcel,
   'microsoft powerpoint': SiMicrosoftpowerpoint,
   'microsoft word': SiMicrosoftword,
   'windows': SiWindows,
 
-  // Langages et Frameworks
   'javascript': SiJavascript,
   'typescript': SiTypescript,
   'python': SiPython,
@@ -55,7 +52,6 @@ const skillIconMap: Record<string, IconType> = {
   'bootstrap': SiBootstrap,
   'wordpress': SiWordpress,
 
-  // APIs et Outils
   'api': SiOpenapiinitiative,
   'Api': SiOpenapiinitiative,
   'API': SiOpenapiinitiative,
@@ -73,27 +69,23 @@ const skillIconMap: Record<string, IconType> = {
   'PIP': SiPython,
   'python pip': SiPython,
 
-  // Bases de données
   'mysql': SiMysql,
   'mariadb': SiMariadb,
   'postgresql': SiPostgresql,
   'mongodb': SiMongodb,
   'firebase': SiFirebase,
 
-  // DevOps & Cloud
   'docker': SiDocker,
   'kubernetes': SiKubernetes,
   'aws': SiAmazonaws,
   'google cloud': SiGooglecloud,
   'azure': SiMicrosoftazure,
 
-  // Systèmes d'exploitation
   'linux': SiLinux,
   'ubuntu': SiUbuntu,
   'debian': SiDebian,
   'kali linux': SiKalilinux,
 
-  // Design
   'figma': SiFigma,
 };
 

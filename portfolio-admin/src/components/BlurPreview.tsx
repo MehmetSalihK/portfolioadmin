@@ -54,10 +54,8 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
   const imageRef = useRef<HTMLImageElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  // Détermine si le fichier est un PDF
   const isPdf = file?.type === 'application/pdf' || fileUrl.toLowerCase().includes('.pdf');
 
-  // Détecter le mode sombre du système
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     setIsDarkMode(mediaQuery.matches);
@@ -70,7 +68,6 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Force overlay update when image loads or resizes
   useEffect(() => {
     const updateOverlay = () => {
       if (overlayRef.current && imageRef.current) {
@@ -105,7 +102,6 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
         height: imageRef.current.naturalHeight
       });
       
-      // Update overlay position after image loads
       setTimeout(() => {
         if (overlayRef.current && imageRef.current) {
           const offset = getImageOffset();
@@ -160,7 +156,6 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
     const mouseY = (e.clientY - rect.top) / scale;
     
     if (isResizing) {
-      // Handle resizing
       setBlurZones(zones => zones.map(zone => {
         if (zone.id !== selectedZone) return zone;
         
@@ -183,7 +178,6 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
         };
       }));
     } else {
-      // Handle dragging
       const newX = mouseX - dragStart.x;
       const newY = mouseY - dragStart.y;
       
@@ -221,7 +215,6 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
 
   const handleImageMouseDown = (e: React.MouseEvent) => {
     if (!isDrawingMode) {
-      // Désélectionner la zone si on clique ailleurs
       setSelectedZone(null);
       return;
     }
@@ -304,8 +297,6 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
     setBlurZones([]);
   };
 
-
-
   const getDisplayScale = () => {
     if (!imageRef.current || !imageDimensions.width) return 1;
     return imageRef.current.clientWidth / imageDimensions.width;
@@ -315,7 +306,6 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
     if (!imageRef.current) return { x: 0, y: 0 };
     const imageRect = imageRef.current.getBoundingClientRect();
     
-    // Find the container with relative positioning (the one with the overlay)
     let container = imageRef.current.parentElement;
     while (container && !container.classList.contains('relative')) {
       container = container.parentElement;
@@ -645,8 +635,6 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
                   <FiEdit3 className="w-4 h-4" />
                   {isDrawingMode ? 'Mode dessin actif' : 'Activer le dessin'}
                 </button>
-                
-
                 
                 <button
                   onClick={clearAllZones}

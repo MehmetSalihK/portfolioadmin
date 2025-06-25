@@ -16,8 +16,6 @@ export default function LocationAutocomplete({ value, onChange, placeholder }: L
     onChange(inputValue);
 
     if (inputValue.length > 2) {
-      // Ici vous pouvez intégrer une API comme OpenStreetMap Nominatim
-      // Pour l'instant, on utilise des suggestions statiques
       const staticSuggestions = [
         'Paris, 75001, France',
         'Lyon, 69000, France',

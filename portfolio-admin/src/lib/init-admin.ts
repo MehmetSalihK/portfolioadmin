@@ -10,7 +10,6 @@ export default async function initializeAdmin() {
         throw new Error('ADMIN_EMAIL ou ADMIN_PASSWORD non défini dans .env.local');
     }
 
-    // Vérifier la connexion MongoDB
     if (mongoose.connection.readyState !== 1) {
         throw new Error('La connexion MongoDB n\'est pas établie');
     }
@@ -19,15 +18,12 @@ export default async function initializeAdmin() {
     console.log('📧 Email:', adminEmail);
 
     try {
-        // Chercher l'admin existant ou en créer un nouveau
         const admin = await Admin.findOne({ email: adminEmail }).select('+password');
 
-        // Obtenir la date actuelle en France
         const now = new Date();
         const franceDate = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
 
         if (!admin) {
-            // Créer un nouvel admin
             const newAdmin = new Admin({
                 email: adminEmail,
                 password: adminPassword, // Le hook pre-save va le hasher
@@ -39,7 +35,6 @@ export default async function initializeAdmin() {
             await newAdmin.save();
             console.log('✅ Nouvel admin créé avec succès');
         } else {
-            // Mettre à jour l'admin existant
             admin.password = adminPassword; // Le hook pre-save va le hasher
             admin.updatedAt = franceDate;
             await admin.save();

@@ -11,7 +11,6 @@ interface SkillCardProps {
 }
 
 const SkillCard = ({ skill }: SkillCardProps) => {
-  // Dynamically get the icon from react-icons
   const IconComponent = (ReactIcons as Record<string, IconType>)[skill.icon] || ReactIcons.SiJavascript;
 
   return (

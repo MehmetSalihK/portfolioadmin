@@ -24,11 +24,9 @@ export default function ExperienceModal({ isOpen, onClose, onSubmit }: Experienc
     e.preventDefault();
     
     try {
-      // Préparer les dates en ajoutant le premier jour du mois
       const startDateWithDay = formData.startDate ? `${formData.startDate}-01` : null;
       const endDateWithDay = formData.endDate ? `${formData.endDate}-01` : null;
 
-      // Préparer les données
       const dataToSubmit = {
         ...formData,
         startDate: startDateWithDay ? new Date(startDateWithDay).toISOString() : null,

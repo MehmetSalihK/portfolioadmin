@@ -4,12 +4,10 @@ import Skill from '@/models/Skill';
 import Category from '@/models/Category';
 
 const skillCategoryMapping: { [key: string]: string } = {
-  // Langages de programmation
   'JavaScript': 'Langages de programmation',
   'TypeScript': 'Langages de programmation',
   'Python': 'Langages de programmation',
   
-  // Frameworks & Librairies
   'React.js': 'Frameworks & Librairies',
   'Next.js': 'Frameworks & Librairies',
   'Vue.js': 'Frameworks & Librairies',
@@ -17,14 +15,12 @@ const skillCategoryMapping: { [key: string]: string } = {
   'Express Js': 'Frameworks & Librairies',
   'React Native': 'Frameworks & Librairies',
 
-  // Base de données
   'MongoDB': 'Base de données',
   'MySQL': 'Base de données',
   'PostgreSQL': 'Base de données',
   'MariaDB': 'Base de données',
   'SQL': 'Base de données',
 
-  // Outils & DevOps
   'Git': 'Outils & DevOps',
   'GitHub': 'Outils & DevOps',
   'GitLab': 'Outils & DevOps',
@@ -37,7 +33,6 @@ const skillCategoryMapping: { [key: string]: string } = {
   'API REST': 'Outils & DevOps',
   'Endpoints': 'Outils & DevOps',
 
-  // Design
   'Figma': 'Design',
   'Canva': 'Design'
 };
@@ -50,7 +45,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await connectDB();
 
-    // S'assurer que les catégories existent
     const categories = await Category.find();
     if (categories.length === 0) {
       const defaultCategories = [
@@ -63,11 +57,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await Category.insertMany(defaultCategories);
     }
 
-    // Récupérer toutes les catégories
     const updatedCategories = await Category.find();
     const categoryMap = new Map(updatedCategories.map(cat => [cat.name, cat._id]));
 
-    // Mettre à jour chaque compétence
     const skills = await Skill.find();
     let updatedCount = 0;
 

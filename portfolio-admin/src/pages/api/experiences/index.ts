@@ -15,7 +15,6 @@ export default async function handler(
     try {
       const experiences = await Experience.find().lean();
       
-      // Formater les dates pour l'affichage
       const formattedExperiences = experiences.map(exp => ({
         ...exp,
         startDate: exp.startDate ? format(new Date(exp.startDate), 'yyyy-MM') : null,
@@ -38,9 +37,7 @@ export default async function handler(
       try {
         const { startDate, endDate, ...otherData } = req.body;
         
-        // Convertir les dates au format YYYY-MM en Date
         const formattedStartDate = new Date(startDate);
-        // Si c'est un poste actuel ou si pas de date de fin, mettre à null
         const formattedEndDate = endDate ? new Date(endDate) : null;
 
         const experience = await Experience.create({

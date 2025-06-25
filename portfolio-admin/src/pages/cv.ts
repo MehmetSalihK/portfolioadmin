@@ -12,7 +12,6 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
   try {
     await connectDB();
     
-    // Trouver le CV actif
     const cv = await CV.findOne({ isActive: true });
     
     if (!cv) {
@@ -25,24 +24,19 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     let fileBuffer: Buffer;
     
     if (isVercel && cv.data) {
-      // Sur Vercel, récupérer depuis la base64
       fileBuffer = Buffer.from(cv.data, 'base64');
     } else {
-      // En local, lire depuis le fichier
       const filePath = path.join(process.cwd(), 'public', 'uploads', 'cv', cv.filename);
       
-      // Vérifier si le fichier existe
       if (!fs.existsSync(filePath)) {
         return {
           notFound: true
         };
       }
       
-      // Lire le fichier
       fileBuffer = fs.readFileSync(filePath);
     }
     
-    // Définir les en-têtes appropriés
     res.setHeader('Content-Type', cv.mimeType || 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="${cv.originalName}"`);
     res.write(fileBuffer);

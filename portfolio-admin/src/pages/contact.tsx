@@ -31,28 +31,20 @@ export default function ContactPage({ settings = { email: '', github: '', linked
   });
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [mapUrl, setMapUrl] = useState('');
-
-  // Fonction pour géocoder la position
   const geocodePosition = async (position: string) => {
     if (!position) return;
-    
     try {
       const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(position)}&limit=1`);
       const data = await response.json();
-      
       if (data.features && data.features.length > 0) {
         const feature = data.features[0];
         const [lng, lat] = feature.geometry.coordinates;
         const cityName = feature.properties.city || feature.properties.label;
-        
         setLocationData({
           name: cityName,
           coordinates: { lat, lng }
         });
-        
-        // Générer l'URL Google Maps avec les coordonnées
         const googleMapsUrl = `https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${lat},${lng}&zoom=13`;
-        // Pour l'instant, utiliser l'ancienne méthode avec le nom de la ville
         const fallbackUrl = `https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d35034.27598397238!2d${lng}!3d${lat}!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2s${encodeURIComponent(cityName)}!5e0!3m2!1sfr!2sfr!4v1738647148138!5m2!1sfr!2sfr`;
         setMapUrl(fallbackUrl);
       }
@@ -65,7 +57,6 @@ export default function ContactPage({ settings = { email: '', github: '', linked
     if (settings.position) {
       geocodePosition(settings.position);
     } else {
-      // Valeurs par défaut si pas de position
       setLocationData({ name: 'Nogent-sur-Oise, France', coordinates: { lat: 49.2586, lng: 2.4826 } });
       setMapUrl('https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d35034.27598397238!2d2.4825724346456397!3d49.2586183631009!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e64a38b9d28da5%3A0x1c0af141f1252070!2s60180%20Nogent-sur-Oise!5e0!3m2!1sfr!2sfr!4v1738647148138!5m2!1sfr!2sfr');
     }

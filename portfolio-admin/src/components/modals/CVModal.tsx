@@ -9,12 +9,10 @@ interface CVModalProps {
 
 export default function CVModal({ isOpen, onClose }: CVModalProps) {
   const handleDownload = () => {
-    // Ouvrir le CV dans un nouvel onglet pour téléchargement
     window.open('/cv', '_blank');
   };
 
   const handleExternalView = () => {
-    // Ouvrir le CV dans un nouvel onglet
     window.open('/cv', '_blank');
   };
 

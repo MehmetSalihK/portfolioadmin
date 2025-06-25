@@ -11,10 +11,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await connectDB();
 
-    // Supprimer toutes les catégories existantes
     await Category.deleteMany({});
 
-    // Créer les nouvelles catégories
     const categories = await Category.insertMany(defaultCategories);
 
     return res.status(200).json({ 

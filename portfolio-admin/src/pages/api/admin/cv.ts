@@ -26,13 +26,10 @@ export default async function handler(
 
   if (req.method === 'POST') {
     try {
-      // Sur Vercel, utiliser le dossier temporaire
       const isVercel = process.env.VERCEL || process.env.NODE_ENV === 'production';
       const uploadDir = isVercel 
         ? '/tmp' 
         : path.join(process.cwd(), 'public', 'uploads', 'cv');
-      
-      // Créer le dossier s'il n'existe pas (seulement en local)
       if (!isVercel && !fs.existsSync(uploadDir)) {
         try {
           fs.mkdirSync(uploadDir, { recursive: true });
@@ -41,11 +38,10 @@ export default async function handler(
           return res.status(500).json({ error: 'Impossible de créer le dossier d\'upload' });
         }
       }
-
       const form = formidable({
         uploadDir,
         keepExtensions: true,
-        maxFileSize: 10 * 1024 * 1024, // 10MB
+        maxFileSize: 10 * 1024 * 1024,
         filter: ({ mimetype }) => {
           return mimetype === 'application/pdf' || 
                  mimetype === 'image/png' || 
@@ -60,21 +56,17 @@ export default async function handler(
         return res.status(400).json({ error: 'Aucun fichier fourni' });
       }
 
-      // Récupérer et supprimer l'ancien CV
       const oldCV = await CV.findOne({ isActive: true });
       if (oldCV) {
-        // Supprimer le fichier physique de l'ancien CV (seulement en local)
         if (!isVercel) {
           const oldFilePath = path.join(uploadDir, oldCV.filename);
           if (fs.existsSync(oldFilePath)) {
             fs.unlinkSync(oldFilePath);
           }
         }
-        // Supprimer l'ancien CV de la base
         await CV.findByIdAndDelete(oldCV._id);
       }
 
-      // Créer un nouveau nom de fichier unique
       const timestamp = Date.now();
       const extension = path.extname(file.originalFilename || '');
       const newFilename = `cv_${timestamp}${extension}`;
@@ -82,7 +74,6 @@ export default async function handler(
       let cvData = {};
       
       if (isVercel) {
-        // Sur Vercel, stocker le fichier en base64
         const fileBuffer = fs.readFileSync(file.filepath);
         const base64Data = fileBuffer.toString('base64');
         
@@ -95,7 +86,6 @@ export default async function handler(
           isActive: true
         };
       } else {
-        // En local, déplacer le fichier
         const newPath = path.join(uploadDir, newFilename);
         fs.renameSync(file.filepath, newPath);
         
@@ -108,7 +98,6 @@ export default async function handler(
         };
       }
 
-      // Sauvegarder en base
       const cvRecord = new CV(cvData);
 
       await cvRecord.save();
@@ -137,7 +126,6 @@ export default async function handler(
     try {
       const activeCV = await CV.findOne({ isActive: true });
       if (activeCV) {
-        // Supprimer le fichier physique (seulement en local)
         const isVercel = process.env.VERCEL || process.env.NODE_ENV === 'production';
         if (!isVercel) {
           const filePath = path.join(process.cwd(), 'public', 'uploads', 'cv', activeCV.filename);
@@ -146,7 +134,6 @@ export default async function handler(
           }
         }
         
-        // Supprimer de la base
         await CV.findByIdAndDelete(activeCV._id);
       }
       

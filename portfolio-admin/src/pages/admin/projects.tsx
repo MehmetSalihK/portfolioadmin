@@ -252,7 +252,6 @@ export default function ProjectsPage() {
     }
   };
 
-  // Grouper les skills par catégorie
   const groupedSkills = skills.reduce((acc, skill) => {
     if (!acc[skill.category]) {
       acc[skill.category] = [];

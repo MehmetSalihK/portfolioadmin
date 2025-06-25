@@ -80,12 +80,10 @@ export default function MessagesPage() {
         throw new Error('Erreur lors de la mise à jour du statut');
       }
 
-      // Mettre à jour l'état local
       setMessages(messages.map(msg => 
         msg._id === messageId ? { ...msg, status: newStatus } : msg
       ));
 
-      // Si le message sélectionné est celui qu'on vient de mettre à jour
       if (selectedMessage && selectedMessage._id === messageId) {
         setSelectedMessage({ ...selectedMessage, status: newStatus });
       }
@@ -114,10 +112,8 @@ export default function MessagesPage() {
         throw new Error('Erreur lors de la suppression du message');
       }
 
-      // Mettre à jour l'état local
       setMessages(messages.filter(msg => msg._id !== messageId));
       
-      // Si le message supprimé était sélectionné, le désélectionner
       if (selectedMessage && selectedMessage._id === messageId) {
         setSelectedMessage(null);
         setIsViewingMessage(false);
@@ -136,7 +132,6 @@ export default function MessagesPage() {
     setSelectedMessage(message);
     setIsViewingMessage(true);
     
-    // Marquer comme lu si non lu
     if (message.status === 'unread') {
       updateMessageStatus(message._id, 'read');
     }

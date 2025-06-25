@@ -10,7 +10,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       let categories = await Category.find().sort('displayOrder');
       
-      // Si aucune catégorie n'existe, créer les catégories par défaut
       if (categories.length === 0) {
         categories = await Category.insertMany(defaultCategories);
       }

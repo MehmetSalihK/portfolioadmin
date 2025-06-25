@@ -35,7 +35,6 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      // Fetch actual stats from your API endpoints
       const [messagesResponse, projectsResponse, skillsResponse, experiencesResponse] = await Promise.all([
         fetch('/api/admin/messages?filter=unread'),
         fetch('/api/projects'),

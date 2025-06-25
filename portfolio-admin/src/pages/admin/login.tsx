@@ -59,14 +59,12 @@ export default function AdminLogin() {
   };
 
   useEffect(() => {
-    // Suppression complète des erreurs de console
     const originalConsole = {
       error: console.error,
       warn: console.warn,
       log: console.log
     };
   
-    // Fonction de filtrage des messages
     const shouldFilter = (message: any) => {
       if (typeof message !== 'string') return false;
       return (
@@ -80,7 +78,6 @@ export default function AdminLogin() {
       );
     };
   
-    // Remplacement des fonctions de console
     console.error = (...args: any[]) => {
       if (!args.some(shouldFilter)) {
         originalConsole.error.apply(console, args);
@@ -99,7 +96,6 @@ export default function AdminLogin() {
       }
     };
   
-    // Nettoyage lors du démontage du composant
     return () => {
       console.error = originalConsole.error;
       console.warn = originalConsole.warn;

@@ -25,7 +25,6 @@ export default function AutoSync() {
 
                 const data = await response.json();
                 
-                // Vérifier si les données ont changé
                 const currentSync = JSON.stringify(data);
                 if (currentSync !== lastSyncRef.current && isMounted) {
                     console.log('✅ Synchronisation automatique réussie');
@@ -38,11 +37,9 @@ export default function AutoSync() {
             }
         }
 
-        // Éviter la double initialisation en strict mode
         if (initializedRef.current) return;
         initializedRef.current = true;
 
-        // Synchroniser au démarrage et configurer l'intervalle
         const TROIS_HEURES = 3 * 60 * 60 * 1000; // 3 heures en millisecondes
         
         const initialSync = async () => {
@@ -55,7 +52,6 @@ export default function AutoSync() {
         initialSync();
         const interval = setInterval(initialSync, TROIS_HEURES);
 
-        // Synchroniser à chaque changement de route (sans message)
         router.events.on('routeChangeComplete', syncAdmin);
 
         return () => {

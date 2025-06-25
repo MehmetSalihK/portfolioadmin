@@ -49,7 +49,6 @@ const AdminSchema = new Schema<IAdmin>({
   toObject: { virtuals: true }
 });
 
-// Virtuals pour les dates formatées
 AdminSchema.virtual('formattedCreatedAt').get(function(this: IAdmin) {
   return formatDate(this.createdAt);
 });
@@ -62,7 +61,6 @@ AdminSchema.virtual('formattedLastLogin').get(function(this: IAdmin) {
   return this.lastLogin ? formatDate(this.lastLogin) : 'Jamais';
 });
 
-// Hash password before saving
 AdminSchema.pre('save', async function(next) {
   if (!this.isModified('password')) {
     return next();
@@ -77,7 +75,6 @@ AdminSchema.pre('save', async function(next) {
   }
 });
 
-// Method to compare password
 AdminSchema.methods.comparePassword = async function(candidatePassword: string) {
   try {
     return await bcrypt.compare(candidatePassword, this.password);

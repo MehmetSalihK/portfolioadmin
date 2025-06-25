@@ -52,7 +52,6 @@ export default async function handler(
       });
     }
 
-    // Récupérer les repositories depuis GitHub
     const response = await fetch(
       `https://api.github.com/users/${githubUsername}/repos?sort=updated&per_page=100`,
       {
@@ -70,29 +69,24 @@ export default async function handler(
 
     const repos: GitHubRepo[] = await response.json();
 
-    // Filtrer et transformer les repositories
     const projects: TransformedProject[] = repos
       .filter(repo => 
         !repo.private && 
         !repo.archived && 
         !repo.disabled &&
-        // repo.description && // Commenté pour inclure les repos sans description
         !repo.name.includes('.github') && // Exclure les repos de configuration
         !repo.name.toLowerCase().includes('readme') // Exclure les repos README
       )
       .map(repo => {
-        // Générer les technologies basées sur le langage principal et les topics
         const technologies = [
           ...(repo.language ? [repo.language] : []),
           ...repo.topics.slice(0, 5) // Limiter à 5 topics
         ].filter((tech, index, arr) => arr.indexOf(tech) === index); // Supprimer les doublons
 
-        // Déterminer si le projet est featured (basé sur les étoiles ou topics spéciaux)
         const featured = repo.stargazers_count >= 5 || 
                         repo.topics.includes('featured') || 
                         repo.topics.includes('portfolio');
 
-        // Générer une image par défaut basée sur le langage
         const getDefaultImage = (language: string | null): string => {
           const imageMap: { [key: string]: string } = {
             'JavaScript': '/images/js-project.svg',
@@ -126,7 +120,6 @@ export default async function handler(
         };
       })
       .sort((a, b) => {
-        // Trier par featured d'abord, puis par étoiles, puis par date de mise à jour
         if (a.featured && !b.featured) return -1;
         if (!a.featured && b.featured) return 1;
         if (a.stars !== b.stars) return b.stars - a.stars;

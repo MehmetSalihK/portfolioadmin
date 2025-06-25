@@ -29,7 +29,6 @@ interface EducationModalProps {
 }
 
 export default function EducationModal({ isOpen, onClose, onSubmit, education }: EducationModalProps) {
-  // Fonction pour formater une date en format YYYY-MM pour les inputs de type month
   const formatDateForInput = (dateString: string) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -58,7 +57,6 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
   const [showBlurPreview, setShowBlurPreview] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
 
-  // Ajout de useEffect pour mettre à jour le formulaire quand education change
   useEffect(() => {
     if (education) {
       setFormData({
@@ -79,7 +77,6 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
         isBlurred: education.isBlurred || false
       });
     } else {
-      // Réinitialiser le formulaire si pas d'éducation
       setFormData({
         school: '',
         degree: '',
@@ -98,7 +95,6 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
         isBlurred: false
       });
     }
-    // L'état de floutage est maintenant géré par la base de données
   }, [education, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,26 +107,22 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validation du type de fichier
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
     if (!allowedTypes.includes(file.type)) {
       toast.error('Type de fichier non autorisé. Seuls PDF, JPEG et PNG sont acceptés.');
       return;
     }
 
-    // Validation de la taille (max 4MB pour compatibilité Vercel)
      const maxSize = 4 * 1024 * 1024; // 4MB
      if (file.size > maxSize) {
        toast.error('Le fichier est trop volumineux. Taille maximale : 4MB.');
        return;
      }
 
-    // Supprimer l'ancien fichier s'il existe
     if (formData.diplomaFilePath) {
       await deleteFile(formData.diplomaFilePath);
     }
 
-    // Stocker le fichier sans l'uploader automatiquement
     setPendingFile(file);
     setFormData(prev => ({ 
       ...prev, 
@@ -141,7 +133,6 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
       isBlurred: false 
     }));
     
-    // Ouvrir automatiquement le BlurPreview pour les images
     if (file.type.startsWith('image/')) {
       setShowBlurPreview(true);
     }
@@ -175,13 +166,11 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
     try {
       const uploadFormData = new FormData();
       
-      // Générer un nom de fichier basé sur le diplôme
       const customFileName = generateFileName(file.name, formData.degree);
       const renamedFile = new File([file], customFileName, { type: file.type });
       
       uploadFormData.append('image', renamedFile);
       
-      // Ajouter les zones de floutage si c'est une image
       if (blurZones && file.type.startsWith('image/')) {
         uploadFormData.append('blurZones', JSON.stringify(blurZones));
       }
@@ -513,7 +502,6 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                           <button
                             type="button"
                             onClick={async () => {
-                              // Supprimer le fichier physique
                               if (formData.diplomaFilePath) {
                                 await deleteFile(formData.diplomaFilePath);
                               }

@@ -33,7 +33,6 @@ export default async function handler(
       return res.status(404).json({ error: 'Projet non trouvé' });
     }
 
-    // Initialiser les stats si elles n'existent pas
     if (!project.stats) {
       project.stats = {
         demoClicks: 0,
@@ -45,7 +44,6 @@ export default async function handler(
       };
     }
 
-    // Mettre à jour le compteur approprié
     switch (type) {
       case 'demo':
         project.stats.demoClicks = (project.stats.demoClicks || 0) + 1;
@@ -60,10 +58,8 @@ export default async function handler(
         return res.status(400).json({ error: 'Type invalide' });
     }
 
-    // Mettre à jour lastClicked
     project.stats.lastClicked = new Date();
 
-    // Ajouter à l'historique des clics
     if (!Array.isArray(project.stats.clickHistory)) {
       project.stats.clickHistory = [];
     }
@@ -73,7 +69,6 @@ export default async function handler(
       timestamp: new Date()
     });
 
-    // Mettre à jour les stats quotidiennes
     if (!Array.isArray(project.stats.dailyStats)) {
       project.stats.dailyStats = [];
     }
@@ -109,12 +104,10 @@ export default async function handler(
         break;
     }
 
-    // Marquer les champs comme modifiés
     project.markModified('stats');
     project.markModified('stats.dailyStats');
     project.markModified('stats.clickHistory');
 
-    // Sauvegarder les modifications
     await project.save();
 
     return res.status(200).json({ 

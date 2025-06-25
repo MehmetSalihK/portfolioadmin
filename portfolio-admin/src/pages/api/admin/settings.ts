@@ -20,7 +20,6 @@ export default async function handler(
       await connectDB();
       console.log('Received data:', req.body);
 
-      // Créer ou mettre à jour les settings dans le modèle Setting (utilisé par la page contact)
       await Setting.findOneAndUpdate(
         {},
         {
@@ -33,7 +32,6 @@ export default async function handler(
         { upsert: true, new: true }
       );
 
-      // Créer ou mettre à jour les settings dans le modèle Settings (pour compatibilité)
       const settings = await Settings.findOneAndUpdate(
         {},
         {
@@ -46,7 +44,6 @@ export default async function handler(
         { upsert: true, new: true }
       );
 
-      // Mettre à jour HomePage
       await HomePage.findOneAndUpdate(
         {},
         {
@@ -77,7 +74,6 @@ export default async function handler(
     try {
       await connectDB();
       
-      // Récupérer les settings ou créer des valeurs par défaut si elles n'existent pas
       let settings = await Setting.findOne();
       
       if (!settings) {

@@ -25,7 +25,6 @@ const skillSchema = new mongoose.Schema({
   }
 });
 
-// Vérifie si le modèle existe déjà pour éviter l'erreur "Cannot overwrite model once compiled"
 const Skill = mongoose.models.Skill || mongoose.model('Skill', skillSchema);
 
 export default Skill;

@@ -7,21 +7,17 @@ import mongoose from 'mongoose';
 
 let watcher: FSWatcher | null = null;
 
-// Fonction pour recharger les variables d'environnement
 async function reloadEnvFile() {
     try {
         const envPath = path.resolve(process.cwd(), '.env.local');
         
-        // Vérifier si le fichier existe
         if (!fs.existsSync(envPath)) {
             console.error('❌ Fichier .env.local non trouvé');
             return;
         }
 
-        // Lire le contenu du fichier
         const envContent = fs.readFileSync(envPath, 'utf8');
         
-        // Extraire ADMIN_EMAIL et ADMIN_PASSWORD
         const emailMatch = envContent.match(/ADMIN_EMAIL=(.+)/);
         const passwordMatch = envContent.match(/ADMIN_PASSWORD=(.+)/);
 
@@ -32,11 +28,9 @@ async function reloadEnvFile() {
             process.env.ADMIN_EMAIL = emailMatch[1];
             process.env.ADMIN_PASSWORD = passwordMatch[1];
 
-            // Vérifier si les valeurs ont changé
             if (oldEmail !== process.env.ADMIN_EMAIL || oldPassword !== process.env.ADMIN_PASSWORD) {
                 console.log('📝 Changements détectés dans .env.local');
                 
-                // Si la connexion MongoDB est établie, synchroniser l'admin
                 if (mongoose.connection.readyState === 1) {
                     console.log('🔑 Synchronisation des identifiants admin...');
                     await initializeAdmin();
@@ -51,16 +45,13 @@ async function reloadEnvFile() {
     }
 }
 
-// Démarrer le watcher
 export function startEnvWatcher() {
-    // Arrêter le watcher précédent s'il existe
     if (watcher) {
         watcher.close();
     }
 
     const envPath = path.resolve(process.cwd(), '.env.local');
     
-    // Vérifier si le fichier existe
     if (!fs.existsSync(envPath)) {
         console.error('❌ Fichier .env.local non trouvé');
         return;
@@ -82,6 +73,5 @@ export function startEnvWatcher() {
         await reloadEnvFile();
     });
 
-    // Synchronisation initiale
     reloadEnvFile();
 }

@@ -23,7 +23,6 @@ export default async function handler(
       try {
         const skills = await Skill.find().lean();
         
-        // Organiser les compétences par catégorie
         const skillsByCategory = Object.entries(DEFAULT_CATEGORIES).map(([category, skillNames]) => ({
           name: category,
           skills: skills.filter(skill => skillNames.includes(skill.name))
@@ -43,7 +42,6 @@ export default async function handler(
           return res.status(400).json({ error: 'Le nom est requis' });
         }
 
-        // Trouver la catégorie pour cette compétence
         let skillCategory = null;
         for (const [category, skills] of Object.entries(DEFAULT_CATEGORIES)) {
           if (skills.includes(name)) {

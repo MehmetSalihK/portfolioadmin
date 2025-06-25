@@ -15,13 +15,11 @@ export default function EducationPage() {
 
   const handleAddEducation = async (formData: any) => {
     try {
-      // Debug: Afficher les données envoyées
       console.log('Données envoyées à l\'API:', formData);
       console.log('isDiplomaNotObtained:', formData.isDiplomaNotObtained);
       console.log('isDiplomaPassed:', formData.isDiplomaPassed);
       console.log('isCurrentlyStudying:', formData.isCurrentlyStudying);
       
-      // Si nous avons un selectedEducation, c'est une modification
       if (selectedEducation) {
         const response = await fetch(`/api/education/${(selectedEducation as any)._id}`, {
           method: 'PUT',
@@ -37,7 +35,6 @@ export default function EducationPage() {
 
         toast.success('Formation modifiée avec succès');
       } else {
-        // C'est un nouvel ajout
         const response = await fetch('/api/education', {
           method: 'POST',
           headers: {
@@ -71,7 +68,6 @@ export default function EducationPage() {
       if (response.ok) {
         const data = await response.json();
         console.log('Données récupérées de la DB:', data);
-        // Debug: Vérifier les statuts de chaque formation
         data.forEach((edu: any, index: number) => {
           console.log(`Formation ${index}:`, {
             school: edu.school,
@@ -91,7 +87,6 @@ export default function EducationPage() {
   const handleDeleteEducation = async (id: string) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cette formation ?')) {
       try {
-        // Récupérer l'éducation avant de la supprimer pour obtenir le chemin du fichier
         const educationToDelete = educations.find((edu: any) => edu._id === id);
         
         const response = await fetch(`/api/education/${id}`, {
@@ -102,7 +97,6 @@ export default function EducationPage() {
           throw new Error('Erreur lors de la suppression');
         }
 
-        // Si l'éducation avait un fichier de diplôme, le supprimer aussi
         if (educationToDelete && ((educationToDelete as any).diplomaFilePath || (educationToDelete as any).diplomaFile)) {
           const filePath = (educationToDelete as any).diplomaFilePath || (educationToDelete as any).diplomaFile;
           const fileResponse = await fetch('/api/upload', {
@@ -118,7 +112,6 @@ export default function EducationPage() {
           }
         }
 
-        // Mettre à jour l'état local immédiatement après une suppression réussie
         setEducations(prevEducations => prevEducations.filter((edu: any) => edu._id !== id));
         toast.success('Formation supprimée avec succès');
       } catch (error) {

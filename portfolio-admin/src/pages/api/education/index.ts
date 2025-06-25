@@ -6,7 +6,6 @@ import Education from '@/models/Education';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Check authentication
     const session = await getServerSession(req, res, authOptions);
 
     if (!session) {

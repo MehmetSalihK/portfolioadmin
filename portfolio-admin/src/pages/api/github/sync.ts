@@ -27,7 +27,6 @@ export default async function handler(
   try {
     await connectDB();
 
-    // Récupérer les projets depuis l'API GitHub
     const githubResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/github/repos`);
     
     if (!githubResponse.ok) {
@@ -43,13 +42,11 @@ export default async function handler(
 
     for (const githubProject of githubProjects) {
       try {
-        // Chercher si le projet existe déjà (par URL GitHub)
         const existingProject = await Project.findOne({ 
           githubUrl: githubProject.githubUrl 
         });
 
         if (existingProject) {
-          // Mettre à jour le projet existant avec les nouvelles données GitHub
           const updated = await Project.findByIdAndUpdate(
             existingProject._id,
             {
@@ -58,11 +55,9 @@ export default async function handler(
               technologies: githubProject.technologies,
               demoUrl: githubProject.demoUrl || existingProject.demoUrl,
               featured: githubProject.featured || existingProject.featured,
-              // Garder l'image existante si elle a été personnalisée
               imageUrl: existingProject.imageUrl.includes('/uploads/') 
                 ? existingProject.imageUrl 
                 : githubProject.imageUrl,
-              // Ajouter les métadonnées GitHub
               githubData: {
                 language: githubProject.language,
                 stars: githubProject.stars,
@@ -78,7 +73,6 @@ export default async function handler(
             updatedCount++;
           }
         } else {
-          // Créer un nouveau projet
           const newProject = new Project({
             title: githubProject.title,
             description: githubProject.description,
@@ -114,7 +108,6 @@ export default async function handler(
       }
     }
 
-    // Optionnel: Marquer les projets GitHub qui ne sont plus dans la liste comme archivés
     if (req.body.archiveRemoved) {
       const githubUrls = githubProjects.map(p => p.githubUrl);
       await Project.updateMany(

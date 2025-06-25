@@ -13,7 +13,6 @@ const categorySchema = new mongoose.Schema({
   }
 });
 
-// Vérifie si le modèle existe déjà pour éviter l'erreur "Cannot overwrite model once compiled"
 const Category = mongoose.models.Category || mongoose.model('Category', categorySchema);
 
 export default Category; 

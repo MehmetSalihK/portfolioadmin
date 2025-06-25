@@ -9,13 +9,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Connexion à la base de données
     await dbConnect();
 
-    // Synchroniser l'admin
     await initializeAdmin();
 
-    // Récupérer l'admin pour avoir les dates formatées
     const admin = await Admin.findOne({ email: process.env.ADMIN_EMAIL });
 
     return res.status(200).json({ 

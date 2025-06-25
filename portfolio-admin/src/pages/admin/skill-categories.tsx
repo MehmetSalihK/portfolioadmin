@@ -241,7 +241,6 @@ export default function SkillCategoriesPage() {
         {/* Liste des catégories avec leurs compétences */}
         <div className="space-y-8">
           {categories.map((category) => {
-            // Filtrer les compétences pour cette catégorie
             const categorySkills = skills.filter(skill => {
               const skillName = skill.name.toLowerCase();
               
