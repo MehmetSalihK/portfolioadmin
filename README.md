@@ -2,6 +2,13 @@
 
 <div align="center">
   
+  **🌍 Langues:**
+  [🇬🇧 English](README_EN.md) | [🇹🇷 Türkçe](README_TR.md)
+  
+</div>
+
+<div align="center">
+  
   [![Next.js](https://img.shields.io/badge/Next.js-14.0.0-black.svg)](https://nextjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-blue.svg)](https://www.typescriptlang.org/)
   [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3.0-38B2AC.svg)](https://tailwindcss.com/)
@@ -274,7 +281,6 @@ portfolio-admin/
 - Analytics et statistiques
   - Suivi des visites
   - Temps passé par page
-  - Interactions utilisateurs
 - Système de sauvegarde et versions
 - Export/Import des données
 - Mode maintenance
