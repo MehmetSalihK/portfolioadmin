@@ -178,137 +178,142 @@ export default function AnalyticsPage() {
               </button>
             ))}
           </div>
+        </div>
 
-          {/* Analytics Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl p-6">
-              <div className="flex items-center gap-3 mb-2 text-blue-400">
-                <FiEye className="w-5 h-5" />
-                <span>Total Visites</span>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-100 text-sm">Visites totales</p>
+                <p className="text-2xl font-bold">{analyticsData?.totalVisits || 0}</p>
               </div>
-              <p className="text-3xl font-bold text-white">{analyticsData?.totalVisits || 0}</p>
+              <FiEye className="w-8 h-8 text-blue-200" />
             </div>
+          </motion.div>
 
-            <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-xl p-6">
-              <div className="flex items-center gap-3 mb-2 text-purple-400">
-                <FiUsers className="w-5 h-5" />
-                <span>Visiteurs Uniques</span>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-100 text-sm">Visiteurs uniques</p>
+                <p className="text-2xl font-bold">{analyticsData?.uniqueVisitors || 0}</p>
               </div>
-              <p className="text-3xl font-bold text-white">{analyticsData?.uniqueVisitors || 0}</p>
+              <FiUsers className="w-8 h-8 text-green-200" />
             </div>
+          </motion.div>
 
-            <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-xl p-6">
-              <div className="flex items-center gap-3 mb-2 text-green-400">
-                <FiClock className="w-5 h-5" />
-                <span>Temps Moyen</span>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-100 text-sm">Temps moyen</p>
+                <p className="text-2xl font-bold">{formatTime(analyticsData?.avgTimeSpent || 0)}</p>
               </div>
-              <p className="text-3xl font-bold text-white">{formatTime(analyticsData?.avgTimeSpent || 0)}</p>
+              <FiClock className="w-8 h-8 text-purple-200" />
             </div>
+          </motion.div>
 
-            <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/20 rounded-xl p-6">
-              <div className="flex items-center gap-3 mb-2 text-orange-400">
-                <FiTrendingUp className="w-5 h-5" />
-                <span>Taux de Rebond</span>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-orange-100 text-sm">Tendance</p>
+                <p className="text-2xl font-bold">+{Math.round(((analyticsData?.totalVisits || 0) / 30) * 100) / 100}%</p>
               </div>
-              <p className="text-3xl font-bold text-white">
-                {analyticsData?.totalVisits ? Math.round(((analyticsData.totalVisits - analyticsData.uniqueVisitors) / analyticsData.totalVisits) * 100) : 0}%
-              </p>
+              <FiTrendingUp className="w-8 h-8 text-orange-200" />
             </div>
-          </div>
+          </motion.div>
+        </div>
 
+        {/* Charts and Tables */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Top Pages */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div className="bg-[#1E1E1E] rounded-xl p-6 border border-[#2A2A2A]">
-              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <FiTrendingUp className="w-5 h-5 text-blue-500" />
-                Pages Populaires
-              </h3>
-              <div className="space-y-3">
-                {analyticsData?.topPages?.slice(0, 5).map((page, index) => (
-                  <div key={page.page} className="flex items-center justify-between p-3 bg-[#2A2A2A] rounded-lg">
-                    <div className="flex-1">
-                      <div className="text-white font-medium">{page.page}</div>
-                      <div className="text-gray-400 text-sm">{page.visits} visites</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-blue-400 font-medium">{formatTime(page.avgTimeSpent)}</div>
-                      <div className="text-gray-500 text-xs">temps moyen</div>
-                    </div>
+          <div className="bg-[#1E1E1E] rounded-xl p-6">
+            <h3 className="text-xl font-semibold text-white mb-4">Pages les plus visitées</h3>
+            <div className="space-y-3">
+              {analyticsData?.topPages?.map((page, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-[#2A2A2A] rounded-lg">
+                  <div>
+                    <p className="text-white font-medium">{page.page}</p>
+                    <p className="text-gray-400 text-sm">{formatTime(page.avgTimeSpent)} temps moyen</p>
                   </div>
-                )) || (
-                  <div className="text-gray-400 text-center py-4">Aucune donnée disponible</div>
-                )}
-              </div>
-            </div>
-
-            {/* Device Stats */}
-            <div className="bg-[#1E1E1E] rounded-xl p-6 border border-[#2A2A2A]">
-              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <FiMonitor className="w-5 h-5 text-green-500" />
-                Appareils
-              </h3>
-              <div className="space-y-3">
-                {analyticsData?.deviceStats?.map((device, index) => {
-                  const percentage = analyticsData.totalVisits > 0 
-                    ? Math.round((device.count / analyticsData.totalVisits) * 100) 
-                    : 0;
-                  return (
-                    <div key={device.device} className="flex items-center justify-between p-3 bg-[#2A2A2A] rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="text-gray-400">
-                          {getDeviceIcon(device.device)}
-                        </div>
-                        <div>
-                          <div className="text-white font-medium capitalize">{device.device}</div>
-                          <div className="text-gray-400 text-sm">{device.count} visites</div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-green-400 font-medium">{percentage}%</div>
-                      </div>
-                    </div>
-                  );
-                }) || (
-                  <div className="text-gray-400 text-center py-4">Aucune donnée disponible</div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Daily Visits Chart */}
-          <div className="bg-[#1E1E1E] rounded-xl p-6 border border-[#2A2A2A]">
-            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-              <FiBarChart2 className="w-5 h-5 text-purple-500" />
-              Visites Quotidiennes
-            </h3>
-            <div className="space-y-2">
-              {analyticsData?.dailyVisits?.slice(-7).map((day, index) => {
-                const maxVisits = Math.max(...(analyticsData.dailyVisits?.map(d => d.visits) || [1]));
-                const percentage = maxVisits > 0 ? (day.visits / maxVisits) * 100 : 0;
-                return (
-                  <div key={day.date} className="flex items-center gap-4">
-                    <div className="w-20 text-sm text-gray-400">
-                      {new Date(day.date).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}
-                    </div>
-                    <div className="flex-1 bg-[#2A2A2A] rounded-full h-6 relative overflow-hidden">
-                      <div 
-                        className="bg-gradient-to-r from-purple-500 to-blue-500 h-full rounded-full transition-all duration-300"
-                        style={{ width: `${percentage}%` }}
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-medium">
-                        {day.visits} visites
-                      </div>
-                    </div>
-                    <div className="w-16 text-sm text-gray-400 text-right">
-                      {day.uniqueVisitors} uniques
-                    </div>
-                  </div>
-                );
-              }) || (
+                  <span className="text-blue-400 font-semibold">{page.visits} visites</span>
+                </div>
+              )) || (
                 <div className="text-gray-400 text-center py-4">Aucune donnée disponible</div>
               )}
             </div>
           </div>
-      </AdminLayout>
+
+          {/* Device Stats */}
+          <div className="bg-[#1E1E1E] rounded-xl p-6">
+            <h3 className="text-xl font-semibold text-white mb-4">Statistiques par appareil</h3>
+            <div className="space-y-3">
+              {analyticsData?.deviceStats?.map((device, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-[#2A2A2A] rounded-lg">
+                  <div className="flex items-center gap-3">
+                    {getDeviceIcon(device.device)}
+                    <span className="text-white capitalize">{device.device}</span>
+                  </div>
+                  <span className="text-blue-400 font-semibold">{device.count}</span>
+                </div>
+              )) || (
+                <div className="text-gray-400 text-center py-4">Aucune donnée disponible</div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Daily Visits Chart */}
+        <div className="mt-8 bg-[#1E1E1E] rounded-xl p-6">
+          <h3 className="text-xl font-semibold text-white mb-4">Visites quotidiennes</h3>
+          <div className="space-y-2">
+            {analyticsData?.dailyVisits?.map((day, index) => {
+              const maxVisits = Math.max(...(analyticsData.dailyVisits?.map(d => d.visits) || [1]));
+              const percentage = (day.visits / maxVisits) * 100;
+              
+              return (
+                <div key={index} className="flex items-center gap-4">
+                  <div className="w-20 text-sm text-gray-400">
+                    {new Date(day.date).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}
+                  </div>
+                  <div className="flex-1 bg-[#2A2A2A] rounded-full h-6 relative overflow-hidden">
+                    <div 
+                      className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-500"
+                      style={{ width: `${percentage}%` }}
+                    />
+                    <div className="absolute inset-0 flex items-center px-3">
+                      <span className="text-white text-sm font-medium">{day.visits} visites</span>
+                    </div>
+                  </div>
+                  <div className="w-16 text-sm text-gray-400 text-right">
+                    {day.uniqueVisitors} uniques
+                  </div>
+                </div>
+              );
+            }) || (
+              <div className="text-gray-400 text-center py-4">Aucune donnée disponible</div>
+            )}
+          </div>
+        </div>
+      </div>
+    </AdminLayout>
   );
 }

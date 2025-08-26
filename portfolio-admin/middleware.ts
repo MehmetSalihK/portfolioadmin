@@ -53,7 +53,7 @@ export async function middleware(request: NextRequest) {
                     'unknown';
     
     const allowedIPs = maintenanceStatus.allowedIPs || [];
-    const isIPAllowed = allowedIPs.includes(clientIP) || allowedIPs.includes('127.0.0.1');
+    const isIPAllowed = allowedIPs.includes(clientIP);
     
     if (!isIPAllowed) {
       // Rediriger vers la page de maintenance
@@ -69,14 +69,8 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - admin (admin routes)
-     * - maintenance (maintenance page)
+     * Match all request paths except for static files
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|admin|maintenance).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };

@@ -1595,6 +1595,19 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
   try {
     await connectDB();
 
+    // Vérifier le mode maintenance
+    const Maintenance = (await import('@/models/Maintenance')).default;
+    const maintenanceStatus = await Maintenance.findOne().lean();
+    
+    if (maintenanceStatus && (maintenanceStatus as any).isEnabled) {
+      return {
+        redirect: {
+          destination: '/maintenance',
+          permanent: false,
+        },
+      };
+    }
+
     let homeData = await HomePage.findOne().lean();
     if (!homeData) {
       homeData = defaultHomeData;

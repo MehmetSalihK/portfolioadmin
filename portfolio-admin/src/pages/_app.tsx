@@ -11,13 +11,14 @@ import AutoSync from '@/components/admin/AutoSync';
 function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const router = useRouter();
   const isAdminPage = router.pathname.startsWith('/admin');
+  const isMaintenancePage = router.pathname === '/maintenance';
 
   return (
     <SessionProvider session={session}>
       <ThemeProvider attribute="class">
         <AutoSync />
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-          {!isAdminPage && <Navbar />}
+          {!isAdminPage && !isMaintenancePage && <Navbar />}
           <div className={!isAdminPage ? "" : ""}>
             <Component {...pageProps} />
           </div>
