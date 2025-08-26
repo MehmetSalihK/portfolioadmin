@@ -7,9 +7,8 @@ import BlurPreview from '../BlurPreview';
 interface EducationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: any) => Promise<void>;
   education?: {
-    _id?: string;
     school: string;
     degree: string;
     field: string;
@@ -23,12 +22,11 @@ interface EducationModalProps {
     diplomaFile?: string;
     diplomaFileName?: string;
     diplomaFilePath?: string;
-    diplomaData?: string;
-    isBlurred?: boolean;
   };
 }
 
 export default function EducationModal({ isOpen, onClose, onSubmit, education }: EducationModalProps) {
+  // Fonction pour formater une date en format YYYY-MM pour les inputs de type month
   const formatDateForInput = (dateString: string) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -50,13 +48,12 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
     isDiplomaNotObtained: education?.isDiplomaNotObtained || false,
     diplomaFile: education?.diplomaFile || '',
     diplomaFileName: education?.diplomaFileName || '',
-    diplomaFilePath: education?.diplomaFilePath || '',
-    diplomaData: education?.diplomaData || '',
-    isBlurred: education?.isBlurred || false
+    diplomaFilePath: education?.diplomaFilePath || ''
   });
   const [showBlurPreview, setShowBlurPreview] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
 
+  // Ajout de useEffect pour mettre à jour le formulaire quand education change
   useEffect(() => {
     if (education) {
       setFormData({
@@ -72,11 +69,10 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
         isDiplomaNotObtained: education.isDiplomaNotObtained || false,
         diplomaFile: education.diplomaFile || '',
         diplomaFileName: education.diplomaFileName || '',
-        diplomaFilePath: education.diplomaFilePath || '',
-        diplomaData: education.diplomaData || '',
-        isBlurred: education.isBlurred || false
+        diplomaFilePath: education.diplomaFilePath || ''
       });
     } else {
+      // Réinitialiser le formulaire si pas d'éducation
       setFormData({
         school: '',
         degree: '',
@@ -90,12 +86,10 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
         isDiplomaNotObtained: false,
         diplomaFile: '',
         diplomaFileName: '',
-        diplomaFilePath: '',
-        diplomaData: '',
-        isBlurred: false
+        diplomaFilePath: ''
       });
     }
-  }, [education, isOpen]);
+  }, [education]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,77 +101,37 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Validation du type de fichier
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
     if (!allowedTypes.includes(file.type)) {
       toast.error('Type de fichier non autorisé. Seuls PDF, JPEG et PNG sont acceptés.');
       return;
     }
 
-     const maxSize = 4 * 1024 * 1024; // 4MB
-     if (file.size > maxSize) {
-       toast.error('Le fichier est trop volumineux. Taille maximale : 4MB.');
-       return;
-     }
-
-    if (formData.diplomaFilePath) {
-      await deleteFile(formData.diplomaFilePath);
+    // Validation de la taille (max 50MB)
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    if (file.size > maxSize) {
+      toast.error('Le fichier est trop volumineux. Taille maximale : 50MB.');
+      return;
     }
 
+    // Stocker le fichier sans ouvrir automatiquement le BlurPreview
     setPendingFile(file);
-    setFormData(prev => ({ 
-      ...prev, 
-      diplomaFile: '',
-      diplomaFileName: '',
-      diplomaFilePath: '',
-      diplomaData: '',
-      isBlurred: false 
-    }));
-    
-    if (file.type.startsWith('image/')) {
-      setShowBlurPreview(true);
-    }
-  };
-
-  const generateFileName = (originalName: string, degree: string) => {
-    const extension = originalName.split('.').pop();
-    const cleanDegree = degree.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-    return `${cleanDegree || 'diplome'}.${extension}`;
-  };
-
-  const deleteFile = async (filePath: string) => {
-    try {
-      const response = await fetch('/api/upload', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ filePath }),
-      });
-
-      if (!response.ok) {
-        console.error('Erreur lors de la suppression du fichier');
-      }
-    } catch (error) {
-      console.error('Erreur lors de la suppression du fichier:', error);
-    }
   };
 
   const uploadFile = async (file: File, blurZones?: any[]) => {
     try {
-      const uploadFormData = new FormData();
+      const formData = new FormData();
+      formData.append('image', file);
       
-      const customFileName = generateFileName(file.name, formData.degree);
-      const renamedFile = new File([file], customFileName, { type: file.type });
-      
-      uploadFormData.append('image', renamedFile);
-      
+      // Ajouter les zones de floutage si c'est une image
       if (blurZones && file.type.startsWith('image/')) {
-        uploadFormData.append('blurZones', JSON.stringify(blurZones));
+        formData.append('blurZones', JSON.stringify(blurZones));
       }
 
       const response = await fetch('/api/upload', {
         method: 'POST',
-        body: uploadFormData,
+        body: formData,
       });
 
       if (!response.ok) {
@@ -190,8 +144,7 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
          ...prev,
          diplomaFile: data.filePath,
          diplomaFileName: data.filename,
-         diplomaFilePath: data.filePath,
-         diplomaData: data.fileData
+         diplomaFilePath: data.filePath
        }));
 
       toast.success('Certificat téléchargé avec succès!');
@@ -204,17 +157,9 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
   const handleBlurConfirm = async (blurZones: any[]) => {
     if (pendingFile) {
       await uploadFile(pendingFile, blurZones);
-      setFormData(prev => ({ ...prev, isBlurred: true }));
-      setShowBlurPreview(false);
       setPendingFile(null);
     }
-  };
-
-  const handleUploadWithoutBlur = async () => {
-    if (pendingFile) {
-      await uploadFile(pendingFile);
-      setPendingFile(null);
-    }
+    setShowBlurPreview(false);
   };
 
   const handleBlurCancel = () => {
@@ -402,20 +347,18 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                     Certificat de diplôme
                   </label>
                   
-                  {/* Zone de téléchargement - masquée s'il y a déjà un fichier */}
-                  {!formData.diplomaFileName && !pendingFile && (
-                    <div className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center hover:border-gray-500 transition-colors bg-[#1A1A1A]">
-                      <input
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={handleFileUpload}
-                        className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
-                      />
-                      <p className="text-xs text-gray-500 mt-2">
-                        PDF, JPEG, PNG acceptés (max 50MB)
-                      </p>
-                    </div>
-                  )}
+                  {/* Zone de téléchargement */}
+                  <div className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center hover:border-gray-500 transition-colors bg-[#1A1A1A]">
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={handleFileUpload}
+                      className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                    />
+                    <p className="text-xs text-gray-500 mt-2">
+                      PDF, JPEG, PNG acceptés (max 50MB)
+                    </p>
+                  </div>
 
                   {/* Affichage du fichier en attente */}
                   {pendingFile && (
@@ -428,18 +371,16 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                           </span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          {!formData.isBlurred && (
-                            <button
-                              type="button"
-                              onClick={() => setShowBlurPreview(true)}
-                              className="text-orange-400 hover:text-orange-300 text-sm flex items-center space-x-1"
-                            >
-                              <span>Flouter</span>
-                            </button>
-                          )}
                           <button
                             type="button"
-                            onClick={handleUploadWithoutBlur}
+                            onClick={() => setShowBlurPreview(true)}
+                            className="text-orange-400 hover:text-orange-300 text-sm flex items-center space-x-1"
+                          >
+                            <span>Flouter</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => uploadFile(pendingFile)}
                             className="text-green-400 hover:text-green-300 text-sm flex items-center space-x-1"
                           >
                             <span>Télécharger sans floutage</span>
@@ -468,15 +409,13 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                           </span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          {!formData.isBlurred && (
-                            <button
-                              type="button"
-                              onClick={() => setShowBlurPreview(true)}
-                              className="text-orange-400 hover:text-orange-300 text-sm flex items-center space-x-1"
-                            >
-                              <span>Flouter</span>
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() => setShowBlurPreview(true)}
+                            className="text-orange-400 hover:text-orange-300 text-sm flex items-center space-x-1"
+                          >
+                            <span>Flouter</span>
+                          </button>
                           <a
                             href={formData.diplomaFilePath}
                             target="_blank"
@@ -489,30 +428,11 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                           <button
                             type="button"
                             onClick={() => {
-                              const fileInput = document.createElement('input');
-                              fileInput.type = 'file';
-                              fileInput.accept = '.pdf,.jpg,.jpeg,.png';
-                              fileInput.onchange = (e) => handleFileUpload(e as any);
-                              fileInput.click();
-                            }}
-                            className="text-yellow-400 hover:text-yellow-300 text-sm flex items-center space-x-1"
-                          >
-                            <span>Remplacer</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              if (formData.diplomaFilePath) {
-                                await deleteFile(formData.diplomaFilePath);
-                              }
-                              
                               setFormData(prev => ({
                                 ...prev,
                                 diplomaFile: '',
                                 diplomaFileName: '',
-                                diplomaFilePath: '',
-                                diplomaData: '',
-                                isBlurred: false
+                                diplomaFilePath: ''
                               }));
                             }}
                             className="text-red-400 hover:text-red-300 text-sm flex items-center space-x-1"

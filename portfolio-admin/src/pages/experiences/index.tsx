@@ -6,6 +6,7 @@ import { useTheme } from 'next-themes';
 import { GetStaticProps } from 'next';
 import connectDB from '@/lib/db';
 import Experience from '@/models/Experience';
+import useAnalytics from '@/utils/hooks/useAnalytics';
 
 interface Experience {
   _id: string;
@@ -23,6 +24,13 @@ interface ExperiencesPageProps {
 }
 
 export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
+  // Tracking analytics pour la page Expériences
+  useAnalytics({
+    enabled: true,
+    updateInterval: 30000, // 30 secondes
+    trackTimeSpent: true
+  });
+
   const { theme } = useTheme();
 
   return (

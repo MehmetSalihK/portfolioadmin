@@ -14,10 +14,13 @@ import Skill from '@/models/Skill';
 import HomePage from '@/models/HomePage';
 import Setting from '@/models/Setting';
 import { useRef, useEffect, useState } from 'react';
+import useAnalytics from '@/utils/hooks/useAnalytics';
 import { 
   FaGithub, 
   FaLinkedin, 
   FaTwitter, 
+  FaWhatsapp,
+  FaTelegram,
   FaReact, 
   FaNodeJs, 
   FaGit, 
@@ -67,6 +70,7 @@ interface Project {
   githubUrl?: string;
   featured?: boolean;
 }
+
 interface Experience {
   _id: string;
   title: string;
@@ -77,6 +81,7 @@ interface Experience {
   description: string;
   technologies: string[];
 }
+
 interface HomePageProps {
   projects: Project[];
   experiences: Experience[];
@@ -91,10 +96,27 @@ interface HomePageProps {
     subtitle: string;
     aboutTitle: string;
     aboutText: string;
+    navigation: {
+      about: string;
+      projects: string;
+      experience: string;
+      contact: string;
+    };
+    contactInfo: {
+      email: string;
+      phone: string;
+      location: string;
+    };
+    footer: {
+      copyright: string;
+      description: string;
+    };
     socialLinks: {
       github: string;
       linkedin: string;
       twitter: string;
+      whatsapp: string;
+      telegram: string;
     };
   };
   settings: {
@@ -121,14 +143,31 @@ interface HomePageProps {
 const defaultHomeData = {
   _id: 'default',
   __v: 0,
-  title: 'Bienvenue sur mon Portfolio',
-  subtitle: 'Développeur Full Stack passionné par la création d\'applications web modernes et performantes',
-  aboutTitle: 'À propos de moi',
+  title: 'Portfolio Professionnel',
+  subtitle: 'Développeur Full Stack passionné par la création d\'applications web modernes et performantes. Spécialisé dans React, Next.js, Node.js et les technologies cloud.',
+  aboutTitle: 'À propos',
   aboutText: 'Je suis un développeur Full Stack passionné par la création d\'applications web innovantes. Avec une solide expérience dans le développement front-end et back-end, je m\'efforce de créer des solutions élégantes et performantes qui répondent aux besoins des utilisateurs.',
+  navigation: {
+    about: 'À propos',
+    projects: 'Projets',
+    experience: 'Expérience',
+    contact: 'Contact'
+  },
+  contactInfo: {
+    email: 'contact@portfolio.com',
+    phone: '+33 X XX XX XX XX',
+    location: 'France'
+  },
+  footer: {
+    copyright: '© 2024 Portfolio. Fait avec ❤️ et Next.js',
+    description: 'Développeur Full Stack passionné par la création d\'applications web modernes et performantes.'
+  },
   socialLinks: {
     github: '',
     linkedin: '',
-    twitter: ''
+    twitter: '',
+    whatsapp: '',
+    telegram: ''
   }
 };
 
@@ -226,11 +265,18 @@ export default function Home({ projects, experiences, skills, homeData = default
   const [showBanner, setShowBanner] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Analytics tracking
+  useAnalytics({ enabled: true, updateInterval: 30000 });
+
+  // État pour la modale
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [isCVModalOpen, setIsCVModalOpen] = useState(false);
+
+  // Limiter à 3 projets les plus visités (on peut utiliser featured ou un autre critère)
   const formattedProjects = projects
     .sort((a, b) => {
+      // Prioriser les projets featured, puis par ordre de création
       if (a.featured && !b.featured) return -1;
       if (!a.featured && b.featured) return 1;
       return 0;
@@ -245,6 +291,7 @@ export default function Home({ projects, experiences, skills, homeData = default
     mainRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Fonctions pour gérer la modale
   const openModal = (project: any) => {
     setSelectedProject(project);
     setIsModalOpen(true);
@@ -277,6 +324,7 @@ export default function Home({ projects, experiences, skills, homeData = default
 
       await response.json();
     } catch (error) {
+      // Silently handle error
     }
   };
 
@@ -319,6 +367,8 @@ export default function Home({ projects, experiences, skills, homeData = default
     const formData = new FormData(form);
 
     setIsSubmitting(true);
+
+    // Afficher une notification de chargement
     const loadingToastId = toast.loading(
       <div className="flex items-center space-x-2">
         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
@@ -344,6 +394,7 @@ export default function Home({ projects, experiences, skills, homeData = default
       });
 
       if (response.ok) {
+        // Succès : Remplacer la notification de chargement par une notification de succès
         toast.dismiss(loadingToastId);
         toast.custom((t) => (
           <motion.div
@@ -415,9 +466,11 @@ export default function Home({ projects, experiences, skills, homeData = default
           duration: 5000,
         });
 
+        // Réinitialiser le formulaire
         form.reset();
         setIsSubmitting(false);
       } else {
+        // Erreur : Afficher une notification d'erreur
         toast.dismiss(loadingToastId);
         setIsSubmitting(false);
         toast.custom((t) => (
@@ -487,6 +540,7 @@ export default function Home({ projects, experiences, skills, homeData = default
         });
       }
     } catch (error) {
+      // Gérer l'erreur comme ci-dessus
       toast.dismiss(loadingToastId);
       toast.error('Erreur lors de l\'envoi du message');
       setIsSubmitting(false);
@@ -583,7 +637,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                 href="/projects"
                 className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform"
               >
-                <span>Voir mes projets</span>
+                <span>Voir mes {homeData.navigation?.projects?.toLowerCase() || 'projets'}</span>
                 <motion.svg
                   className="ml-2 w-5 h-5"
                   fill="none"
@@ -607,7 +661,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                 href="#contact"
                 className="inline-flex items-center px-8 py-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform"
               >
-                Me contacter
+                {homeData.navigation?.contact || 'Me contacter'}
               </Link>
             </motion.div>
             
@@ -667,6 +721,30 @@ export default function Home({ projects, experiences, skills, homeData = default
                 className="p-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
               >
                 <FaTwitter className="w-6 h-6" />
+              </motion.a>
+            )}
+            {homeData.socialLinks.whatsapp && (
+              <motion.a
+                href={homeData.socialLinks.whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+                whileHover={{ scale: 1.2, y: -3 }}
+                whileTap={{ scale: 0.9 }}
+                className="p-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400"
+              >
+                <FaWhatsapp className="w-6 h-6" />
+              </motion.a>
+            )}
+            {homeData.socialLinks.telegram && (
+              <motion.a
+                href={homeData.socialLinks.telegram}
+                target="_blank"
+                rel="noopener noreferrer"
+                whileHover={{ scale: 1.2, y: -3 }}
+                whileTap={{ scale: 0.9 }}
+                className="p-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-300"
+              >
+                <FaTelegram className="w-6 h-6" />
               </motion.a>
             )}
           </motion.div>
@@ -827,7 +905,7 @@ export default function Home({ projects, experiences, skills, homeData = default
               className="text-center mb-12 lg:mb-16"
             >
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 to-purple-800 dark:from-white dark:to-purple-200 bg-clip-text text-transparent mb-4">
-                Mes Projets
+                Mes {homeData.navigation?.projects || 'Projets'}
               </h2>
               <div className="w-24 h-1 bg-gradient-to-r from-purple-500 to-pink-500 mx-auto rounded-full mb-6"></div>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
@@ -1095,7 +1173,7 @@ export default function Home({ projects, experiences, skills, homeData = default
               className="text-center mb-12 lg:mb-16"
             >
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 to-green-800 dark:from-white dark:to-green-200 bg-clip-text text-transparent mb-4">
-                Mes Expériences
+                Mes {homeData.navigation?.experience || 'Expérience'}s
               </h2>
               <div className="w-24 h-1 bg-gradient-to-r from-green-500 to-teal-500 mx-auto rounded-full mb-6"></div>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
@@ -1221,7 +1299,7 @@ export default function Home({ projects, experiences, skills, homeData = default
               className="text-center mb-12 lg:mb-16"
             >
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 to-blue-800 dark:from-white dark:to-blue-200 bg-clip-text text-transparent mb-4">
-                Contactez-moi
+                {homeData.navigation?.contact || 'Contact'}ez-moi
               </h2>
               <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full mb-6"></div>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
@@ -1265,7 +1343,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                       </div>
                       <div>
                         <h4 className="font-semibold text-gray-900 dark:text-white">Email</h4>
-                        <p className="text-gray-600 dark:text-gray-300">{settings?.email || 'contact@monportfolio.com'}</p>
+                        <p className="text-gray-600 dark:text-gray-300">{homeData.contactInfo?.email || 'contact@portfolio.com'}</p>
                       </div>
                     </motion.div>
                     
@@ -1500,6 +1578,8 @@ export default function Home({ projects, experiences, skills, homeData = default
         </section>
       </main>
       
+
+      
       {/* CV Modal */}
       <CVModal 
         isOpen={isCVModalOpen} 
@@ -1520,12 +1600,14 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       homeData = defaultHomeData;
     }
 
+    // Récupérer les settings
     const settingsFromDB = await Setting.findOne().lean();
     const settings = settingsFromDB || {
       email: 'contact@mehmetsalihk.fr',
       linkedin: 'https://www.linkedin.com/in/mehmetsalihk'
     };
 
+    // Récupérer les projets sélectionnés pour la page d'accueil
     const projects = await Project.aggregate([
       {
         $match: { 
@@ -1556,17 +1638,21 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       }
     ]);
     
+    // Utiliser directement les 3 projets les plus populaires de la base de données
     const allProjects = projects;
     const experiences = await Experience.find({}).sort({ startDate: -1 }).select('title company location startDate endDate description technologies').lean();
+    // Ensure technologies is an array, even if undefined
     const experiencesWithTechnologies = experiences.map(exp => ({
       ...exp,
       technologies: exp.technologies || []
     }));
     
+    // Récupérer les catégories visibles sans doublons
     const allCategories = await SkillCategory.find({ isVisible: true })
       .sort('displayOrder')
       .lean();
 
+    // Filtrer les catégories pour n'avoir que des noms uniques
     const uniqueCategories = allCategories.reduce<typeof allCategories>((acc, current) => {
       const exists = acc.find(cat => cat.name === current.name);
       if (!exists) {
@@ -1575,6 +1661,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       return acc;
     }, []);
 
+    // Récupérer les compétences non masquées avec categoryId valide
     const skills = await Skill.find({ 
       isHidden: false,
       categoryId: { $exists: true, $ne: null }
@@ -1582,6 +1669,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       .populate('categoryId')
       .lean();
 
+    // Associer les compétences aux catégories uniques
     const skillsByCategory = uniqueCategories.map(category => ({
       _id: category._id,
       name: category.name,

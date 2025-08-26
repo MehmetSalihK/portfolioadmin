@@ -4,6 +4,7 @@ import Layout from '@/components/layout/Layout';
 import ExperienceCard from '@/components/experience/ExperienceCard';
 import connectDB from '@/lib/db';
 import Experience from '@/models/Experience';
+import useAnalytics from '@/utils/hooks/useAnalytics';
 
 interface ExperiencePageProps {
   experiences: Array<{
@@ -22,6 +23,13 @@ interface ExperiencePageProps {
 }
 
 export default function Experiences({ experiences = [] }: ExperiencePageProps) {
+  // Tracking analytics pour la page Expériences
+  useAnalytics({
+    enabled: true,
+    updateInterval: 30000, // 30 secondes
+    trackTimeSpent: true
+  });
+
   return (
     <Layout>
       <Head>

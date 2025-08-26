@@ -1,13 +1,6 @@
 # Portfolio Admin
 
 <div align="center">
-
-  🌍 Diller:
-  [🇫🇷 Français](README.md) | [🇬🇧 English](README_EN.md)
-
-</div>
-
-<div align="center">
   
   [![Next.js](https://img.shields.io/badge/Next.js-14.0.0-black.svg)](https://nextjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-blue.svg)](https://www.typescriptlang.org/)

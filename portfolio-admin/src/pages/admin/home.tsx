@@ -15,18 +15,22 @@ interface HomePageData {
     github: string;
     linkedin: string;
     twitter: string;
+    whatsapp: string;
+    telegram: string;
   };
 }
 
 const defaultData: HomePageData = {
-  title: 'Bienvenue sur mon Portfolio',
-  subtitle: 'Développeur Full Stack passionné par la création d\'applications web modernes et performantes',
-  aboutTitle: 'À propos de moi',
+  title: 'Portfolio Professionnel',
+  subtitle: 'Développeur Full Stack passionné par la création d\'applications web modernes et performantes. Spécialisé dans React, Next.js, Node.js et les technologies cloud.',
+  aboutTitle: 'À propos',
   aboutText: 'Je suis un développeur Full Stack passionné par la création d\'applications web innovantes. Avec une solide expérience dans le développement front-end et back-end, je m\'efforce de créer des solutions élégantes et performantes qui répondent aux besoins des utilisateurs.',
   socialLinks: {
     github: '',
     linkedin: '',
-    twitter: ''
+    twitter: '',
+    whatsapp: '',
+    telegram: ''
   }
 };
 
@@ -40,6 +44,8 @@ export default function HomePageAdmin() {
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/admin/login');
+    } else if (status === 'authenticated') {
+      fetchData();
     }
   }, [status, router]);
 
@@ -48,12 +54,19 @@ export default function HomePageAdmin() {
       const response = await fetch('/api/homepage');
       if (!response.ok) throw new Error('Erreur lors du chargement des données');
       const fetchedData = await response.json();
+      
+      // Only keep properties that exist in our current data model
+      const { title, subtitle, aboutTitle, aboutText, socialLinks } = fetchedData;
+      
       setData({
         ...defaultData,
-        ...fetchedData,
+        ...(title !== undefined ? { title } : {}),
+        ...(subtitle !== undefined ? { subtitle } : {}),
+        ...(aboutTitle !== undefined ? { aboutTitle } : {}),
+        ...(aboutText !== undefined ? { aboutText } : {}),
         socialLinks: {
           ...defaultData.socialLinks,
-          ...(fetchedData.socialLinks || {})
+          ...(socialLinks || {})
         }
       });
     } catch (error) {
@@ -217,8 +230,34 @@ export default function HomePageAdmin() {
                   className="w-full px-4 py-2 bg-[#2A2A2A] border border-[#3A3A3A] rounded-lg text-white focus:outline-none focus:border-blue-500"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  WhatsApp
+                </label>
+                <input
+                  type="text"
+                  name="socialLinks.whatsapp"
+                  value={data.socialLinks.whatsapp}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 bg-[#2A2A2A] border border-[#3A3A3A] rounded-lg text-white focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Telegram
+                </label>
+                <input
+                  type="text"
+                  name="socialLinks.telegram"
+                  value={data.socialLinks.telegram}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 bg-[#2A2A2A] border border-[#3A3A3A] rounded-lg text-white focus:outline-none focus:border-blue-500"
+                />
+              </div>
             </div>
           </div>
+
+
 
           <div className="flex justify-end">
             <button

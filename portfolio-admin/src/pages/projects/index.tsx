@@ -4,6 +4,7 @@ import Layout from '@/components/layout/Layout';
 import ProjectCard from '@/components/projects/ProjectCard';
 import connectDB from '@/lib/db';
 import Project from '@/models/Project';
+import useAnalytics from '@/utils/hooks/useAnalytics';
 
 interface ProjectsPageProps {
   projects: Array<{
@@ -18,6 +19,13 @@ interface ProjectsPageProps {
 }
 
 export default function Projects({ projects }: ProjectsPageProps) {
+  // Tracking analytics pour la page Projets
+  useAnalytics({
+    enabled: true,
+    updateInterval: 30000, // 30 secondes
+    trackTimeSpent: true
+  });
+
   const formattedProjects = projects.map(project => ({
     ...project,
     image: project.imageUrl // Map imageUrl to image for ProjectCard

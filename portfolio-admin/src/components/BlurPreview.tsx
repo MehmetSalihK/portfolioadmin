@@ -9,7 +9,8 @@ import {
   FiSquare,
   FiEye,
   FiEyeOff,
-  FiRotateCw
+  FiRotateCw,
+  FiPlay
 } from 'react-icons/fi';
 import Image from 'next/image';
 
@@ -48,14 +49,15 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
   const [drawStart, setDrawStart] = useState({ x: 0, y: 0 });
   const [currentDrawZone, setCurrentDrawZone] = useState<BlurZone | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [previewImageDimensions, setPreviewImageDimensions] = useState({ width: 0, height: 0 });
   
   const overlayRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
+  // Détermine si le fichier est un PDF
   const isPdf = file?.type === 'application/pdf' || fileUrl.toLowerCase().includes('.pdf');
 
+  // Détecter le mode sombre du système
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     setIsDarkMode(mediaQuery.matches);
@@ -68,6 +70,7 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
+  // Force overlay update when image loads or resizes
   useEffect(() => {
     const updateOverlay = () => {
       if (overlayRef.current && imageRef.current) {
@@ -102,6 +105,7 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
         height: imageRef.current.naturalHeight
       });
       
+      // Update overlay position after image loads
       setTimeout(() => {
         if (overlayRef.current && imageRef.current) {
           const offset = getImageOffset();
@@ -156,6 +160,7 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
     const mouseY = (e.clientY - rect.top) / scale;
     
     if (isResizing) {
+      // Handle resizing
       setBlurZones(zones => zones.map(zone => {
         if (zone.id !== selectedZone) return zone;
         
@@ -178,6 +183,7 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
         };
       }));
     } else {
+      // Handle dragging
       const newX = mouseX - dragStart.x;
       const newY = mouseY - dragStart.y;
       
@@ -215,6 +221,7 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
 
   const handleImageMouseDown = (e: React.MouseEvent) => {
     if (!isDrawingMode) {
+      // Désélectionner la zone si on clique ailleurs
       setSelectedZone(null);
       return;
     }
@@ -297,6 +304,43 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
     setBlurZones([]);
   };
 
+  const addDemoZones = () => {
+    if (!imageDimensions.width || !imageDimensions.height) return;
+    
+    const demoZones: BlurZone[] = [
+      {
+        id: 'demo-1',
+        x: imageDimensions.width * 0.1,
+        y: imageDimensions.height * 0.1,
+        width: imageDimensions.width * 0.25,
+        height: imageDimensions.height * 0.15,
+        label: 'Zone 1',
+        isVisible: true
+      },
+      {
+        id: 'demo-2',
+        x: imageDimensions.width * 0.6,
+        y: imageDimensions.height * 0.3,
+        width: imageDimensions.width * 0.3,
+        height: imageDimensions.height * 0.2,
+        label: 'Zone 2',
+        isVisible: true
+      },
+      {
+        id: 'demo-3',
+        x: imageDimensions.width * 0.2,
+        y: imageDimensions.height * 0.7,
+        width: imageDimensions.width * 0.4,
+        height: imageDimensions.height * 0.2,
+        label: 'Zone 3',
+        isVisible: true
+      }
+    ];
+    
+    setBlurZones(demoZones);
+    setIsDrawingMode(false);
+  };
+
   const getDisplayScale = () => {
     if (!imageRef.current || !imageDimensions.width) return 1;
     return imageRef.current.clientWidth / imageDimensions.width;
@@ -304,26 +348,13 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
 
   const getImageOffset = () => {
     if (!imageRef.current) return { x: 0, y: 0 };
-    const imageRect = imageRef.current.getBoundingClientRect();
-    
-    let container = imageRef.current.parentElement;
-    while (container && !container.classList.contains('relative')) {
-      container = container.parentElement;
-    }
-    
-    if (!container) return { x: 0, y: 0 };
-    
-    const containerRect = container.getBoundingClientRect();
+    const rect = imageRef.current.getBoundingClientRect();
+    const containerRect = imageRef.current.parentElement?.getBoundingClientRect();
+    if (!containerRect) return { x: 0, y: 0 };
     return {
-      x: imageRect.left - containerRect.left,
-      y: imageRect.top - containerRect.top
+      x: rect.left - containerRect.left,
+      y: rect.top - containerRect.top
     };
-  };
-
-  const getPreviewScale = () => {
-    if (!imageDimensions.width || !imageDimensions.height) return 1;
-    const maxSize = 500;
-    return Math.min(maxSize / imageDimensions.width, maxSize / imageDimensions.height, 1);
   };
 
   const themeClasses = {
@@ -399,12 +430,8 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-auto p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Image/PDF Container */}
-            <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-              <h4 className={`${themeClasses.subtitle} text-sm font-medium p-3 border-b border-gray-200 dark:border-gray-700`}>
-                Image originale
-              </h4>
+          {/* Image/PDF Container */}
+          <div className="relative mb-6 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
             {isPDF() ? (
               <div className="relative">
                 <iframe
@@ -548,71 +575,6 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
                 </div>
               )}
             </div>
-            </div>
-
-            {/* Blur Preview Container */}
-            <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-              <h4 className={`${themeClasses.subtitle} text-sm font-medium p-3 border-b border-gray-200 dark:border-gray-700`}>
-                Prévisualisation avec flou
-              </h4>
-              <div className="relative p-4 flex justify-center">
-                {fileUrl && (
-                  <div className="relative">
-                    <div className="relative max-w-full max-h-[500px]">
-                      <Image
-                        src={fileUrl}
-                        alt="Prévisualisation avec flou"
-                        width={500}
-                        height={500}
-                        className="max-w-full max-h-[500px] object-contain rounded-lg shadow-lg"
-                        onLoad={(e) => {
-                          const img = e.target as HTMLImageElement;
-                          setPreviewImageDimensions({
-                            width: img.clientWidth,
-                            height: img.clientHeight
-                          });
-                        }}
-                      />
-                    </div>
-                    
-                    {/* Overlay des zones floutées pour la prévisualisation */}
-                     <div className="absolute inset-0">
-                       {blurZones.map(zone => {
-                         if (!zone.isVisible) return null;
-                         
-                         const previewScale = getPreviewScale();
-                         
-                         return (
-                           <div
-                             key={`preview-${zone.id}`}
-                             className="absolute rounded"
-                             style={{
-                               left: (zone.x * previewScale),
-                               top: (zone.y * previewScale),
-                               width: (zone.width * previewScale),
-                               height: (zone.height * previewScale),
-                               backdropFilter: 'blur(10px)',
-                               backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                               border: '1px solid rgba(255, 255, 255, 0.3)'
-                             }}
-                           >
-                             <div className="absolute inset-0 bg-gray-500 bg-opacity-30 rounded" />
-                           </div>
-                         );
-                       })}
-                     </div>
-                  </div>
-                )}
-                
-                {!fileUrl && (
-                  <div className="text-center py-12">
-                    <p className={`${themeClasses.subtitle} text-sm`}>
-                      Aucune image à prévisualiser
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
 
           {/* Controls */}
@@ -634,6 +596,16 @@ const BlurPreview: React.FC<BlurPreviewProps> = ({
                 >
                   <FiEdit3 className="w-4 h-4" />
                   {isDrawingMode ? 'Mode dessin actif' : 'Activer le dessin'}
+                </button>
+                
+                <button
+                  onClick={addDemoZones}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+                    themeClasses.button.secondary
+                  } hover:bg-blue-50 hover:border-blue-300`}
+                >
+                  <FiPlay className="w-4 h-4" />
+                  Démo Live
                 </button>
                 
                 <button

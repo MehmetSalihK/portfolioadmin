@@ -106,12 +106,14 @@ export default function SettingsPage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Vérifier le type de fichier
     const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg'];
     if (!allowedTypes.includes(file.type)) {
       toast.error('Seuls les fichiers PDF, PNG et JPEG sont autorisés');
       return;
     }
 
+    // Vérifier la taille (10MB max)
     if (file.size > 10 * 1024 * 1024) {
       toast.error('Le fichier ne doit pas dépasser 10MB');
       return;
@@ -181,6 +183,7 @@ export default function SettingsPage() {
     setSettings(newSettings);
     localStorage.setItem('adminSettings', JSON.stringify(newSettings));
     
+    // Auto-complétion pour le champ position
     if (name === 'position' && value.length >= 2) {
       searchAddresses(value);
     } else if (name === 'position' && value.length < 2) {
@@ -189,6 +192,7 @@ export default function SettingsPage() {
     }
   };
 
+  // Fonction pour rechercher des adresses
   const searchAddresses = async (query: string) => {
     setIsLoadingSuggestions(true);
     try {
@@ -211,6 +215,7 @@ export default function SettingsPage() {
     }
   };
 
+  // Sélectionner une suggestion
   const selectSuggestion = (suggestion: string) => {
     const newSettings = {
       ...settings,
@@ -222,6 +227,7 @@ export default function SettingsPage() {
     setPositionSuggestions([]);
   };
 
+  // Fermer les suggestions quand on clique ailleurs
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node) &&

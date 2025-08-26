@@ -5,6 +5,7 @@ import connectDB from '@/lib/db';
 import Education from '@/models/Education';
 import { FiBookOpen, FiCalendar, FiMapPin, FiAward, FiExternalLink } from 'react-icons/fi';
 import { motion } from 'framer-motion';
+import useAnalytics from '@/utils/hooks/useAnalytics';
 
 interface FormationsPageProps {
   educations: {
@@ -23,6 +24,13 @@ interface FormationsPageProps {
 }
 
 export default function FormationsPage({ educations = [] }: FormationsPageProps) {
+  // Tracking analytics pour la page Formations
+  useAnalytics({
+    enabled: true,
+    updateInterval: 30000, // 30 secondes
+    trackTimeSpent: true
+  });
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' });

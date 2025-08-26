@@ -2,8 +2,8 @@
 
 <div align="center">
   
-  **🌍 Langues:**
-  [🇬🇧 English](README_EN.md) | [🇹🇷 Türkçe](README_TR.md)
+  **🌍 Languages / Langues / Diller:**
+  [🇫🇷 Français](README.md) | [🇬🇧 English](README_EN.md) | [🇹🇷 Türkçe](README_TR.md)
   
 </div>
 
@@ -17,17 +17,17 @@
 
 ## 📋 Table des matières
 
-- [À propos](#-à-propos)
-- [Fonctionnalités](#-fonctionnalités)
-- [Interface d'administration](#-interface-dadministration)
-- [Technologies](#-technologies)
-- [Installation](#-installation)
-- [Configuration](#-configuration)
-- [Structure du projet](#-structure-du-projet)
-- [API Routes](#-api-routes)
-- [État du projet](#-état-du-projet)
-- [Améliorations prévues](#-améliorations-prévues)
-- [Dépannage](#-dépannage)
+- [À propos](#🎯-à-propos)
+- [Fonctionnalités](#✨-fonctionnalités)
+- [Interface d'administration](#💻-interface-dadministration)
+- [Technologies](#🛠-technologies)
+- [Installation](#📥-installation)
+- [Configuration](#⚙️-configuration)
+- [Structure du projet](#📁-structure-du-projet)
+- [API Routes](#🌐-api-routes)
+- [État du projet](#🚧-état-actuel-du-projet)
+- [Fonctionnalités Prévues](#📝-fonctionnalités-prévues)
+- [Dépannage](#🔧-dépannage)
 
 ## 🎯 À propos
 

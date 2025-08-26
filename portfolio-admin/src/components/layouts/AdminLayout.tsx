@@ -19,6 +19,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const menuItems = [
     { href: '/admin', label: 'Dashboard', icon: FiHome },
+    { href: '/admin/home', label: 'Page d\'accueil', icon: FiUser },
     { href: '/admin/stats', label: 'Stats', icon: FiBarChart2 },
     { href: '/admin/projects', label: 'Projects', icon: FiFolder },
     { href: '/admin/skills', label: 'Skills', icon: FiCode },

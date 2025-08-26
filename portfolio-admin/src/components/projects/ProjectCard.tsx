@@ -17,11 +17,13 @@ interface ProjectCardProps {
 const ProjectCard = ({ project }: ProjectCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   
+  // Fonction pour tronquer le texte
   const truncateText = (text: string, maxLength: number = 100) => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength).trim();
   };
 
+  // Gérer l'ouverture/fermeture de la modale
   const openModal = () => {
     setIsModalOpen(true);
     document.body.style.overflow = 'hidden'; // Bloquer le défilement
@@ -32,6 +34,7 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
     document.body.style.overflow = 'unset'; // Restaurer le défilement
   };
 
+  // Empêcher la fermeture en cliquant sur le contenu de la modale
   const handleModalContentClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
