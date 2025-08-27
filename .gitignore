@@ -1,0 +1,23 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+pnpm-lock.yaml
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# IDE / éditeurs
+.vscode/
+.idea/
+*.swp
+
+# Build
+dist/
+build/
+out/
+.next/
