@@ -138,6 +138,30 @@ const ProjectSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  category: {
+    type: String,
+    enum: ['web', 'mobile', 'desktop', 'api', 'library', 'tool', 'game', 'other'],
+    default: 'web',
+  },
+  tags: [{
+    type: String,
+    trim: true,
+  }],
+  status: {
+    type: String,
+    enum: ['planning', 'development', 'completed', 'maintenance', 'deprecated'],
+    default: 'completed',
+  },
+  difficulty: {
+    type: String,
+    enum: ['beginner', 'intermediate', 'advanced', 'expert'],
+    default: 'intermediate',
+  },
+  priority: {
+    type: String,
+    enum: ['low', 'medium', 'high', 'critical'],
+    default: 'medium',
+  }
 }, {
   timestamps: true,
 });

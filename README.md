@@ -11,29 +11,54 @@
   
   [![Next.js](https://img.shields.io/badge/Next.js-14.0.0-black.svg)](https://nextjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-blue.svg)](https://www.typescriptlang.org/)
-  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3.0-38B2AC.svg)](https://tailwindcss.com/)
-  [![MongoDB](https://img.shields.io/badge/MongoDB-6.0-green.svg)](https://www.mongodb.com/)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.0-38B2AC.svg)](https://tailwindcss.com/)
+  [![MongoDB](https://img.shields.io/badge/MongoDB-7.0-green.svg)](https://www.mongodb.com/)
+  [![Vercel](https://img.shields.io/badge/Vercel-000000.svg?logo=vercel)](https://vercel.com/)
+  [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+  
+</div>
+
+<div align="center">
+  <p><em>Une solution no-code moderne pour gérer votre portfolio professionnel</em></p>
 </div>
 
 ## 📋 Table des matières
 
-- [À propos](#🎯-à-propos)
-- [Fonctionnalités](#✨-fonctionnalités)
-- [Interface d'administration](#💻-interface-dadministration)
-- [Technologies](#🛠-technologies)
-- [Installation](#📥-installation)
-- [Configuration](#⚙️-configuration)
-- [Structure du projet](#📁-structure-du-projet)
-- [API Routes](#🌐-api-routes)
-- [État du projet](#🚧-état-actuel-du-projet)
-- [Fonctionnalités Prévues](#📝-fonctionnalités-prévues)
-- [Dépannage](#🔧-dépannage)
+- [🎯 À propos](#🎯-à-propos)
+- [🚀 Démo en ligne](#🚀-démo-en-ligne)
+- [✨ Fonctionnalités principales](#✨-fonctionnalités-principales)
+- [💻 Interface d'administration](#💻-interface-dadministration)
+- [🛠 Technologies utilisées](#🛠-technologies-utilisées)
+- [📥 Installation rapide](#📥-installation-rapide)
+- [⚙️ Configuration](#⚙️-configuration)
+- [📁 Structure du projet](#📁-structure-du-projet)
+- [🌐 API Routes](#🌐-api-routes)
+- [🚧 État du projet](#🚧-état-actuel-du-projet)
+- [🔧 Dépannage](#🔧-dépannage)
+- [🤝 Contribution](#🤝-contribution)
+- [📄 Licence](#📄-licence)
 
 ## 🎯 À propos
 
-Portfolio Admin est une solution "no-code" pour gérer votre portfolio en ligne. Plus besoin de modifier le code source pour mettre à jour votre site ! Grâce à une interface d'administration intuitive, vous pouvez modifier tout le contenu de votre portfolio en quelques clics.
+Portfolio Admin est une solution **no-code** moderne et intuitive pour gérer votre portfolio professionnel en ligne. Fini les modifications manuelles du code source ! Grâce à une interface d'administration élégante et puissante, vous pouvez :
 
-## ✨ Fonctionnalités
+- ✅ **Modifier le contenu** de votre portfolio en temps réel
+- ✅ **Gérer vos projets** avec un système de modales interactives
+- ✅ **Personnaliser votre CV** avec affichage modal intégré
+- ✅ **Optimiser votre présence** avec analytics intégrés
+- ✅ **Maintenir votre site** avec un mode maintenance professionnel
+
+> 🎯 **Objectif** : Permettre aux développeurs de se concentrer sur leur code plutôt que sur la maintenance de leur portfolio
+
+## 🚀 Démo en ligne
+
+🌐 **Site de démonstration** : [Voir la démo](https://votre-demo.vercel.app)
+
+📱 **Interface d'administration** : [Admin Dashboard](https://votre-demo.vercel.app/admin)
+
+> 💡 **Astuce** : Utilisez les identifiants de démonstration pour tester l'interface d'administration
+
+## ✨ Fonctionnalités principales
 
 - 🎨 **Gestion No-Code**
   - Modification du contenu sans toucher au code
@@ -123,55 +148,93 @@ Notre éditeur de texte riche permet de :
 
 Toutes ces modifications se font directement depuis l'interface d'administration, sans avoir besoin de toucher au code !
 
-## 🛠 Technologies
+## 🛠 Technologies utilisées
 
-Le projet utilise les technologies suivantes :
+<div align="center">
 
-- **Frontend**
-  - Next.js 14
-  - TypeScript
-  - Tailwind CSS
-  - TipTap Editor
+### 🎨 Frontend
+| Technologie | Version | Description |
+|-------------|---------|-------------|
+| ![Next.js](https://img.shields.io/badge/Next.js-14.0.0-black?logo=next.js) | `14.0.0` | Framework React full-stack |
+| ![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-blue?logo=typescript) | `5.0.0` | Typage statique pour JavaScript |
+| ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.0-38B2AC?logo=tailwind-css) | `3.4.0` | Framework CSS utilitaire |
+| ![TipTap](https://img.shields.io/badge/TipTap-2.0.0-orange) | `2.0.0` | Éditeur de texte riche |
 
-- **Backend**
-  - MongoDB
-  - NextAuth.js
-  - API Routes Next.js
+### 🔧 Backend & Base de données
+| Technologie | Version | Description |
+|-------------|---------|-------------|
+| ![MongoDB](https://img.shields.io/badge/MongoDB-7.0-green?logo=mongodb) | `7.0` | Base de données NoSQL |
+| ![NextAuth.js](https://img.shields.io/badge/NextAuth.js-4.0.0-purple) | `4.0.0` | Authentification pour Next.js |
+| ![Mongoose](https://img.shields.io/badge/Mongoose-8.0.0-red) | `8.0.0` | ODM pour MongoDB |
 
-- **Analytics**
-  - Vercel Analytics
+### 📊 Analytics & Déploiement
+| Technologie | Description |
+|-------------|-------------|
+| ![Vercel Analytics](https://img.shields.io/badge/Vercel_Analytics-black?logo=vercel) | Suivi des performances et visiteurs |
+| ![Vercel](https://img.shields.io/badge/Vercel-black?logo=vercel) | Plateforme de déploiement |
 
-- **Outils**
-  - ESLint
-  - Prettier
-  - Git
+### 🛠 Outils de développement
+| Outil | Description |
+|-------|-------------|
+| ![ESLint](https://img.shields.io/badge/ESLint-4B32C3?logo=eslint) | Linter JavaScript/TypeScript |
+| ![Prettier](https://img.shields.io/badge/Prettier-F7B93E?logo=prettier) | Formateur de code |
+| ![Git](https://img.shields.io/badge/Git-F05032?logo=git) | Contrôle de version |
 
-## 📥 Installation
+</div>
 
-1. Clonez le repository
+## 📥 Installation rapide
+
+### 🚀 Installation en 5 minutes
+
+#### 1️⃣ Cloner le projet
 ```bash
-git clone https://github.com/votre-username/portfolio-admin.git
-cd portfolio-admin
+# Clonez le repository
+git clone https://github.com/mehmetsalihkuscu/portfolio-admin.git
+cd portfolio-admin/portfolio-admin
 ```
 
-2. Installez les dépendances
+#### 2️⃣ Installer les dépendances
 ```bash
+# Avec npm (recommandé)
 npm install
-# ou
+
+# Ou avec yarn
 yarn install
+
+# Ou avec pnpm (plus rapide)
+pnpm install
 ```
 
-3. Configurez les variables d'environnement
+#### 3️⃣ Configuration de l'environnement
 ```bash
+# Créer le fichier de configuration
 cp .env.example .env.local
+
+# Éditer les variables d'environnement
+nano .env.local  # ou votre éditeur préféré
 ```
 
-4. Lancez le serveur de développement
+#### 4️⃣ Lancer le serveur de développement
 ```bash
+# Démarrer en mode développement
 npm run dev
-# ou
-yarn dev
+
+# Le site sera accessible sur http://localhost:3000
 ```
+
+#### 5️⃣ Accéder à l'interface d'administration
+```bash
+# Interface d'admin disponible sur :
+# http://localhost:3000/admin
+```
+
+### ⚡ Installation rapide avec un seul script
+```bash
+# Script d'installation automatique
+curl -fsSL https://raw.githubusercontent.com/mehmetsalihkuscu/portfolio-admin/main/install.sh | bash
+```
+
+> 💡 **Astuce** : Assurez-vous d'avoir Node.js 18+ et npm installés sur votre système
 
 ## ⚙️ Configuration
 
@@ -307,6 +370,76 @@ Ce projet est actuellement en développement actif. Certaines fonctionnalités p
 # Assurez-vous que les callbacks OAuth sont correctement configurés
 ```
 
+## 🤝 Contribution
+
+Les contributions sont les bienvenues ! Voici comment vous pouvez contribuer :
+
+### 🐛 Signaler un bug
+1. Vérifiez que le bug n'a pas déjà été signalé dans les [Issues](https://github.com/mehmetsalihkuscu/portfolio-admin/issues)
+2. Créez une nouvelle issue avec le template "Bug Report"
+3. Décrivez le problème en détail avec des étapes de reproduction
+
+### ✨ Proposer une fonctionnalité
+1. Créez une issue avec le template "Feature Request"
+2. Décrivez la fonctionnalité souhaitée et son utilité
+3. Attendez l'approbation avant de commencer le développement
+
+### 🔧 Contribuer au code
+1. **Fork** le projet
+2. Créez une branche pour votre fonctionnalité (`git checkout -b feature/AmazingFeature`)
+3. **Committez** vos changements (`git commit -m 'Add some AmazingFeature'`)
+4. **Push** vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrez une **Pull Request**
+
+### 📝 Guidelines de contribution
+- Suivez les conventions de code existantes
+- Ajoutez des tests pour les nouvelles fonctionnalités
+- Mettez à jour la documentation si nécessaire
+- Utilisez des messages de commit clairs et descriptifs
+
+### 🏆 Contributeurs
+
+Merci à tous les contributeurs qui ont participé à ce projet !
+
+<a href="https://github.com/mehmetsalihkuscu/portfolio-admin/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=mehmetsalihkuscu/portfolio-admin" />
+</a>
+
+## 📄 Licence
+
+Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
+
+```
+MIT License
+
+Copyright (c) 2024 Mehmet Salih Kuscu
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
 <div align="center">
-  <p>Développé par Mehmet Salih Kuscu pour une gestion de portfolio efficace et sans code</p>
+  <p><strong>Développé avec ❤️ par <a href="https://github.com/mehmetsalihkuscu">Mehmet Salih Kuscu</a></strong></p>
+  <p><em>Pour une gestion de portfolio efficace et sans code</em></p>
+  
+  [![GitHub](https://img.shields.io/badge/GitHub-mehmetsalihkuscu-black?logo=github)](https://github.com/mehmetsalihkuscu)
+  [![LinkedIn](https://img.shields.io/badge/LinkedIn-Mehmet%20Salih%20Kuscu-blue?logo=linkedin)](https://linkedin.com/in/mehmetsalihkuscu)
+  [![Email](https://img.shields.io/badge/Email-contact@mehmetsalihk.fr-red?logo=gmail)](mailto:contact@mehmetsalihk.fr)
 </div>

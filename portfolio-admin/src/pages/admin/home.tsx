@@ -4,6 +4,8 @@ import { useRouter } from 'next/router';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { toast } from 'react-hot-toast';
 import RichTextEditor from '@/components/RichTextEditor';
+import LivePreview from '@/components/LivePreview';
+import { usePreviewSync } from '@/hooks/usePreviewSync';
 
 interface HomePageData {
   _id?: string;
@@ -40,6 +42,8 @@ export default function HomePageAdmin() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [data, setData] = useState<HomePageData>(defaultData);
+  const [showPreview, setShowPreview] = useState(false);
+  const { notifyChange, isConnected } = usePreviewSync();
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -92,6 +96,7 @@ export default function HomePageAdmin() {
       if (!response.ok) throw new Error('Erreur lors de la sauvegarde');
 
       toast.success('Modifications enregistrées');
+      notifyChange('homepage-update');
     } catch (error) {
       toast.error('Erreur lors de la sauvegarde');
     } finally {
@@ -128,7 +133,23 @@ export default function HomePageAdmin() {
   return (
     <AdminLayout>
       <div className="p-6 max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-white mb-8">Modifier la page d'accueil</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold text-white">Modifier la page d'accueil</h1>
+          <button
+            onClick={() => setShowPreview(!showPreview)}
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${
+              showPreview
+                ? 'bg-green-600 hover:bg-green-700 text-white'
+                : 'bg-gray-600 hover:bg-gray-700 text-white'
+            }`}
+          >
+            👁️
+            {isConnected && (
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            )}
+            Prévisualisation
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Section Hero */}
@@ -272,6 +293,15 @@ export default function HomePageAdmin() {
           </div>
         </form>
       </div>
+
+      {/* Prévisualisation en temps réel */}
+      <LivePreview
+        isVisible={showPreview}
+        onToggle={() => setShowPreview(!showPreview)}
+        previewUrl="http://localhost:3000"
+        autoRefresh={isConnected}
+        refreshInterval={2000}
+      />
     </AdminLayout>
   );
 }

@@ -1,12 +1,12 @@
 import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
-import { ThemeProvider } from 'next-themes';
 import { SessionProvider } from 'next-auth/react';
 import { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import { Analytics } from '@vercel/analytics/next';
 import Navbar from '@/components/layout/Navbar';
 import AutoSync from '@/components/admin/AutoSync';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const router = useRouter();
@@ -15,17 +15,17 @@ function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
 
   return (
     <SessionProvider session={session}>
-      <ThemeProvider attribute="class">
+      <ThemeProvider>
         <AutoSync />
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen">
           {!isAdminPage && !isMaintenancePage && <Navbar />}
           <div className={!isAdminPage ? "" : ""}>
             <Component {...pageProps} />
           </div>
         </div>
+        <Toaster position="bottom-right" />
+        <Analytics />
       </ThemeProvider>
-      <Toaster position="bottom-right" />
-      <Analytics />
     </SessionProvider>
   );
 }
