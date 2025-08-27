@@ -5,7 +5,8 @@
     "husky": "^9.1.7"
   },
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
     "compression": "^1.8.1",

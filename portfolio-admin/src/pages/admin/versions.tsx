@@ -103,7 +103,7 @@ const VersionsPage: React.FC = () => {
     if (session) {
       loadData();
     }
-  }, [session, activeTab, filters, pagination.page]);
+  }, [session, activeTab, filters, pagination.page, loadData]);
 
   const loadData = async () => {
     try {

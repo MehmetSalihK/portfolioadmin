@@ -26,7 +26,8 @@ import {
   FiUser,
   FiFilter,
   FiDownload,
-  FiExternalLink
+  FiExternalLink,
+  FiX
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
@@ -165,7 +166,7 @@ const SEOPage: React.FC = () => {
     if (session) {
       loadData();
     }
-  }, [session, activeTab, filters, pagination.page]);
+  }, [session, activeTab, filters, pagination.page, loadData]);
 
   const loadData = async () => {
     try {
