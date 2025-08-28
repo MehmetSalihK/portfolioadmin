@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -98,14 +98,36 @@ const VersionsPage: React.FC = () => {
     }
   }, [status, router]);
 
-  // Charger les données
-  useEffect(() => {
-    if (session) {
-      loadData();
-    }
-  }, [session, activeTab, filters, pagination.page, loadData]);
+  const loadVersions = useCallback(async () => {
+    const params = new URLSearchParams({
+      page: pagination.page.toString(),
+      limit: pagination.limit.toString(),
+      ...(filters.entityType && { type: filters.entityType }),
+    });
+    
+    const response = await fetch(`/api/backup/versions?${params}`);
+    if (!response.ok) throw new Error('Erreur lors du chargement des versions');
+    
+    const data = await response.json();
+    setVersions(data.versions);
+    setPagination(prev => ({ ...prev, ...data.pagination }));
+  }, [pagination.page, pagination.limit, filters.entityType]);
 
-  const loadData = async () => {
+  const loadBackups = useCallback(async () => {
+    const params = new URLSearchParams({
+      page: pagination.page.toString(),
+      limit: pagination.limit.toString(),
+    });
+    
+    const response = await fetch(`/api/backup?${params}`);
+    if (!response.ok) throw new Error('Erreur lors du chargement des sauvegardes');
+    
+    const data = await response.json();
+    setBackups(data.backups);
+    setPagination(prev => ({ ...prev, ...data.pagination }));
+  }, [pagination.page, pagination.limit]);
+
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -120,36 +142,14 @@ const VersionsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab, loadVersions, loadBackups]);
 
-  const loadVersions = async () => {
-    const params = new URLSearchParams({
-      page: pagination.page.toString(),
-      limit: pagination.limit.toString(),
-      ...(filters.entityType && { type: filters.entityType }),
-    });
-    
-    const response = await fetch(`/api/backup/versions?${params}`);
-    if (!response.ok) throw new Error('Erreur lors du chargement des versions');
-    
-    const data = await response.json();
-    setVersions(data.versions);
-    setPagination(prev => ({ ...prev, ...data.pagination }));
-  };
-
-  const loadBackups = async () => {
-    const params = new URLSearchParams({
-      page: pagination.page.toString(),
-      limit: pagination.limit.toString(),
-    });
-    
-    const response = await fetch(`/api/backup?${params}`);
-    if (!response.ok) throw new Error('Erreur lors du chargement des sauvegardes');
-    
-    const data = await response.json();
-    setBackups(data.backups);
-    setPagination(prev => ({ ...prev, ...data.pagination }));
-  };
+  // Charger les données
+  useEffect(() => {
+    if (session) {
+      loadData();
+    }
+  }, [session, activeTab, filters, pagination.page, loadData]);
 
   // Restaurer une version
   const handleRestoreVersion = async (versionId: string) => {
@@ -259,17 +259,14 @@ const VersionsPage: React.FC = () => {
     }
   };
 
+
+
   // Formater la taille
   const formatSize = (bytes: number) => {
     const sizes = ['B', 'KB', 'MB', 'GB'];
     if (bytes === 0) return '0 B';
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
-  };
-
-  // Formater la date
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('fr-FR');
   };
 
   if (status === 'loading' || loading) {
@@ -501,6 +498,18 @@ const VersionsList: React.FC<{
   onDelete: (versionId: string) => void;
   onView: (version: EntityVersion) => void;
 }> = ({ versions, onRestore, onDelete, onView }) => {
+  // Formater la date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('fr-FR');
+  };
+
+  // Formater la taille
+  const formatSize = (bytes: number) => {
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 B';
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+  };
   return (
     <div className="overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200">
@@ -587,6 +596,19 @@ const BackupsList: React.FC<{
   onRestore: (backup: Backup) => void;
   onView: (backup: Backup) => void;
 }> = ({ backups, onRestore, onView }) => {
+  // Formater la date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('fr-FR');
+  };
+
+  // Formater la taille
+  const formatSize = (bytes: number) => {
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 B';
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+  };
+
   return (
     <div className="overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200">
@@ -837,6 +859,10 @@ const CompareModal: React.FC<{
   onCompare: () => void;
   comparisonResult: any;
 }> = ({ isOpen, onClose, versions, compareVersions, setCompareVersions, onCompare, comparisonResult }) => {
+  // Formater la date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('fr-FR');
+  };
   if (!isOpen) return null;
   
   return (

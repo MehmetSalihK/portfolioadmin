@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FiEye, FiEyeOff, FiRefreshCw, FiExternalLink, FiMonitor, FiSmartphone, FiTablet } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -55,7 +55,7 @@ const LivePreview: React.FC<LivePreviewProps> = ({
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fonction pour rafraîchir la prévisualisation
-  const refreshPreview = () => {
+  const refreshPreview = useCallback(() => {
     if (iframeRef.current) {
       setIsLoading(true);
       const timestamp = Date.now();
@@ -63,7 +63,7 @@ const LivePreview: React.FC<LivePreviewProps> = ({
       iframeRef.current.src = `${previewUrl}${separator}_refresh=${timestamp}`;
       setLastRefresh(timestamp);
     }
-  };
+  }, [previewUrl]);
 
   // Gestion du rafraîchissement automatique
   useEffect(() => {
@@ -83,7 +83,7 @@ const LivePreview: React.FC<LivePreviewProps> = ({
         clearInterval(refreshIntervalRef.current);
       }
     };
-  }, [isVisible, isAutoRefreshEnabled, refreshInterval]);
+  }, [isVisible, isAutoRefreshEnabled, refreshInterval, refreshPreview]);
 
   // Gestion du chargement de l'iframe
   const handleIframeLoad = () => {

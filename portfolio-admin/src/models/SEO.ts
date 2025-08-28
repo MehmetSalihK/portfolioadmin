@@ -362,7 +362,7 @@ SEOSchema.index({ 'analysis.score': -1 });
 // Middleware pour mettre à jour updatedAt
 SEOSchema.pre('save', function(next) {
   this.updatedAt = new Date();
-  if (this.isModified() && !this.isNew) {
+  if (this.isModified() && !this.isNew && this.sitemap) {
     this.sitemap.lastMod = new Date();
   }
   next();
@@ -426,8 +426,8 @@ SEOSchema.methods.generateMetaTags = function() {
 
 SEOSchema.methods.generateStructuredData = function() {
   return this.structuredData
-    .filter(data => data.isActive)
-    .map(data => ({
+    .filter((data: any) => data.isActive)
+    .map((data: any) => ({
       '@context': 'https://schema.org',
       '@type': data.type,
       ...data.data

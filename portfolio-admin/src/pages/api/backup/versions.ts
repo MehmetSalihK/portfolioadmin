@@ -9,7 +9,7 @@ import Experience from '../../../models/Experience';
 import Education from '../../../models/Education';
 import Contact from '../../../models/Contact';
 import HomePage from '../../../models/HomePage';
-import { Media } from '../../../models/Media';
+import Media from '../../../models/Media';
 import Category from '../../../models/Category';
 import Setting from '../../../models/Setting';
 
@@ -104,7 +104,7 @@ function compareVersions(version1: any, version2: any) {
   // Comparer les champs
   const allKeys = new Set([...Object.keys(data1), ...Object.keys(data2)]);
   
-  for (const key of allKeys) {
+  for (const key of Array.from(allKeys)) {
     if (JSON.stringify(data1[key]) !== JSON.stringify(data2[key])) {
       changes.push({
         field: key,
@@ -330,7 +330,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('Erreur API versions:', error);
     return res.status(500).json({ 
       message: 'Erreur interne du serveur',
-      error: error.message 
+      error: error instanceof Error ? error.message : String(error) 
     });
   }
 }

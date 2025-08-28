@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FiSettings, FiCheck, FiX, FiLoader, FiClock } from 'react-icons/fi';
 
 interface OptimizationJob {
@@ -39,7 +39,7 @@ const OptimizationStatus: React.FC<OptimizationStatusProps> = ({ isVisible, onCl
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchStatus = async () => {
+  const fetchStatus = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch('/api/media/optimize/status');
@@ -53,7 +53,7 @@ const OptimizationStatus: React.FC<OptimizationStatusProps> = ({ isVisible, onCl
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [stats]);
 
   useEffect(() => {
     if (isVisible) {
@@ -61,7 +61,7 @@ const OptimizationStatus: React.FC<OptimizationStatusProps> = ({ isVisible, onCl
       const interval = setInterval(fetchStatus, 2000); // Actualiser toutes les 2 secondes
       return () => clearInterval(interval);
     }
-  }, [isVisible]);
+  }, [isVisible, fetchStatus]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {

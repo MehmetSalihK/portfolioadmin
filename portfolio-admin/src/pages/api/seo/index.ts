@@ -9,7 +9,7 @@ import Experience from '../../../models/Experience';
 import Education from '../../../models/Education';
 import Contact from '../../../models/Contact';
 import HomePage from '../../../models/HomePage';
-import { Media } from '../../../models/Media';
+import Media from '../../../models/Media';
 
 // Fonction pour analyser le contenu et générer des métadonnées SEO
 function analyzeSEOContent(content: string, title?: string) {
@@ -379,7 +379,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const seo = await optimizeEntitySEO('project', project._id.toString(), project.toObject());
             results.push({ type: 'project', id: project._id, status: 'success' });
           } catch (error) {
-            results.push({ type: 'project', id: project._id, status: 'error', error: error.message });
+            results.push({ type: 'project', id: project._id, status: 'error', error: error instanceof Error ? error.message : String(error) });
           }
         }
         
@@ -390,7 +390,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const seo = await optimizeEntitySEO('skill', skill._id.toString(), skill.toObject());
             results.push({ type: 'skill', id: skill._id, status: 'success' });
           } catch (error) {
-            results.push({ type: 'skill', id: skill._id, status: 'error', error: error.message });
+            results.push({ type: 'skill', id: skill._id, status: 'error', error: error instanceof Error ? error.message : String(error) });
           }
         }
         
@@ -449,7 +449,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('Erreur API SEO:', error);
     return res.status(500).json({ 
       message: 'Erreur interne du serveur',
-      error: error.message 
+      error: error instanceof Error ? error.message : String(error) 
     });
   }
 }

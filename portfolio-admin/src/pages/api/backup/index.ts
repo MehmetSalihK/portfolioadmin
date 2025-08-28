@@ -9,7 +9,7 @@ import Experience from '../../../models/Experience';
 import Education from '../../../models/Education';
 import Contact from '../../../models/Contact';
 import HomePage from '../../../models/HomePage';
-import { Media } from '../../../models/Media';
+import Media from '../../../models/Media';
 import Category from '../../../models/Category';
 import Setting from '../../../models/Setting';
 import crypto from 'crypto';
@@ -170,7 +170,11 @@ async function restoreBackup(backupId: string, options: any = {}) {
     const restoredEntities = {
       success: 0,
       failed: 0,
-      conflicts: [],
+      conflicts: [] as Array<{
+        entityType: string;
+        entityId: any;
+        reason: string;
+      }>,
     };
     
     // Restaurer chaque type d'entité
@@ -220,7 +224,7 @@ async function restoreBackup(backupId: string, options: any = {}) {
               restoredEntities.conflicts.push({
                 entityType: key,
                 entityId: item._id,
-                reason: itemError.message,
+                reason: itemError instanceof Error ? itemError.message : String(itemError),
               });
             }
           }
@@ -340,7 +344,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('Erreur API backup:', error);
     return res.status(500).json({ 
       message: 'Erreur interne du serveur',
-      error: error.message 
+      error: error instanceof Error ? error.message : String(error)
     });
   }
 }
+
+// Export des fonctions pour utilisation dans d'autres modules
+export { createFullBackup, createIncrementalBackup, restoreBackup };

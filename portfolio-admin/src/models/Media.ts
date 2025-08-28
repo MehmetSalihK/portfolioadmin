@@ -212,7 +212,7 @@ MediaSchema.virtual('sizeInMB').get(function() {
 });
 
 MediaSchema.virtual('dimensionsString').get(function() {
-  if (this.dimensions.width && this.dimensions.height) {
+  if (this.dimensions && this.dimensions.width && this.dimensions.height) {
     return `${this.dimensions.width}x${this.dimensions.height}`;
   }
   return 'Unknown';

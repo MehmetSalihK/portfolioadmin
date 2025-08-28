@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,7 +15,7 @@ import {
   FiEdit3,
   FiTrash2,
   FiPlus,
-  FiBarChart3,
+  FiBarChart,
   FiGlobe,
   FiTarget,
   FiZap,
@@ -161,14 +161,39 @@ const SEOPage: React.FC = () => {
     }
   }, [status, router]);
 
-  // Charger les données
-  useEffect(() => {
-    if (session) {
-      loadData();
-    }
-  }, [session, activeTab, filters, pagination.page, loadData]);
+  const loadSEOAnalysis = useCallback(async () => {
+    const response = await fetch('/api/seo?action=analyze');
+    if (!response.ok) throw new Error('Erreur lors du chargement de l\'analyse SEO');
+    
+    const data = await response.json();
+    setSeoAnalysis(data.analysis);
+  }, []);
 
-  const loadData = async () => {
+  const loadSEOEntities = useCallback(async () => {
+    const params = new URLSearchParams({
+      page: pagination.page.toString(),
+      limit: pagination.limit.toString(),
+      ...(filters.entityType && { type: filters.entityType }),
+      ...(filters.search && { search: filters.search }),
+    });
+    
+    const response = await fetch(`/api/seo?${params}`);
+    if (!response.ok) throw new Error('Erreur lors du chargement des entités SEO');
+    
+    const data = await response.json();
+    setSeoData(data.seoEntries);
+    setPagination(prev => ({ ...prev, ...data.pagination }));
+  }, [pagination.page, pagination.limit, filters.entityType, filters.search]);
+
+  const loadSEOConfig = useCallback(async () => {
+    const response = await fetch('/api/seo?action=config');
+    if (!response.ok) throw new Error('Erreur lors du chargement de la configuration SEO');
+    
+    const data = await response.json();
+    setSeoConfig(data.config);
+  }, []);
+
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -188,39 +213,14 @@ const SEOPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab, loadSEOAnalysis, loadSEOEntities, loadSEOConfig]);
 
-  const loadSEOAnalysis = async () => {
-    const response = await fetch('/api/seo?action=analyze');
-    if (!response.ok) throw new Error('Erreur lors du chargement de l\'analyse SEO');
-    
-    const data = await response.json();
-    setSeoAnalysis(data.analysis);
-  };
-
-  const loadSEOEntities = async () => {
-    const params = new URLSearchParams({
-      page: pagination.page.toString(),
-      limit: pagination.limit.toString(),
-      ...(filters.entityType && { type: filters.entityType }),
-      ...(filters.search && { search: filters.search }),
-    });
-    
-    const response = await fetch(`/api/seo?${params}`);
-    if (!response.ok) throw new Error('Erreur lors du chargement des entités SEO');
-    
-    const data = await response.json();
-    setSeoData(data.seoEntries);
-    setPagination(prev => ({ ...prev, ...data.pagination }));
-  };
-
-  const loadSEOConfig = async () => {
-    const response = await fetch('/api/seo?action=config');
-    if (!response.ok) throw new Error('Erreur lors du chargement de la configuration SEO');
-    
-    const data = await response.json();
-    setSeoConfig(data.config);
-  };
+  // Charger les données
+  useEffect(() => {
+    if (session) {
+      loadData();
+    }
+  }, [session, activeTab, filters, pagination.page, loadData]);
 
   // Optimiser automatiquement toutes les entités
   const handleBulkOptimization = async () => {
@@ -332,20 +332,6 @@ const SEOPage: React.FC = () => {
     }
   };
 
-  // Obtenir la couleur du score
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  // Obtenir l'icône du score
-  const getScoreIcon = (score: number) => {
-    if (score >= 80) return <FiCheckCircle className="w-5 h-5 text-green-600" />;
-    if (score >= 60) return <FiAlertTriangle className="w-5 h-5 text-yellow-600" />;
-    return <FiXCircle className="w-5 h-5 text-red-600" />;
-  };
-
   // Formater la date
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('fr-FR');
@@ -403,7 +389,7 @@ const SEOPage: React.FC = () => {
           {/* Onglets */}
           <div className="flex space-x-8 border-b">
             {[
-              { id: 'overview', label: 'Vue d\'ensemble', icon: FiBarChart3 },
+              { id: 'overview', label: 'Vue d\'ensemble', icon: FiBarChart },
               { id: 'entities', label: 'Entités', icon: FiFileText },
               { id: 'config', label: 'Configuration', icon: FiSettings },
               { id: 'sitemap', label: 'Sitemap', icon: FiGlobe },
@@ -499,10 +485,29 @@ const SEOOverview: React.FC<{
   config: SEOConfig | null;
   onRefresh: () => void;
 }> = ({ analysis, config, onRefresh }) => {
+  // Obtenir la couleur du score
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  // Obtenir l'icône du score
+  const getScoreIcon = (score: number) => {
+    if (score >= 80) return <FiCheckCircle className="w-5 h-5 text-green-600" />;
+    if (score >= 60) return <FiAlertTriangle className="w-5 h-5 text-yellow-600" />;
+    return <FiXCircle className="w-5 h-5 text-red-600" />;
+  };
+
+  // Formater la date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('fr-FR');
+  };
+
   if (!analysis) {
     return (
       <div className="text-center py-12">
-        <FiBarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+        <FiBarChart className="w-12 h-12 text-gray-400 mx-auto mb-4" />
         <p className="text-gray-500">Aucune donnée d'analyse disponible</p>
         <button
           onClick={onRefresh}
@@ -636,6 +641,25 @@ const SEOEntities: React.FC<{
   onEdit: (entity: SEOData) => void;
   onDelete: (seoId: string) => void;
 }> = ({ entities, filters, setFilters, pagination, setPagination, onOptimize, onEdit, onDelete }) => {
+  // Obtenir la couleur du score
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  // Obtenir l'icône du score
+  const getScoreIcon = (score: number) => {
+    if (score >= 80) return <FiCheckCircle className="w-5 h-5 text-green-600" />;
+    if (score >= 60) return <FiAlertTriangle className="w-5 h-5 text-yellow-600" />;
+    return <FiXCircle className="w-5 h-5 text-red-600" />;
+  };
+
+  // Formater la date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('fr-FR');
+  };
+
   return (
     <div className="space-y-6">
       {/* Filtres */}

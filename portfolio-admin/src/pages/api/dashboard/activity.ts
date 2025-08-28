@@ -1,8 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
-import connectDB from '@/lib/db';
-import dbConnect from '@/lib/mongodb';
+import dbConnect from '@/lib/db';
 import Analytics from '@/models/Analytics';
 import Project from '@/models/Project';
 import Skill from '@/models/Skill';
@@ -62,35 +61,35 @@ export default async function handler(
     // Combiner toutes les activités récentes
     const recentActivity = [
       ...recentProjects.map(project => ({
-        _id: project._id.toString(),
+        _id: String(project._id),
         type: 'Projet',
         description: `Projet "${project.title}" mis à jour`,
         date: new Date(project.updatedAt).toLocaleDateString('fr-FR'),
         timestamp: project.updatedAt
       })),
       ...recentSkills.map(skill => ({
-        _id: skill._id.toString(),
+        _id: String(skill._id),
         type: 'Compétence',
         description: `Compétence "${skill.name}" mise à jour`,
         date: new Date(skill.updatedAt).toLocaleDateString('fr-FR'),
         timestamp: skill.updatedAt
       })),
       ...recentExperiences.map(experience => ({
-        _id: experience._id.toString(),
+        _id: String(experience._id),
         type: 'Expérience',
         description: `Expérience chez ${experience.company} mise à jour`,
         date: new Date(experience.updatedAt).toLocaleDateString('fr-FR'),
         timestamp: experience.updatedAt
       })),
       ...recentMessages.map(message => ({
-        _id: message._id.toString(),
+        _id: String(message._id),
         type: 'Message',
         description: `Nouveau message de ${message.name}`,
         date: new Date(message.createdAt).toLocaleDateString('fr-FR'),
         timestamp: message.createdAt
       })),
       ...recentAnalytics.map(analytics => ({
-        _id: analytics._id.toString(),
+        _id: String(analytics._id),
         type: 'Visite',
         description: `Visite sur ${analytics.page}${analytics.country ? ` depuis ${analytics.country}` : ''}`,
         date: new Date(analytics.createdAt).toLocaleDateString('fr-FR'),
@@ -113,7 +112,7 @@ export default async function handler(
     console.error('Error fetching dashboard activity:', error);
     return res.status(500).json({ 
       message: 'Erreur lors de la récupération de l\'activité',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
     });
   }
 }

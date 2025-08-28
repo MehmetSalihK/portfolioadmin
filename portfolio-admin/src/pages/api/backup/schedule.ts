@@ -3,7 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
 import dbConnect from '../../../lib/db';
 import { Backup } from '../../../models/Backup';
-import cron from 'node-cron';
+import { createFullBackup, createIncrementalBackup } from './index';
+import cron, { ScheduledTask as CronScheduledTask } from 'node-cron';
 
 // Interface pour les tâches de sauvegarde programmées
 interface ScheduledTask {
@@ -13,7 +14,7 @@ interface ScheduledTask {
   enabled: boolean;
   lastRun?: Date;
   nextRun?: Date;
-  task?: cron.ScheduledTask;
+  task?: CronScheduledTask;
 }
 
 // Stockage des tâches programmées en mémoire
@@ -27,11 +28,24 @@ async function executeScheduledBackup(taskId: string, type: 'full' | 'incrementa
     await dbConnect();
     
     // Créer la sauvegarde
-    const backup = await Backup.createBackup(type, {
-      description: `Sauvegarde automatique ${type}`,
-      createdBy: 'system',
-      isScheduled: true,
-    });
+    let backup;
+    if (type === 'full') {
+      backup = await createFullBackup(
+        `Sauvegarde automatique ${taskId}`,
+        `Sauvegarde automatique ${type}`,
+        'system'
+      );
+    } else {
+      // Pour les sauvegardes incrémentales, récupérer la date de la dernière sauvegarde
+      const lastBackup = await Backup.findOne({ type: 'full' }).sort({ createdAt: -1 });
+      const lastBackupDate = lastBackup ? lastBackup.createdAt : new Date(0);
+      backup = await createIncrementalBackup(
+        `Sauvegarde automatique ${taskId}`,
+        `Sauvegarde automatique ${type}`,
+        'system',
+        lastBackupDate
+      );
+    }
     
     console.log(`Sauvegarde programmée terminée: ${backup._id}`);
     
@@ -66,8 +80,6 @@ function createScheduledTask(
   if (enabled && cron.validate(schedule)) {
     task.task = cron.schedule(schedule, () => {
       executeScheduledBackup(id, type).catch(console.error);
-    }, {
-      scheduled: false, // Ne pas démarrer automatiquement
     });
     
     // Calculer la prochaine exécution
@@ -159,9 +171,7 @@ async function cleanupOldBackups() {
 }
 
 // Tâche de nettoyage hebdomadaire
-const cleanupTask = cron.schedule('0 3 * * 0', cleanupOldBackups, {
-  scheduled: false,
-});
+const cleanupTask = cron.schedule('0 3 * * 0', cleanupOldBackups);
 
 // Initialiser au démarrage du serveur
 if (process.env.NODE_ENV === 'production') {
@@ -194,7 +204,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           enabled: task.enabled,
           lastRun: task.lastRun,
           nextRun: task.nextRun,
-          isRunning: task.task?.running || false,
+          isRunning: task.enabled && !!task.task,
         }));
         
         return res.status(200).json({ tasks });
@@ -352,7 +362,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (task.enabled && cron.validate(task.schedule)) {
           task.task = cron.schedule(task.schedule, () => {
             executeScheduledBackup(id as string, task.type).catch(console.error);
-          }, { scheduled: false });
+          });
           
           startTask(id as string);
         }
@@ -388,7 +398,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('Erreur API schedule:', error);
     return res.status(500).json({ 
       message: 'Erreur interne du serveur',
-      error: error.message 
+      error: error instanceof Error ? error.message : String(error) 
     });
   }
 }

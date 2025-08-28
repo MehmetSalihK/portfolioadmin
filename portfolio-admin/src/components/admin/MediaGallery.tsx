@@ -113,7 +113,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
 
   useEffect(() => {
     fetchMedia(true);
-  }, [selectedCategory, selectedType, searchTerm]);
+  }, [selectedCategory, selectedType, searchTerm, fetchMedia]);
 
   const handleSelect = (item: MediaItem) => {
     if (multiSelect) {
@@ -454,7 +454,7 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
                 {previewItem.type === 'image' && (
                   <div className="mb-4">
                     <Image
-                      src={getImageUrl(previewItem, 'large')}
+                      src={getImageUrl(previewItem, 'medium')}
                       alt={previewItem.altText || previewItem.title}
                       width={800}
                       height={600}

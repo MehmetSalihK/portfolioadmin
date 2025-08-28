@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 
 interface AnalyticsData {
@@ -41,7 +41,7 @@ const useAnalytics = (options: UseAnalyticsOptions = {}) => {
   }, [enabled]);
 
   // Fonction pour envoyer les données d'analytics
-  const sendAnalytics = async (data: Partial<AnalyticsData>) => {
+  const sendAnalytics = useCallback(async (data: Partial<AnalyticsData>) => {
     if (!enabled || !sessionId) return;
 
     try {
@@ -59,16 +59,16 @@ const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     } catch (error) {
       console.error('Error sending analytics:', error);
     }
-  };
+  }, [enabled, sessionId, router.asPath]);
 
   // Calculer le temps passé
-  const getTimeSpent = (): number => {
+  const getTimeSpent = useCallback((): number => {
     if (!trackTimeSpent || startTimeRef.current === 0) return 0;
     return Math.floor((Date.now() - startTimeRef.current) / 1000);
-  };
+  }, [trackTimeSpent]);
 
   // Démarrer le tracking
-  const startTracking = async () => {
+  const startTracking = useCallback(async () => {
     if (!enabled || !sessionId || isTracking) return;
 
     setIsTracking(true);
@@ -89,10 +89,10 @@ const useAnalytics = (options: UseAnalyticsOptions = {}) => {
         lastUpdateRef.current = Date.now();
       }, updateInterval);
     }
-  };
+  }, [enabled, sessionId, isTracking, trackTimeSpent, updateInterval, sendAnalytics, getTimeSpent]);
 
   // Arrêter le tracking
-  const stopTracking = async () => {
+  const stopTracking = useCallback(async () => {
     if (!enabled || !sessionId || !isTracking) return;
 
     setIsTracking(false);
@@ -111,7 +111,7 @@ const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     });
 
     startTimeRef.current = 0;
-  };
+  }, [enabled, sessionId, isTracking, getTimeSpent, sendAnalytics]);
 
   // Tracking des changements de page
   useEffect(() => {
@@ -141,7 +141,7 @@ const useAnalytics = (options: UseAnalyticsOptions = {}) => {
       router.events.off('routeChangeComplete', handleRouteChangeComplete);
       stopTracking();
     };
-  }, [enabled, sessionId, router.isReady]);
+  }, [enabled, sessionId, router.isReady, router.events, startTracking, stopTracking]);
 
   // Tracking de la visibilité de la page
   useEffect(() => {
@@ -174,7 +174,7 @@ const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [enabled, isTracking, trackTimeSpent, updateInterval]);
+  }, [enabled, isTracking, trackTimeSpent, updateInterval, getTimeSpent, sendAnalytics]);
 
   // Nettoyage lors du démontage
   useEffect(() => {
@@ -209,7 +209,7 @@ const useAnalytics = (options: UseAnalyticsOptions = {}) => {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [enabled, isTracking, sessionId, router.asPath]);
+  }, [enabled, isTracking, sessionId, router.asPath, getTimeSpent]);
 
   return {
     sessionId,

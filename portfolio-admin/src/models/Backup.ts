@@ -289,7 +289,7 @@ EntityVersionSchema.pre('save', function(next) {
 });
 
 BackupSchema.pre('save', function(next) {
-  if (this.data) {
+  if (this.data && this.metadata) {
     this.metadata.totalSize = JSON.stringify(this.data).length;
     
     // Calculer le nombre total d'entités

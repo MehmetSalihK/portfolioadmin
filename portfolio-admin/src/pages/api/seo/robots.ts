@@ -285,7 +285,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('Erreur API robots:', error);
     return res.status(500).json({ 
       message: 'Erreur interne du serveur',
-      error: error.message 
+      error: error instanceof Error ? error.message : String(error) 
     });
   }
 }

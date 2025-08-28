@@ -63,7 +63,7 @@ export default function ImageCropper({ imageUrl, imageId, onClose, onSave }: Ima
   
   // Options
   const [selectedRatio, setSelectedRatio] = useState<number | null>(null);
-  const [selectedSize, setSelectedSize] = useState({ width: null, height: null });
+  const [selectedSize, setSelectedSize] = useState<{ width: number | null; height: number | null }>({ width: null, height: null });
   const [quality, setQuality] = useState(0.9);
   const [format, setFormat] = useState<'jpeg' | 'png' | 'webp'>('jpeg');
   const [saveAsNew, setSaveAsNew] = useState(true);
@@ -446,6 +446,7 @@ export default function ImageCropper({ imageUrl, imageId, onClose, onSave }: Ima
                 className="border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg"
                 style={{ maxWidth: '100%', maxHeight: '100%' }}
               />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 ref={imageRef}
                 src={imageUrl}

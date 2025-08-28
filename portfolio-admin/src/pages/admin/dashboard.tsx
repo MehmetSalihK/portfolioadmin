@@ -146,7 +146,7 @@ export default function DashboardPage() {
               theme === 'dark' ? 'text-white' : 'text-gray-900'
             }`}>{value}</p>
           </div>
-          <div className={`p-3 rounded-lg ${colorClasses[color] || colorClasses.blue}`}>
+          <div className={`p-3 rounded-lg ${colorClasses[color as keyof typeof colorClasses] || colorClasses.blue}`}>
             <Icon className="w-6 h-6" />
           </div>
         </div>
@@ -430,7 +430,7 @@ export default function DashboardPage() {
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => `${name} ${percent ? (percent * 100).toFixed(0) : 0}%`}
                   >
                     {deviceData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />

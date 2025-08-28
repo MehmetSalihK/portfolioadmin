@@ -1,13 +1,13 @@
 import cron from 'node-cron';
-import { connectDB } from '../lib/mongodb';
-import { Backup } from '../models/Backup';
-import { Project } from '../models/Project';
-import { Skill } from '../models/Skill';
-import { Media } from '../models/Media';
-import { Experience } from '../models/Experience';
-import { Education } from '../models/Education';
-import { Category } from '../models/Category';
-import { SEO } from '../models/SEO';
+import connectDB from '../lib/db';
+import Backup from '../models/Backup';
+import Project from '../models/Project';
+import Skill from '../models/Skill';
+import Media from '../models/Media';
+import Experience from '../models/Experience';
+import Education from '../models/Education';
+import Category from '../models/Category';
+import SEO from '../models/SEO';
 import crypto from 'crypto';
 import zlib from 'zlib';
 import { promisify } from 'util';
@@ -24,7 +24,7 @@ interface ScheduledTask {
   enabled: boolean;
   lastRun?: Date;
   nextRun?: Date;
-  task?: cron.ScheduledTask;
+  task?: any;
 }
 
 // Gestionnaire de tâches planifiées
@@ -101,7 +101,6 @@ class BackupScheduler {
         task.task = cron.schedule(config.schedule, async () => {
           await this.executeBackup(id, config.type);
         }, {
-          scheduled: false, // Ne pas démarrer automatiquement
           timezone: 'Europe/Paris',
         });
       }
@@ -131,7 +130,6 @@ class BackupScheduler {
       task.task = cron.schedule(task.schedule, async () => {
         await this.executeBackup(id, task.type);
       }, {
-        scheduled: false,
         timezone: 'Europe/Paris',
       });
     }
@@ -406,7 +404,7 @@ class BackupScheduler {
   // Obtenir la prochaine date d'exécution
   private getNextRunDate(schedule: string): Date | undefined {
     try {
-      const task = cron.schedule(schedule, () => {}, { scheduled: false });
+      const task = cron.schedule(schedule, () => {});
       // Note: node-cron ne fournit pas directement la prochaine exécution
       // On peut utiliser une bibliothèque comme 'cron-parser' pour cela
       task.destroy();
@@ -466,7 +464,7 @@ class BackupScheduler {
   async shutdown() {
     console.log('🛑 Arrêt du planificateur de sauvegardes...');
     
-    for (const [id] of this.tasks) {
+    for (const [id] of Array.from(this.tasks)) {
       await this.stopTask(id);
     }
     

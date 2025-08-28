@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../auth/[...nextauth]';
-import dbConnect from '../../../../lib/mongodb';
+import dbConnect from '../../../../lib/db';
 import Media from '../../../../models/Media';
 import sharp from 'sharp';
 import fs from 'fs';

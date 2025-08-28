@@ -337,7 +337,7 @@ async function detectOptimalFormat(inputPath: string): Promise<{ format: string;
     
     // Analyser les caractéristiques de l'image
     const hasTransparency = metadata.hasAlpha;
-    const isLowColor = stats.channels.every(channel => channel.max - channel.min < 128);
+    const isLowColor = stats.channels.every((channel: any) => channel.max - channel.min < 128);
     const isHighDetail = metadata.width && metadata.height && (metadata.width * metadata.height) > 1000000;
     
     // Logique de sélection du format
@@ -373,7 +373,7 @@ async function extractImageMetadata(filePath: string): Promise<any> {
     const optimalFormat = await detectOptimalFormat(filePath);
 
     // Calculer la complexité de l'image
-    const complexity = stats.channels.reduce((acc, channel) => {
+    const complexity = stats.channels.reduce((acc: number, channel: any) => {
       return acc + (channel.max - channel.min);
     }, 0) / stats.channels.length;
     
@@ -383,7 +383,7 @@ async function extractImageMetadata(filePath: string): Promise<any> {
         { color: '#' + Math.floor(stats.channels[0].mean).toString(16).padStart(2, '0').repeat(3), percentage: 100 }
       ] : [],
       averageColor: stats.channels ? 
-        '#' + stats.channels.map(c => Math.floor(c.mean).toString(16).padStart(2, '0')).join('') : null,
+        '#' + stats.channels.map((c: any) => Math.floor(c.mean).toString(16).padStart(2, '0')).join('') : null,
       optimalFormat: optimalFormat,
       complexity: Math.round(complexity),
       aspectRatio: metadata.width && metadata.height ? (metadata.width / metadata.height).toFixed(2) : null,

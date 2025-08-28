@@ -7,7 +7,7 @@ import Experience from '../../../models/Experience';
 import Education from '../../../models/Education';
 import Contact from '../../../models/Contact';
 import HomePage from '../../../models/HomePage';
-import { Media } from '../../../models/Media';
+import Media from '../../../models/Media';
 import Category from '../../../models/Category';
 
 // Interface pour les entrées du sitemap
@@ -294,7 +294,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('Erreur API sitemap:', error);
     return res.status(500).json({ 
       message: 'Erreur interne du serveur',
-      error: error.message 
+      error: error instanceof Error ? error.message : String(error) 
     });
   }
 }
