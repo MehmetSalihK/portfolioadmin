@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import RichTextEditor from '@/components/RichTextEditor';
 import LivePreview from '@/components/LivePreview';
 import { usePreviewSync } from '@/hooks/usePreviewSync';
+import { getPreviewUrl } from '@/utils/getBaseUrl';
 
 interface HomePageData {
   _id?: string;
@@ -298,7 +299,7 @@ export default function HomePageAdmin() {
       <LivePreview
         isVisible={showPreview}
         onToggle={() => setShowPreview(!showPreview)}
-        previewUrl="http://localhost:3000"
+        previewUrl={getPreviewUrl()}
         autoRefresh={isConnected}
         refreshInterval={2000}
       />

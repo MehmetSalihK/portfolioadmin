@@ -100,7 +100,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   if (status === 'loading') {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-900">
+      <div className="flex justify-center items-center min-h-screen" style={{ backgroundColor: 'rgb(30, 30, 30)' }}>
         <motion.div
           animate={{
             scale: [1, 1.2, 1],
@@ -128,11 +128,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      theme === 'dark' 
-        ? 'bg-gray-900' 
-        : 'bg-gray-50'
-    }`}>
+    <div className="min-h-screen transition-colors duration-300" style={{ backgroundColor: 'rgb(30, 30, 30)' }}>
       {/* Mobile Overlay */}
       {isSidebarOpen && (
         <motion.div
@@ -147,11 +143,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Toggle Button for Mobile */}
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className={`fixed top-4 left-4 z-50 p-3 rounded-xl shadow-lg transition-all duration-300 md:hidden ${
-          theme === 'dark'
-            ? 'bg-gray-800 text-white hover:bg-gray-700'
-            : 'bg-white text-gray-900 hover:bg-gray-100'
-        }`}
+        className="fixed top-4 left-4 z-50 p-3 rounded-xl shadow-lg transition-all duration-300 md:hidden text-white hover:bg-gray-600"
+        style={{ backgroundColor: 'rgb(40, 40, 40)' }}
       >
         {isSidebarOpen ? (
           <FiX className="w-5 h-5" />
@@ -167,43 +160,28 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           animate={isSidebarOpen ? "open" : "closed"}
           variants={sidebarVariants}
           transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-          className={`fixed inset-y-0 left-0 w-72 shadow-2xl z-40 transform md:translate-x-0 transition-colors duration-300 ${
-            theme === 'dark'
-              ? 'bg-gray-800 border-r border-gray-700'
-              : 'bg-white border-r border-gray-200'
-          }`}
+          className="fixed inset-y-0 left-0 w-64 shadow-2xl z-40 transform md:translate-x-0 transition-colors duration-300 border-r border-gray-700"
+          style={{ backgroundColor: 'rgb(40, 40, 40)' }}
         >
           <div className="flex flex-col h-full">
             {/* Header */}
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`px-6 py-6 border-b transition-colors duration-300 ${
-                theme === 'dark'
-                  ? 'border-gray-700/50'
-                  : 'border-gray-200'
-              }`}
+              className="px-6 py-6 border-b border-gray-600/50 transition-colors duration-300"
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h1 className={`text-xl font-bold transition-colors duration-300 ${
-                    theme === 'dark' ? 'text-white' : 'text-gray-900'
-                  }`}>
+                  <h1 className="text-xl font-bold text-white transition-colors duration-300">
                     Portfolio Admin
                   </h1>
-                  <p className={`text-sm mt-1 transition-colors duration-300 ${
-                    theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
+                  <p className="text-sm mt-1 text-gray-300 transition-colors duration-300">
                     {session?.user?.email}
                   </p>
                 </div>
                 <button
                   onClick={toggleTheme}
-                  className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 ${
-                    theme === 'dark'
-                      ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
+                  className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-110"
                   title={`Passer au thème ${theme === 'dark' ? 'clair' : 'sombre'}`}
                 >
                   {theme === 'dark' ? (
@@ -232,20 +210,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       href={item.href}
                       className={`group flex items-center px-4 py-3 rounded-xl transition-all duration-300 relative overflow-hidden ${
                         isActive
-                          ? theme === 'dark'
-                            ? 'bg-blue-500/20 text-blue-400 shadow-lg'
-                            : 'bg-blue-50 text-blue-600 shadow-md'
-                          : theme === 'dark'
-                            ? 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                          ? 'bg-blue-500/20 text-blue-400 shadow-lg'
+                          : 'text-gray-300 hover:bg-gray-600 hover:text-white'
                       }`}
                     >
                       {isActive && (
                         <motion.div
                           layoutId="activeIndicator"
-                          className={`absolute left-0 top-0 bottom-0 w-1 rounded-r-full ${
-                            theme === 'dark' ? 'bg-blue-400' : 'bg-blue-600'
-                          }`}
+                          className="absolute left-0 top-0 bottom-0 w-1 rounded-r-full bg-blue-400"
                           transition={{ type: "spring", bounce: 0.2 }}
                         />
                       )}
@@ -254,9 +226,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       }`} />
                       <div className="flex-1">
                         <span className="font-medium text-sm">{item.label}</span>
-                        <p className={`text-xs mt-0.5 transition-colors duration-300 ${
-                          theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
-                        }`}>
+                        <p className="text-xs mt-0.5 text-gray-400 transition-colors duration-300">
                           {item.description}
                         </p>
                       </div>
@@ -264,9 +234,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className={`w-2 h-2 rounded-full ${
-                            theme === 'dark' ? 'bg-blue-400' : 'bg-blue-600'
-                          }`}
+                          className="w-2 h-2 rounded-full bg-blue-400"
                         />
                       )}
                     </Link>
@@ -279,19 +247,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`p-4 border-t transition-colors duration-300 ${
-                theme === 'dark'
-                  ? 'border-gray-700/50'
-                  : 'border-gray-200'
-              }`}
+              className="p-4 border-t border-gray-600/50 transition-colors duration-300"
             >
               <button
                 onClick={handleSignOut}
-                className={`flex items-center w-full px-4 py-3 rounded-xl transition-all duration-300 group ${
-                  theme === 'dark'
-                    ? 'text-gray-300 hover:bg-red-500/10 hover:text-red-400'
-                    : 'text-gray-600 hover:bg-red-50 hover:text-red-600'
-                }`}
+                className="flex items-center w-full px-4 py-3 rounded-xl transition-all duration-300 group text-gray-300 hover:bg-red-500/10 hover:text-red-400"
               >
                 <FiLogOut className="w-5 h-5 mr-3 transition-transform duration-300 group-hover:-rotate-12" />
                 <span className="font-medium">Déconnexion</span>
@@ -302,39 +262,26 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className={`transition-all duration-300 ${isSidebarOpen ? 'md:ml-72' : 'ml-0'}`}>
+      <main className={`transition-all duration-200 ${isSidebarOpen ? 'md:ml-64' : 'ml-0'}`}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="min-h-screen"
+          className="min-h-screen p-6" style={{ backgroundColor: 'rgb(30, 30, 30)' }}
         >
           {children}
-          <Toaster 
+          <Toaster
             position="top-right"
             toastOptions={{
               style: {
-                background: theme === 'dark' ? '#374151' : '#ffffff',
-                color: theme === 'dark' ? '#ffffff' : '#1f2937',
-                border: theme === 'dark' ? '1px solid #4b5563' : '1px solid #e5e7eb',
-                borderRadius: '12px',
-                boxShadow: theme === 'dark' 
-                  ? '0 10px 15px -3px rgba(0, 0, 0, 0.3)' 
-                  : '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                background: '#333',
+                color: '#fff',
               },
               success: {
                 duration: 3000,
-                iconTheme: {
-                  primary: '#10b981',
-                  secondary: theme === 'dark' ? '#ffffff' : '#ffffff',
-                },
               },
               error: {
                 duration: 4000,
-                iconTheme: {
-                  primary: '#ef4444',
-                  secondary: theme === 'dark' ? '#ffffff' : '#ffffff',
-                },
               },
             }}
           />

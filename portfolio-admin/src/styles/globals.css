@@ -48,6 +48,16 @@
 }
 
 /* Base Typography */
+
+/* Fix About section text color in light mode */
+#about .text-lg.sm\:text-xl * {
+  color: #1f2937 !important; /* Force dark gray text in light mode */
+}
+
+/* Dark mode - keep white text */
+.dark #about .text-lg.sm\:text-xl * {
+  color: #d1d5db !important; /* Force light gray text in dark mode */
+}
 html {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';

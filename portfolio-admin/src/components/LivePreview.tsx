@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FiEye, FiEyeOff, FiRefreshCw, FiExternalLink, FiMonitor, FiSmartphone, FiTablet } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getPreviewUrl } from '@/utils/getBaseUrl';
 
 interface LivePreviewProps {
   isVisible: boolean;
@@ -43,7 +44,7 @@ const devices: Record<DeviceType, DeviceConfig> = {
 const LivePreview: React.FC<LivePreviewProps> = ({
   isVisible,
   onToggle,
-  previewUrl = 'http://localhost:3000',
+  previewUrl = getPreviewUrl(),
   autoRefresh = true,
   refreshInterval = 2000,
 }) => {

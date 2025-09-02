@@ -40,13 +40,15 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   useEffect(() => {
     // Appliquer le thème au document
     const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      root.classList.remove('light');
-    } else {
-      root.classList.add('light');
-      root.classList.remove('dark');
-    }
+    
+    // Nettoyer toutes les classes de thème existantes
+    root.classList.remove('dark', 'light');
+    
+    // Ajouter la nouvelle classe de thème
+    root.classList.add(theme);
+    
+    // Forcer le re-render en modifiant l'attribut data-theme
+    root.setAttribute('data-theme', theme);
     
     // Sauvegarder dans localStorage
     localStorage.setItem('portfolio-admin-theme', theme);

@@ -15,6 +15,7 @@ import ImageCropper from '@/components/ImageCropper';
 import OptimizationStatus from '@/components/OptimizationStatus';
 import LivePreview from '@/components/LivePreview';
 import { usePreviewSync } from '@/hooks/usePreviewSync';
+import { getPreviewUrl } from '@/utils/getBaseUrl';
 
 interface MediaItem {
   _id: string;
@@ -1057,7 +1058,7 @@ export default function MediaPage() {
       <LivePreview
         isVisible={showPreview}
         onToggle={() => setShowPreview(!showPreview)}
-        previewUrl="http://localhost:3000"
+        previewUrl={getPreviewUrl()}
         autoRefresh={isConnected}
         refreshInterval={2000}
       />

@@ -800,7 +800,7 @@ export default function Home({ projects, experiences, skills, homeData = default
               className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center"
             >
               <div className="space-y-6">
-                <div className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 leading-relaxed prose prose-lg dark:prose-invert max-w-none">
+                <div className="text-lg sm:text-xl text-gray-900 dark:text-gray-300 leading-relaxed max-w-none">
                   {parse(homeData.aboutText)}
                 </div>
                 

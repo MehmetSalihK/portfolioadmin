@@ -29,6 +29,7 @@ import {
 import { useTheme } from '@/contexts/ThemeContext';
 import LivePreview from '@/components/LivePreview';
 import { usePreviewSync } from '@/hooks/usePreviewSync';
+import { getPreviewUrl } from '@/utils/getBaseUrl';
 
 interface Skill {
   _id: string;
@@ -1276,7 +1277,7 @@ export default function ProjectsPage() {
       <LivePreview
         isVisible={showPreview}
         onToggle={() => setShowPreview(!showPreview)}
-        previewUrl="http://localhost:3000"
+        previewUrl={getPreviewUrl()}
         autoRefresh={isConnected}
         refreshInterval={2000}
       />

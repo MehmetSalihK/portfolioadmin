@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { FiMoon, FiSun, FiMenu, FiX, FiHome, FiUser, FiCode, FiAward, FiBriefcase, FiMail } from 'react-icons/fi';
-import { useTheme } from 'next-themes';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const navItems = [
   { name: 'Accueil', path: '/', icon: FiHome },
@@ -17,7 +17,7 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const router = useRouter();
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export default function Navbar() {
           <div className="flex items-center space-x-2">
             {mounted && (
               <button
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                onClick={toggleTheme}
                 className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                 aria-label="Toggle theme"
               >
