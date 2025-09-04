@@ -15,7 +15,7 @@ export const send2FACode = async ({ userEmail, code }: Send2FACodeParams) => {
   try {
     const { data, error } = await resend.emails.send({
       from: 'Acme <onboarding@resend.dev>',
-      to: ['contact@mehmetsalihk.fr'], // Toujours envoyer à cette adresse
+      to: ['salihketur60@gmail.com'], // Email vérifié pour Resend en mode test
       subject: 'Code de vérification 2FA - Portfolio Admin',
       html: `
         <!DOCTYPE html>

@@ -40,12 +40,12 @@ const FloatingParticles: React.FC<FloatingParticlesProps> = ({ animationsEnabled
 const inputVariants = {
   focused: {
     scale: 1.02,
-    boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.1)",
+    boxShadow: "0 0 0 3px rgba(75, 85, 99, 0.3)",
     transition: { duration: 0.2 }
   },
   unfocused: {
     scale: 1,
-    boxShadow: "0 0 0 0px rgba(59, 130, 246, 0)",
+    boxShadow: "0 0 0 0px rgba(75, 85, 99, 0)",
     transition: { duration: 0.2 }
   }
 };
@@ -195,7 +195,7 @@ export default function Verify2FA() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="min-h-screen relative overflow-hidden bg-black">
         <FloatingParticles animationsEnabled={backgroundAnimationsEnabled} />
         
         {/* Galactic Background */}
@@ -222,22 +222,7 @@ export default function Verify2FA() {
             />
           ))}
 
-          {/* Nebulae Effects */}
-          <motion.div
-            className="absolute inset-0 opacity-30"
-            style={{
-              background: 'radial-gradient(circle at 20% 30%, rgba(147, 51, 234, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.3) 0%, transparent 50%)'
-            }}
-            animate={backgroundAnimationsEnabled ? {
-              scale: [1, 1.1, 1],
-              opacity: [0.3, 0.5, 0.3],
-            } : {}}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
+
         </div>
 
         <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
@@ -247,7 +232,7 @@ export default function Verify2FA() {
             transition={{ duration: 0.6 }}
             className="w-full max-w-md"
           >
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-8">
+            <div className="bg-gray-900/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-700/50 p-8">
               <motion.h1
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -261,10 +246,9 @@ export default function Verify2FA() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
-                className="text-gray-300 text-center mb-6"
+                className="text-gray-400 text-center mb-6"
               >
-                Un code de vérification a été envoyé à<br />
-                <span className="font-semibold text-blue-300">contact@mehmetsalihk.fr</span>
+                Un code de vérification a été envoyé
               </motion.p>
 
               <div className="text-center mb-6">
@@ -323,7 +307,7 @@ export default function Verify2FA() {
                   disabled={isLoading || code.length !== 6}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="w-full bg-gradient-to-r from-gray-700 to-gray-800 text-white py-3 px-4 rounded-lg font-medium hover:from-gray-600 hover:to-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   {isLoading ? (
                     <div className="flex items-center justify-center">
@@ -340,7 +324,7 @@ export default function Verify2FA() {
                 <button
                   onClick={handleResendCode}
                   disabled={isLoading}
-                  className="text-blue-400 hover:text-blue-300 text-sm underline disabled:opacity-50"
+                  className="text-gray-400 hover:text-gray-300 text-sm underline disabled:opacity-50"
                 >
                   Renvoyer le code
                 </button>

@@ -70,15 +70,22 @@ export default async function handler(
     await twoFactorAuth.save();
 
     // Envoyer l'email avec le code
-    await send2FACode({ userEmail: email, code });
+    console.log('DEBUG: Tentative d\'envoi d\'email avec code:', code);
+    try {
+      await send2FACode({ userEmail: email, code });
+      console.log(`DEBUG: Email envoyé avec succès pour ${email}`);
+    } catch (emailError) {
+      console.error('DEBUG: Erreur lors de l\'envoi d\'email:', emailError);
+      throw emailError;
+    }
 
     console.log(`Code 2FA généré et envoyé pour ${email}`);
 
     res.status(200).json({ 
-      success: true, 
-      message: 'Code de vérification envoyé à contact@mehmetsalihk.fr',
-      email: 'contact@mehmetsalihk.fr' // Indiquer où le code a été envoyé
-    });
+          success: true, 
+          message: 'Code de vérification envoyé à salihketur60@gmail.com',
+          email: 'salihketur60@gmail.com' // Indiquer où le code a été envoyé
+        });
   } catch (error) {
     console.error('Erreur lors de l\'envoi du code 2FA:', error);
     res.status(500).json({ error: 'Erreur interne du serveur' });
