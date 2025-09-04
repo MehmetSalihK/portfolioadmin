@@ -104,7 +104,7 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-3xl font-bold text-white mb-8">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Dashboard</h1>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {cards.map((card, index) => {
@@ -118,15 +118,15 @@ export default function AdminDashboard() {
                   className="group cursor-pointer"
                   onClick={() => router.push(card.link)}
                 >
-                  <div className="relative overflow-hidden bg-[#1E1E1E] rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <div className="relative overflow-hidden bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                     {/* Background Gradient */}
                     <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-10 group-hover:opacity-20 transition-opacity`} />
                     
                     <div className="relative p-6">
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <p className="text-sm text-gray-400">{card.title}</p>
-                          <h3 className="text-3xl font-bold text-white mt-1">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{card.title}</p>
+                          <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
                             {card.value}
                           </h3>
                         </div>
@@ -134,10 +134,10 @@ export default function AdminDashboard() {
                           <Icon className="w-6 h-6 text-white" />
                         </div>
                       </div>
-                      <p className="text-sm text-gray-400">{card.description}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{card.description}</p>
                       
                       {/* Progress bar */}
-                      <div className="mt-4 h-1 bg-gray-700 rounded-full overflow-hidden">
+                      <div className="mt-4 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: '100%' }}
@@ -154,11 +154,11 @@ export default function AdminDashboard() {
 
           {/* Recent Activity Section */}
           <div className="mt-8">
-            <h2 className="text-xl font-semibold text-white mb-4">Activité récente</h2>
-            <div className="bg-[#1E1E1E] rounded-lg p-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Activité récente</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6">
               <div className="space-y-4">
                 {/* Activity items would go here */}
-                <p className="text-gray-400">Aucune activité récente à afficher</p>
+                <p className="text-gray-600 dark:text-gray-400">Aucune activité récente à afficher</p>
               </div>
             </div>
           </div>

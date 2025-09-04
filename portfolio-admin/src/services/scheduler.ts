@@ -7,7 +7,7 @@ import Media from '../models/Media';
 import Experience from '../models/Experience';
 import Education from '../models/Education';
 import Category from '../models/Category';
-import SEO from '../models/SEO';
+
 import crypto from 'crypto';
 import zlib from 'zlib';
 import { promisify } from 'util';
@@ -243,14 +243,13 @@ class BackupScheduler {
 
   // Collecter toutes les données (sauvegarde complète)
   private async collectFullData() {
-    const [projects, skills, media, experiences, education, categories, seo] = await Promise.all([
+    const [projects, skills, media, experiences, education, categories] = await Promise.all([
       Project.find({}).lean(),
       Skill.find({}).lean(),
       Media.find({}).lean(),
       Experience.find({}).lean(),
       Education.find({}).lean(),
       Category.find({}).lean(),
-      SEO.find({}).lean(),
     ]);
 
     return {
@@ -260,7 +259,6 @@ class BackupScheduler {
       experiences,
       education,
       categories,
-      seo,
       timestamp: new Date().toISOString(),
     };
   }
@@ -274,14 +272,13 @@ class BackupScheduler {
 
     const since = lastIncrementalBackup ? lastIncrementalBackup.createdAt : new Date(Date.now() - 6 * 60 * 60 * 1000); // 6h par défaut
 
-    const [projects, skills, media, experiences, education, categories, seo] = await Promise.all([
+    const [projects, skills, media, experiences, education, categories] = await Promise.all([
       Project.find({ updatedAt: { $gte: since } }).lean(),
       Skill.find({ updatedAt: { $gte: since } }).lean(),
       Media.find({ updatedAt: { $gte: since } }).lean(),
       Experience.find({ updatedAt: { $gte: since } }).lean(),
       Education.find({ updatedAt: { $gte: since } }).lean(),
       Category.find({ updatedAt: { $gte: since } }).lean(),
-      SEO.find({ updatedAt: { $gte: since } }).lean(),
     ]);
 
     return {
@@ -291,7 +288,6 @@ class BackupScheduler {
       experiences,
       education,
       categories,
-      seo,
       since: since.toISOString(),
       timestamp: new Date().toISOString(),
     };
@@ -306,14 +302,13 @@ class BackupScheduler {
 
     const since = lastFullBackup ? lastFullBackup.createdAt : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 jours par défaut
 
-    const [projects, skills, media, experiences, education, categories, seo] = await Promise.all([
+    const [projects, skills, media, experiences, education, categories] = await Promise.all([
       Project.find({ updatedAt: { $gte: since } }).lean(),
       Skill.find({ updatedAt: { $gte: since } }).lean(),
       Media.find({ updatedAt: { $gte: since } }).lean(),
       Experience.find({ updatedAt: { $gte: since } }).lean(),
       Education.find({ updatedAt: { $gte: since } }).lean(),
       Category.find({ updatedAt: { $gte: since } }).lean(),
-      SEO.find({ updatedAt: { $gte: since } }).lean(),
     ]);
 
     return {
@@ -323,7 +318,6 @@ class BackupScheduler {
       experiences,
       education,
       categories,
-      seo,
       since: since.toISOString(),
       timestamp: new Date().toISOString(),
     };

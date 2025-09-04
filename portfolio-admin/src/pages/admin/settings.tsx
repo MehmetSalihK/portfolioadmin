@@ -276,7 +276,7 @@ export default function SettingsPage() {
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-3">
             <FiSettings className="w-8 h-8 text-blue-500" />
-            <h1 className="text-3xl font-bold text-white">Settings</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
           </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -293,7 +293,7 @@ export default function SettingsPage() {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-[#1E1E1E] rounded-lg shadow-lg"
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg"
         >
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -302,7 +302,7 @@ export default function SettingsPage() {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
               >
-                <label className="block text-gray-400 text-sm font-medium mb-2">
+                <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">
                   <div className="flex items-center gap-2">
                     <FiEdit3 className="text-blue-500" />
                     Site Title
@@ -313,7 +313,7 @@ export default function SettingsPage() {
                   name="siteTitle"
                   value={settings.siteTitle}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white rounded border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </motion.div>
 
@@ -322,7 +322,7 @@ export default function SettingsPage() {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
               >
-                <label className="block text-gray-400 text-sm font-medium mb-2">
+                <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">
                   <div className="flex items-center gap-2">
                     <FiMail className="text-blue-500" />
                     Email
@@ -333,7 +333,7 @@ export default function SettingsPage() {
                   name="email"
                   value={settings.email}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white rounded border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </motion.div>
 
@@ -342,7 +342,7 @@ export default function SettingsPage() {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.5 }}
               >
-                <label className="block text-gray-400 text-sm font-medium mb-2">
+                <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">
                   <div className="flex items-center gap-2">
                     <FiPhone className="text-blue-500" />
                     Phone Number
@@ -353,7 +353,7 @@ export default function SettingsPage() {
                   name="phone"
                   value={settings.phone}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white rounded border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </motion.div>
 
@@ -363,7 +363,7 @@ export default function SettingsPage() {
                 transition={{ duration: 0.5, delay: 0.55 }}
                 className="relative"
               >
-                <label className="block text-gray-400 text-sm font-medium mb-2">
+                <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">
                   <div className="flex items-center gap-2">
                     <FiMapPin className="text-blue-500" />
                     Position
@@ -379,19 +379,19 @@ export default function SettingsPage() {
                   value={settings.position}
                   onChange={handleChange}
                   placeholder="Ex: Nogent-sur-Oise, 60180"
-                  className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white rounded border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   autoComplete="off"
                 />
                 {showSuggestions && positionSuggestions.length > 0 && (
                   <div
                     ref={suggestionsRef}
-                    className="absolute z-10 w-full mt-1 bg-[#252525] border border-[#2A2A2A] rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                    className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
                   >
                     {positionSuggestions.map((suggestion, index) => (
                       <div
                         key={index}
                         onClick={() => selectSuggestion(suggestion)}
-                        className="px-3 py-2 text-white hover:bg-[#2A2A2A] cursor-pointer border-b border-[#2A2A2A] last:border-b-0"
+                        className="px-3 py-2 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer border-b border-gray-200 dark:border-gray-600 last:border-b-0"
                       >
                         <div className="flex items-center gap-2">
                           <FiMapPin className="text-blue-500 text-sm" />
@@ -401,7 +401,7 @@ export default function SettingsPage() {
                     ))}
                   </div>
                 )}
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Tapez au moins 2 caractères pour voir les suggestions d'adresses françaises
                 </p>
               </motion.div>
@@ -411,7 +411,7 @@ export default function SettingsPage() {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.6 }}
               >
-                <label className="block text-gray-400 text-sm font-medium mb-2">
+                <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">
                   <div className="flex items-center gap-2">
                     <FiGithub className="text-blue-500" />
                     GitHub URL
@@ -422,7 +422,7 @@ export default function SettingsPage() {
                   name="github"
                   value={settings.github}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white rounded border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </motion.div>
 
@@ -431,7 +431,7 @@ export default function SettingsPage() {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.6 }}
               >
-                <label className="block text-gray-400 text-sm font-medium mb-2">
+                <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">
                   <div className="flex items-center gap-2">
                     <FiLinkedin className="text-blue-500" />
                     LinkedIn URL
@@ -442,7 +442,7 @@ export default function SettingsPage() {
                   name="linkedin"
                   value={settings.linkedin}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white rounded border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </motion.div>
 

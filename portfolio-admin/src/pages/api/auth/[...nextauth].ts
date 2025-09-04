@@ -30,6 +30,40 @@ export const authOptions: NextAuthOptions = {
           console.log('Connected to database');
           console.log('Attempting login for:', credentials.email);
           
+          // Vérifier si c'est une authentification 2FA déjà vérifiée
+          if (credentials.password === 'verified-2fa') {
+            console.log('2FA already verified, creating session...');
+            
+            // Vérifier si c'est l'admin par défaut
+            if (credentials.email === process.env.ADMIN_EMAIL) {
+              return {
+                id: 'default-admin',
+                email: process.env.ADMIN_EMAIL,
+                name: 'Admin',
+                role: 'admin',
+              };
+            }
+            
+            // Chercher l'admin dans la base de données
+            const admin = await Admin.findOne({ email: credentials.email });
+            if (!admin) {
+              throw new Error('Utilisateur non trouvé');
+            }
+            
+            // Mettre à jour la dernière connexion
+            await Admin.findByIdAndUpdate(admin._id, {
+              lastLogin: new Date(),
+            });
+            
+            return {
+              id: admin._id.toString(),
+              email: admin.email,
+              name: admin.name,
+              role: admin.role,
+            };
+          }
+          
+          // Authentification normale (ne devrait plus être utilisée avec 2FA)
           // Vérifier si c'est l'admin par défaut
           if (credentials.email === process.env.ADMIN_EMAIL && 
               credentials.password === process.env.ADMIN_PASSWORD) {

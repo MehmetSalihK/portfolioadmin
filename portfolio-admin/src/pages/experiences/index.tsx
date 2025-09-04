@@ -2,7 +2,7 @@ import Head from 'next/head';
 import Layout from '@/components/layouts/Layout';
 import { FiBriefcase, FiMapPin, FiCalendar, FiLink, FiClock } from 'react-icons/fi';
 import { motion } from 'framer-motion';
-import { useTheme } from 'next-themes';
+import { useTheme } from '@/contexts/ThemeContext';
 import { GetStaticProps } from 'next';
 import connectDB from '@/lib/db';
 import Experience from '@/models/Experience';
@@ -40,16 +40,14 @@ export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
         <meta name="description" content="Liste de mes expériences professionnelles" />
       </Head>
 
-      <main className="min-h-screen pt-20 pb-16">
+      <main className="min-h-screen pt-20 pb-16 bg-white dark:bg-gray-900 transition-colors duration-300">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className={`text-4xl font-bold mb-12 text-center ${
-              theme === 'dark' ? 'text-white' : 'text-gray-900'
-            }`}>
+            <h1 className="text-4xl font-bold mb-12 text-center text-gray-900 dark:text-white">
               Mes Expériences
             </h1>
 

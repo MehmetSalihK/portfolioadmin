@@ -24,7 +24,7 @@ interface DashboardStats {
     totalMedia: number;
     totalCategories: number;
     totalBackups: number;
-    totalSEOEntries: number;
+
   };
   analytics: {
     totalPageViews: number;
@@ -54,7 +54,7 @@ interface DashboardStats {
   };
   performance: {
     lastBackup: Date | null;
-    seoScore: number;
+
     systemHealth: 'excellent' | 'good' | 'warning' | 'critical';
   };
 }
@@ -317,12 +317,7 @@ export default function DashboardPage() {
             icon={FiShield}
             color="gray"
           />
-          <StatCard
-            title="Entrées SEO"
-            value={stats.overview.totalSEOEntries}
-            icon={FiGlobe}
-            color="teal"
-          />
+
         </div>
 
         {/* Analytics et Performance */}
@@ -383,20 +378,7 @@ export default function DashboardPage() {
                 <SystemHealthIndicator health={stats.performance.systemHealth} />
               </div>
               
-              <div>
-                <p className="text-sm text-gray-400 mb-1">Score SEO</p>
-                <div className="flex items-center space-x-2">
-                  <div className="flex-1 bg-gray-700 rounded-full h-2">
-                    <div 
-                      className="bg-blue-600 h-2 rounded-full" 
-                      style={{ width: `${stats.performance.seoScore}%` }}
-                    ></div>
-                  </div>
-                  <span className="text-sm font-medium text-white">
-                    {stats.performance.seoScore}%
-                  </span>
-                </div>
-              </div>
+
               
               <div>
                 <p className="text-sm text-gray-400 mb-1">Dernière sauvegarde</p>

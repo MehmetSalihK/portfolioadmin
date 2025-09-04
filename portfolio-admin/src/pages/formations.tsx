@@ -18,8 +18,10 @@ interface FormationsPageProps {
     description: string;
     location: string;
     isCurrentlyStudying: boolean;
+    isPaused: boolean;
     isDiplomaPassed: boolean;
     diplomaFile?: string;
+    isVisible: boolean;
   }[];
 }
 
@@ -43,7 +45,9 @@ export default function FormationsPage({ educations = [] }: FormationsPageProps)
         <meta name="description" content="Découvrez mon parcours de formation et mes diplômes" />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-b from-primary-50 to-white dark:from-gray-900 dark:to-gray-800">
+
+
+      <div className="min-h-screen bg-gradient-to-b from-primary-50 to-white dark:from-gray-900 dark:to-gray-800 pt-20">
         <div className="container mx-auto px-4 py-24">
           <h1 className="text-4xl md:text-5xl font-bold text-center text-gray-900 dark:text-white mb-12">
             Mes Formations
@@ -89,6 +93,8 @@ export default function FormationsPage({ educations = [] }: FormationsPageProps)
                           {formatDate(education.startDate)} - {' '}
                           {education.isCurrentlyStudying ? (
                             <span className="text-green-600 dark:text-green-400 font-medium">En cours</span>
+                          ) : education.isPaused ? (
+                            <span className="text-orange-600 dark:text-orange-400 font-medium">En pause</span>
                           ) : (
                             formatDate(education.endDate!)
                           )}
@@ -134,7 +140,7 @@ export default function FormationsPage({ educations = [] }: FormationsPageProps)
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
   try {
     await connectDB();
-    const educations = await Education.find().sort({ startDate: -1 }).lean();
+    const educations = await Education.find({ isVisible: true }).sort({ startDate: -1 }).lean();
 
     return {
       props: {

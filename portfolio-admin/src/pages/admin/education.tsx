@@ -3,7 +3,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import EducationModal from '@/components/modals/EducationModal';
-import { FiPlus, FiBook, FiEdit2, FiTrash2, FiExternalLink } from 'react-icons/fi';
+import { FiPlus, FiBook, FiEdit2, FiTrash2, FiExternalLink, FiEye } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 export default function EducationPage() {
@@ -84,6 +84,30 @@ export default function EducationPage() {
     }
   };
 
+  const handleToggleVisibility = async (educationId: string, currentStatus: boolean) => {
+    try {
+      const response = await fetch(`/api/education/${educationId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          isVisible: !currentStatus,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update education visibility');
+      }
+
+      await fetchEducations();
+      toast.success(`Formation ${!currentStatus ? 'affichée sur' : 'masquée de'} la page publique`);
+    } catch (error) {
+      console.error('Error updating education visibility:', error);
+      toast.error('Erreur lors de la mise à jour de la visibilité');
+    }
+  };
+
   const handleDeleteEducation = async (id: string) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cette formation ?')) {
       try {
@@ -129,7 +153,7 @@ export default function EducationPage() {
     <AdminLayout>
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
             <FiBook className="w-8 h-8" />
             Gestion des Formations
           </h1>
@@ -147,13 +171,13 @@ export default function EducationPage() {
         {/* Liste des formations */}
         <div className="grid gap-4">
           {educations.map((education: any) => (
-            <div key={education._id} className="bg-[#1E1E1E] p-4 rounded-lg">
+            <div key={education._id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-lg font-semibold text-white">{education.school}</h3>
-                  <p className="text-gray-300">{education.degree} - {education.field}</p>
-                  <p className="text-gray-400 text-sm">{education.location}</p>
-                  <div className="text-gray-400 text-sm mt-1">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{education.school}</h3>
+                  <p className="text-gray-700 dark:text-gray-300">{education.degree} - {education.field}</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">{education.location}</p>
+                  <div className="text-gray-600 dark:text-gray-400 text-sm mt-1">
                     {education.startDate && (
                       <span>
                         {new Date(education.startDate).toLocaleDateString('fr-FR', { month: '2-digit', year: 'numeric' })}
@@ -161,13 +185,16 @@ export default function EducationPage() {
                           <span> - {new Date(education.endDate).toLocaleDateString('fr-FR', { month: '2-digit', year: 'numeric' })}</span>
                         )}
                         {education.isCurrentlyStudying && <span> - En cours</span>}
+                        {education.isPaused && <span> - En pause</span>}
                       </span>
                     )}
                   </div>
-                  <p className="text-gray-400 text-sm mt-2">{education.description}</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">{education.description}</p>
                   <div className="mb-2">
                     {education.isCurrentlyStudying ? (
                       <span className="text-blue-400 text-sm animate-pulse bg-yellow-400/20 px-2 py-1 rounded-md shadow-lg shadow-yellow-400/30">📚 En cours</span>
+                    ) : education.isPaused ? (
+                      <span className="text-orange-400 text-sm animate-pulse bg-orange-400/20 px-2 py-1 rounded-md shadow-lg shadow-orange-400/30">⏸️ En pause</span>
                     ) : education.isDiplomaPassed ? (
                       <>
                         <span className="text-green-400 text-sm animate-pulse bg-yellow-400/20 px-2 py-1 rounded-md shadow-lg shadow-yellow-400/30">✓ Diplôme obtenu</span>
@@ -176,7 +203,7 @@ export default function EducationPage() {
                             href={`/api/certificate/${education._id}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-400 hover:text-blue-500 text-sm underline ml-2 flex items-center gap-1"
+                            className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 text-sm underline ml-2 flex items-center gap-1"
                           >
                             <FiExternalLink size={12} />
                             {education.diplomaFileName ? `Voir ${education.diplomaFileName}` : 'Voir le certificat'}
@@ -186,11 +213,22 @@ export default function EducationPage() {
                     ) : education.isDiplomaNotObtained ? (
                       <span className="text-red-400 text-sm animate-pulse bg-yellow-400/20 px-2 py-1 rounded-md shadow-lg shadow-yellow-400/30">✗ Diplôme non obtenu</span>
                     ) : (
-                      <span className="text-gray-400 text-sm">Statut non défini</span>
+                      <span className="text-gray-600 dark:text-gray-400 text-sm">Statut non défini</span>
                     )}
                   </div>
                 </div>
                 <div className="flex gap-2">
+                  <button
+                    onClick={() => handleToggleVisibility(education._id, education.isVisible)}
+                    className={`p-2 rounded-lg transition-all ${
+                      education.isVisible 
+                        ? 'text-green-400 hover:text-green-500 hover:bg-green-500/10' 
+                        : 'text-red-400 hover:text-red-500 hover:bg-red-500/10'
+                    }`}
+                    title={education.isVisible ? 'Masquer de la page publique' : 'Afficher sur la page publique'}
+                  >
+                    <FiEye className="w-5 h-5" />
+                  </button>
                   <button
                     onClick={() => {
                       setSelectedEducation(education);

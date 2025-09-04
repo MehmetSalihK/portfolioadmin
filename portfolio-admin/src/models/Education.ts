@@ -9,6 +9,7 @@ export interface IEducation extends Document {
   description: string;
   location: string;
   isCurrentlyStudying: boolean;
+  isPaused: boolean;
   isDiplomaPassed: boolean;
   isDiplomaNotObtained: boolean;
   diplomaFile?: string;
@@ -16,6 +17,7 @@ export interface IEducation extends Document {
   diplomaFilePath?: string;
   diplomaData?: string;
   isBlurred?: boolean;
+  isVisible: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -52,6 +54,10 @@ const EducationSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  isPaused: {
+    type: Boolean,
+    default: false,
+  },
   isDiplomaPassed: {
     type: Boolean,
     default: false,
@@ -75,6 +81,10 @@ const EducationSchema = new Schema({
   isBlurred: {
     type: Boolean,
     default: false
+  },
+  isVisible: {
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true

@@ -21,11 +21,11 @@ export default function AdminSkillsPage({ initialSkills }: AdminSkillsPageProps)
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
               <FiAward className="w-8 h-8" />
               Gestion des compétences
           </h1>
-            <p className="text-gray-400 mt-2">
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
               Gérez les compétences affichées sur votre portfolio ({initialSkills.length})
             </p>
           </div>

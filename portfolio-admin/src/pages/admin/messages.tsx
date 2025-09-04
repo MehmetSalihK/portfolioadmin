@@ -151,14 +151,14 @@ export default function MessagesPage() {
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center space-x-3">
-            <FiMail className="text-2xl text-white" />
-            <h1 className="text-2xl font-bold text-white">Messages</h1>
+            <FiMail className="text-2xl text-gray-900 dark:text-white" />
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Messages</h1>
           </div>
           <div className="flex items-center space-x-2">
             <select 
               value={filter}
               onChange={(e) => setFilter(e.target.value as any)}
-              className="bg-gray-800 text-white px-3 py-2 rounded-md text-sm border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-3 py-2 rounded-md text-sm border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">Tous les messages</option>
               <option value="unread">Non lus</option>
@@ -179,10 +179,10 @@ export default function MessagesPage() {
             <FiLoader className="animate-spin text-4xl text-blue-500" />
           </div>
         ) : filteredMessages.length === 0 ? (
-          <div className="bg-[#1E1E1E] rounded-lg p-8 text-center">
-            <FiMail className="text-5xl text-gray-500 mx-auto mb-4" />
-            <p className="text-gray-400 text-lg">Aucun message trouvé</p>
-            <p className="text-gray-500 text-sm mt-2">Les messages que vous recevez via le formulaire de contact apparaîtront ici.</p>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center shadow">
+            <FiMail className="text-5xl text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+            <p className="text-gray-600 dark:text-gray-400 text-lg">Aucun message trouvé</p>
+            <p className="text-gray-500 dark:text-gray-500 text-sm mt-2">Les messages que vous recevez via le formulaire de contact apparaîtront ici.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -192,21 +192,21 @@ export default function MessagesPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className={`bg-[#1E1E1E] rounded-lg overflow-hidden border-l-4 ${
+                className={`bg-white dark:bg-gray-800 rounded-lg overflow-hidden border-l-4 shadow ${
                   message.status === 'unread' ? 'border-l-blue-500' : 
                   message.status === 'archived' ? 'border-l-gray-500' : 'border-l-green-500'
                 }`}
               >
                 <div className="p-4">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-medium text-white">{message.firstName} {message.lastName}</h3>
-                    <span className="text-xs text-gray-500">
+                    <h3 className="font-medium text-gray-900 dark:text-white">{message.firstName} {message.lastName}</h3>
+                    <span className="text-xs text-gray-500 dark:text-gray-500">
                       {format(new Date(message.createdAt), 'dd MMM yyyy', { locale: fr })}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-400 mb-1">{message.email}</p>
-                  <p className="text-sm text-gray-300 font-medium mb-3">{message.subject}</p>
-                  <p className="text-sm text-gray-400 line-clamp-2 mb-4">{message.message}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{message.email}</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 font-medium mb-3">{message.subject}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4">{message.message}</p>
                   
                   <div className="flex justify-between items-center">
                     <div className="flex space-x-2">
@@ -249,7 +249,7 @@ export default function MessagesPage() {
                     
                     <a
                       href={`mailto:${message.email}?subject=Re: ${message.subject}`}
-                      className="text-blue-400 hover:text-blue-300 text-sm"
+                      className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 text-sm"
                     >
                       Répondre
                     </a>
@@ -267,50 +267,50 @@ export default function MessagesPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+              className="fixed inset-0 bg-black/75 dark:bg-black/80 flex items-center justify-center z-50 p-4"
               onClick={closeMessageView}
             >
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-[#1E1E1E] rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+                className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-xl"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-6">
                     <div>
-                      <h2 className="text-xl font-bold text-white mb-2">{selectedMessage.subject}</h2>
-                      <p className="text-gray-400">
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{selectedMessage.subject}</h2>
+                      <p className="text-gray-600 dark:text-gray-400">
                         De: {selectedMessage.firstName} {selectedMessage.lastName} &lt;{selectedMessage.email}&gt;
                       </p>
-                      <p className="text-gray-400">
+                      <p className="text-gray-600 dark:text-gray-400">
                         Date: {format(new Date(selectedMessage.createdAt), 'dd MMMM yyyy à HH:mm', { locale: fr })}
                       </p>
                     </div>
                     <button
                       onClick={closeMessageView}
-                      className="text-gray-400 hover:text-white transition-colors"
+                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors"
                     >
                       <FiX size={24} />
                     </button>
                   </div>
                   
-                  <div className="bg-gray-800 rounded-lg p-4 mb-6">
-                    <p className="text-gray-300 whitespace-pre-wrap">{selectedMessage.message}</p>
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+                    <p className="text-gray-900 dark:text-gray-300 whitespace-pre-wrap">{selectedMessage.message}</p>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     {selectedMessage.company && (
-                      <div className="bg-gray-800 rounded-lg p-4">
-                        <h3 className="text-sm font-semibold text-gray-400 mb-1">Entreprise</h3>
-                        <p className="text-white">{selectedMessage.company}</p>
+                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-1">Entreprise</h3>
+                        <p className="text-gray-900 dark:text-white">{selectedMessage.company}</p>
                       </div>
                     )}
                     {selectedMessage.phone && (
-                      <div className="bg-gray-800 rounded-lg p-4">
-                        <h3 className="text-sm font-semibold text-gray-400 mb-1">Téléphone</h3>
-                        <p className="text-white">{selectedMessage.phone}</p>
+                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-1">Téléphone</h3>
+                        <p className="text-gray-900 dark:text-white">{selectedMessage.phone}</p>
                       </div>
                     )}
                   </div>

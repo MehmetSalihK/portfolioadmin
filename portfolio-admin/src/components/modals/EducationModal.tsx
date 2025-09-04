@@ -17,8 +17,10 @@ interface EducationModalProps {
     description: string;
     location: string;
     isCurrentlyStudying?: boolean;
+    isPaused?: boolean;
     isDiplomaPassed?: boolean;
     isDiplomaNotObtained?: boolean;
+    isVisible?: boolean;
     diplomaFile?: string;
     diplomaFileName?: string;
     diplomaFilePath?: string;
@@ -44,8 +46,10 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
     description: education?.description || '',
     location: education?.location || '',
     isCurrentlyStudying: education?.isCurrentlyStudying || false,
+    isPaused: education?.isPaused || false,
     isDiplomaPassed: education?.isDiplomaPassed || false,
     isDiplomaNotObtained: education?.isDiplomaNotObtained || false,
+    isVisible: education?.isVisible !== undefined ? education.isVisible : true,
     diplomaFile: education?.diplomaFile || '',
     diplomaFileName: education?.diplomaFileName || '',
     diplomaFilePath: education?.diplomaFilePath || ''
@@ -65,8 +69,10 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
         description: education.description || '',
         location: education.location || '',
         isCurrentlyStudying: education.isCurrentlyStudying || false,
+        isPaused: education.isPaused || false,
         isDiplomaPassed: education.isDiplomaPassed || false,
         isDiplomaNotObtained: education.isDiplomaNotObtained || false,
+        isVisible: education.isVisible !== undefined ? education.isVisible : true,
         diplomaFile: education.diplomaFile || '',
         diplomaFileName: education.diplomaFileName || '',
         diplomaFilePath: education.diplomaFilePath || ''
@@ -82,8 +88,10 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
         description: '',
         location: '',
         isCurrentlyStudying: false,
+        isPaused: false,
         isDiplomaPassed: false,
         isDiplomaNotObtained: false,
+        isVisible: true,
         diplomaFile: '',
         diplomaFileName: '',
         diplomaFilePath: ''
@@ -270,27 +278,64 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                   className="w-full px-4 py-2 bg-[#2A2A2A] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   disabled={formData.isCurrentlyStudying}
                 />
-                <div className="mt-2">
+                <div className="mt-2 space-y-2">
                   <label className="inline-flex items-center">
                     <input
                       type="checkbox"
                       checked={formData.isCurrentlyStudying}
-                      disabled={formData.isDiplomaPassed || formData.isDiplomaNotObtained}
+                      disabled={formData.isDiplomaPassed || formData.isDiplomaNotObtained || formData.isPaused}
                       onChange={(e) => {
                         setFormData({
                           ...formData,
                           isCurrentlyStudying: e.target.checked,
                           endDate: e.target.checked ? '' : formData.endDate,
+                          isPaused: e.target.checked ? false : formData.isPaused,
                           isDiplomaPassed: e.target.checked ? false : formData.isDiplomaPassed,
                           isDiplomaNotObtained: e.target.checked ? false : formData.isDiplomaNotObtained
                         });
                       }}
                       className="form-checkbox rounded bg-[#2A2A2A] text-blue-500 border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
-                    <span className={`ml-2 text-sm ${(formData.isDiplomaPassed || formData.isDiplomaNotObtained) ? 'text-gray-500' : 'text-gray-300'}`}>En cours</span>
+                    <span className={`ml-2 text-sm ${(formData.isDiplomaPassed || formData.isDiplomaNotObtained || formData.isPaused) ? 'text-gray-500' : 'text-gray-300'}`}>En cours</span>
+                  </label>
+                  
+                  <label className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.isPaused}
+                      disabled={formData.isDiplomaPassed || formData.isDiplomaNotObtained || formData.isCurrentlyStudying}
+                      onChange={(e) => {
+                        setFormData({
+                          ...formData,
+                          isPaused: e.target.checked,
+                          endDate: e.target.checked ? '' : formData.endDate,
+                          isCurrentlyStudying: e.target.checked ? false : formData.isCurrentlyStudying,
+                          isDiplomaPassed: e.target.checked ? false : formData.isDiplomaPassed,
+                          isDiplomaNotObtained: e.target.checked ? false : formData.isDiplomaNotObtained
+                        });
+                      }}
+                      className="form-checkbox rounded bg-[#2A2A2A] text-blue-500 border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                    <span className={`ml-2 text-sm ${(formData.isDiplomaPassed || formData.isDiplomaNotObtained || formData.isCurrentlyStudying) ? 'text-gray-500' : 'text-gray-300'}`}>En pause</span>
                   </label>
                 </div>
               </div>
+            </div>
+
+            {/* Option de visibilité */}
+            <div className="bg-[#1A1A1A] p-4 rounded-lg border border-gray-700">
+              <label className="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.isVisible}
+                  onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
+                  className="form-checkbox rounded bg-[#2A2A2A] text-blue-500 border-gray-700"
+                />
+                <span className="ml-2 text-sm text-gray-300">Afficher sur la page publique</span>
+              </label>
+              <p className="text-xs text-gray-500 mt-1 ml-6">
+                Décochez pour masquer cette formation de la page publique
+              </p>
             </div>
 
             <div>
@@ -312,32 +357,34 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                   <input
                     type="checkbox"
                     checked={formData.isDiplomaPassed}
-                    disabled={formData.isCurrentlyStudying || formData.isDiplomaNotObtained}
+                    disabled={formData.isCurrentlyStudying || formData.isDiplomaNotObtained || formData.isPaused}
                     onChange={(e) => setFormData({ 
                       ...formData, 
                       isDiplomaPassed: e.target.checked,
                       isCurrentlyStudying: e.target.checked ? false : formData.isCurrentlyStudying,
+                      isPaused: e.target.checked ? false : formData.isPaused,
                       isDiplomaNotObtained: e.target.checked ? false : formData.isDiplomaNotObtained
                     })}
                     className="form-checkbox rounded bg-[#2A2A2A] text-blue-500 border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
-                  <span className={`ml-2 text-sm ${(formData.isCurrentlyStudying || formData.isDiplomaNotObtained) ? 'text-gray-500' : 'text-gray-300'}`}>Diplôme obtenu</span>
+                  <span className={`ml-2 text-sm ${(formData.isCurrentlyStudying || formData.isDiplomaNotObtained || formData.isPaused) ? 'text-gray-500' : 'text-gray-300'}`}>Diplôme obtenu</span>
                 </label>
                 
                 <label className="inline-flex items-center">
                    <input
                      type="checkbox"
                      checked={formData.isDiplomaNotObtained}
-                     disabled={formData.isCurrentlyStudying || formData.isDiplomaPassed}
+                     disabled={formData.isCurrentlyStudying || formData.isDiplomaPassed || formData.isPaused}
                      onChange={(e) => setFormData({ 
                        ...formData, 
                        isDiplomaNotObtained: e.target.checked,
                        isCurrentlyStudying: e.target.checked ? false : formData.isCurrentlyStudying,
+                       isPaused: e.target.checked ? false : formData.isPaused,
                        isDiplomaPassed: e.target.checked ? false : formData.isDiplomaPassed
                      })}
                      className="form-checkbox rounded bg-[#2A2A2A] text-blue-500 border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                    />
-                   <span className={`ml-2 text-sm ${(formData.isCurrentlyStudying || formData.isDiplomaPassed) ? 'text-gray-500' : 'text-gray-300'}`}>Diplôme non obtenu</span>
+                   <span className={`ml-2 text-sm ${(formData.isCurrentlyStudying || formData.isDiplomaPassed || formData.isPaused) ? 'text-gray-500' : 'text-gray-300'}`}>Diplôme non obtenu</span>
                  </label>
               </div>
 

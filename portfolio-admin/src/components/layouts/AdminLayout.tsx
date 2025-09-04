@@ -67,12 +67,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       icon: FiBarChart2,
       description: 'Statistiques et suivi'
     },
-    { 
-      href: '/admin/seo', 
-      label: 'SEO', 
-      icon: FiGlobe,
-      description: 'Optimisation SEO'
-    },
+
     { 
       href: '/admin/backup', 
       label: 'Sauvegardes', 
@@ -160,22 +155,21 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           animate={isSidebarOpen ? "open" : "closed"}
           variants={sidebarVariants}
           transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-          className="fixed inset-y-0 left-0 w-64 shadow-2xl z-40 transform md:translate-x-0 transition-colors duration-300 border-r border-gray-700"
-          style={{ backgroundColor: 'rgb(40, 40, 40)' }}
+          className="fixed inset-y-0 left-0 w-64 shadow-2xl z-40 transform md:translate-x-0 transition-colors duration-300 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
         >
           <div className="flex flex-col h-full">
             {/* Header */}
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="px-6 py-6 border-b border-gray-600/50 transition-colors duration-300"
+              className="px-6 py-6 border-b border-gray-200 dark:border-gray-600/50 transition-colors duration-300"
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h1 className="text-xl font-bold text-white transition-colors duration-300">
+                  <h1 className="text-xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
                     Portfolio Admin
                   </h1>
-                  <p className="text-sm mt-1 text-gray-300 transition-colors duration-300">
+                  <p className="text-sm mt-1 text-gray-600 dark:text-gray-300 transition-colors duration-300">
                     {session?.user?.email}
                   </p>
                 </div>
@@ -210,14 +204,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       href={item.href}
                       className={`group flex items-center px-4 py-3 rounded-xl transition-all duration-300 relative overflow-hidden ${
                         isActive
-                          ? 'bg-blue-500/20 text-blue-400 shadow-lg'
-                          : 'text-gray-300 hover:bg-gray-600 hover:text-white'
+                          ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400 shadow-lg'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white'
                       }`}
                     >
                       {isActive && (
                         <motion.div
                           layoutId="activeIndicator"
-                          className="absolute left-0 top-0 bottom-0 w-1 rounded-r-full bg-blue-400"
+                          className="absolute left-0 top-0 bottom-0 w-1 rounded-r-full bg-blue-600 dark:bg-blue-400"
                           transition={{ type: "spring", bounce: 0.2 }}
                         />
                       )}
@@ -226,7 +220,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       }`} />
                       <div className="flex-1">
                         <span className="font-medium text-sm">{item.label}</span>
-                        <p className="text-xs mt-0.5 text-gray-400 transition-colors duration-300">
+                        <p className="text-xs mt-0.5 text-gray-500 dark:text-gray-400 transition-colors duration-300">
                           {item.description}
                         </p>
                       </div>
@@ -234,7 +228,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="w-2 h-2 rounded-full bg-blue-400"
+                          className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400"
                         />
                       )}
                     </Link>
@@ -251,7 +245,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             >
               <button
                 onClick={handleSignOut}
-                className="flex items-center w-full px-4 py-3 rounded-xl transition-all duration-300 group text-gray-300 hover:bg-red-500/10 hover:text-red-400"
+                className="flex items-center w-full px-4 py-3 rounded-xl transition-all duration-300 group text-gray-700 dark:text-gray-300 hover:bg-red-500/10 hover:text-red-400"
               >
                 <FiLogOut className="w-5 h-5 mr-3 transition-transform duration-300 group-hover:-rotate-12" />
                 <span className="font-medium">Déconnexion</span>
@@ -267,16 +261,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="min-h-screen p-6" style={{ backgroundColor: 'rgb(30, 30, 30)' }}
+          className="min-h-screen p-6 bg-gray-50 dark:bg-gray-900 transition-colors duration-300"
         >
           {children}
           <Toaster
             position="top-right"
             toastOptions={{
-              style: {
-                background: '#333',
-                color: '#fff',
-              },
+              className: 'dark:bg-gray-800 dark:text-white bg-white text-gray-900',
               success: {
                 duration: 3000,
               },

@@ -467,7 +467,7 @@ export default function ProjectsPage() {
       <div
         ref={setNodeRef}
         style={style}
-        className={`group relative bg-gradient-to-br from-[#1E1E1E] to-[#252525] rounded-xl overflow-hidden transition-all duration-300 ${
+        className={`group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl overflow-hidden transition-all duration-300 ${
           !project.showOnHomepage ? 'opacity-50 grayscale' : ''
         } ${
           isDragging ? 'shadow-lg scale-105 z-50' : 'hover:shadow-lg'
@@ -480,7 +480,7 @@ export default function ProjectsPage() {
             {...listeners}
             className="absolute top-3 left-3 z-30 p-2 rounded-lg bg-white/10 backdrop-blur-md cursor-grab active:cursor-grabbing hover:bg-white/20 transition-all duration-200"
           >
-            <FiMove className="w-4 h-4 text-white" />
+            <FiMove className="w-4 h-4 text-gray-900 dark:text-white" />
           </div>
         )}
 
@@ -607,10 +607,10 @@ export default function ProjectsPage() {
 
         {/* Contenu */}
         <div className="p-5">
-          <h3 className="text-lg font-semibold text-white mb-2 line-clamp-1">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-1">
             {project.title}
           </h3>
-          <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+          <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
             {project.description}
           </p>
 
@@ -619,7 +619,7 @@ export default function ProjectsPage() {
             {project.technologies.map((tech, index) => (
               <span
                 key={index}
-                className="px-2 py-1 text-xs rounded-full bg-[#2A2A2A]/50 text-gray-300 backdrop-blur-sm"
+                className="px-2 py-1 text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 backdrop-blur-sm"
               >
                 {tech}
               </span>
@@ -632,7 +632,7 @@ export default function ProjectsPage() {
               {project.tags.map((tag, index) => (
                 <span
                   key={index}
-                  className="px-2 py-1 text-xs rounded-full bg-indigo-500/20 text-indigo-300 backdrop-blur-sm border border-indigo-500/30"
+                  className="px-2 py-1 text-xs rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 backdrop-blur-sm border border-indigo-300 dark:border-indigo-500/30"
                 >
                   #{tag}
                 </span>
@@ -641,17 +641,17 @@ export default function ProjectsPage() {
           )}
 
           {/* Liens */}
-          <div className="flex justify-end gap-2 pt-2 border-t border-gray-800">
+          <div className="flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
             {project.demoUrl && (
               <a
                 href={project.demoUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-lg bg-[#2A2A2A]/50 hover:bg-[#333333] text-gray-300 hover:text-white transition-all duration-200 group/link"
+                className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-200 group/link"
               >
                 <div className="relative">
                   <FiExternalLink className="w-4 h-4" />
-                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs bg-gray-800 text-white rounded opacity-0 group-hover/link:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 rounded opacity-0 group-hover/link:opacity-100 transition-opacity duration-200 whitespace-nowrap">
                     Voir le projet
                   </span>
                 </div>
@@ -662,11 +662,11 @@ export default function ProjectsPage() {
                 href={project.githubUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-lg bg-[#2A2A2A]/50 hover:bg-[#333333] text-gray-300 hover:text-white transition-all duration-200 group/link"
+                className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-200 group/link"
               >
                 <div className="relative">
                   <FiGithub className="w-4 h-4" />
-                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs bg-gray-800 text-white rounded opacity-0 group-hover/link:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 rounded opacity-0 group-hover/link:opacity-100 transition-opacity duration-200 whitespace-nowrap">
                     Voir le code
                   </span>
                 </div>
@@ -685,23 +685,34 @@ export default function ProjectsPage() {
           width: 8px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: #1A1A1A;
+          background: #f3f4f6;
           border-radius: 4px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #2A2A2A;
+          background: #d1d5db;
           border-radius: 4px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #333333;
+          background: #9ca3af;
+        }
+        @media (prefers-color-scheme: dark) {
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1A1A1A;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #2A2A2A;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #333333;
+          }
         }
       `}</style>
       
       <div className="p-6">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-3">
-            <FiFolder className="w-8 h-8 text-gray-300" />
-            <h1 className="text-2xl font-bold text-white">Projects</h1>
+            <FiFolder className="w-8 h-8 text-gray-600 dark:text-gray-300" />
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Projects</h1>
           </div>
           <div className="flex items-center gap-3">
             <motion.button
@@ -711,7 +722,7 @@ export default function ProjectsPage() {
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
                 isDragMode
                   ? 'bg-green-600 hover:bg-green-700 text-white'
-                  : 'bg-[#2A2A2A] hover:bg-[#333333] text-white'
+                  : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white'
               }`}
             >
               <FiMove className="w-4 h-4" />
@@ -724,7 +735,7 @@ export default function ProjectsPage() {
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
                 showPreview
                   ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'bg-[#2A2A2A] hover:bg-[#333333] text-white'
+                  : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white'
               }`}
               title={showPreview ? 'Masquer la prévisualisation' : 'Afficher la prévisualisation'}
             >
@@ -741,9 +752,9 @@ export default function ProjectsPage() {
                 resetForm();
                 setIsModalOpen(true);
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-[#2A2A2A] hover:bg-[#333333] text-white rounded-lg transition-all duration-200 hover:scale-105"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-all duration-200 hover:scale-105"
             >
-              <FiPlus className="text-white" /> Add Project
+              <FiPlus className="text-gray-900 dark:text-white" /> Add Project
             </motion.button>
           </div>
         </div>
@@ -754,28 +765,28 @@ export default function ProjectsPage() {
         </div>
 
         {/* Filtres */}
-        <div className="mb-8 bg-[#1E1E1E] rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Filtres</h3>
+        <div className="mb-8 bg-white dark:bg-gray-800 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Filtres</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
             {/* Recherche */}
             <div className="xl:col-span-2">
-              <label className="block text-sm font-medium text-gray-300 mb-2">Recherche</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Recherche</label>
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Rechercher un projet..."
-                className="w-full px-3 py-2 bg-[#2A2A2A] border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             {/* Catégorie */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Catégorie</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Catégorie</label>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3 py-2 bg-[#2A2A2A] border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {PROJECT_CATEGORIES.map(category => (
                   <option key={category.value} value={category.value}>{category.label}</option>
@@ -785,11 +796,11 @@ export default function ProjectsPage() {
 
             {/* Statut */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Statut</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Statut</label>
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full px-3 py-2 bg-[#2A2A2A] border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {PROJECT_STATUSES.map(status => (
                   <option key={status.value} value={status.value}>{status.label}</option>
@@ -799,11 +810,11 @@ export default function ProjectsPage() {
 
             {/* Difficulté */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Difficulté</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Difficulté</label>
               <select
                 value={selectedDifficulty}
                 onChange={(e) => setSelectedDifficulty(e.target.value)}
-                className="w-full px-3 py-2 bg-[#2A2A2A] border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {PROJECT_DIFFICULTIES.map(difficulty => (
                   <option key={difficulty.value} value={difficulty.value}>{difficulty.label}</option>
@@ -813,11 +824,11 @@ export default function ProjectsPage() {
 
             {/* Priorité */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Priorité</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priorité</label>
               <select
                 value={selectedPriority}
                 onChange={(e) => setSelectedPriority(e.target.value)}
-                className="w-full px-3 py-2 bg-[#2A2A2A] border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {PROJECT_PRIORITIES.map(priority => (
                   <option key={priority.value} value={priority.value}>{priority.label}</option>
@@ -827,7 +838,7 @@ export default function ProjectsPage() {
           </div>
 
           {/* Compteur de résultats */}
-          <div className="mt-4 text-sm text-gray-400">
+          <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
             {filteredProjects.length} projet(s) trouvé(s) sur {projects.length}
           </div>
         </div>

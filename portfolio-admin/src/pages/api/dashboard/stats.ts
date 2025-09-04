@@ -11,7 +11,7 @@ import Media from '@/models/Media';
 import Category from '@/models/Category';
 import Analytics from '@/models/Analytics';
 import { Backup } from '@/models/Backup';
-import { SEO } from '@/models/SEO';
+
 
 // Interface pour les statistiques du dashboard
 interface DashboardStats {
@@ -24,7 +24,7 @@ interface DashboardStats {
     totalMedia: number;
     totalCategories: number;
     totalBackups: number;
-    totalSEOEntries: number;
+
   };
   analytics: {
     totalPageViews: number;
@@ -54,7 +54,7 @@ interface DashboardStats {
   };
   performance: {
     lastBackup: Date | null;
-    seoScore: number;
+
     systemHealth: 'excellent' | 'good' | 'warning' | 'critical';
   };
 }
@@ -212,8 +212,7 @@ export default async function handler(
       totalEducation,
       totalMedia,
       totalCategories,
-      totalBackups,
-      totalSEOEntries
+      totalBackups
     ] = await Promise.all([
       Contact.countDocuments({ status: 'unread' }),
       Project.countDocuments(),
@@ -222,8 +221,7 @@ export default async function handler(
       Education.countDocuments().catch(() => 0),
       Media.countDocuments().catch(() => 0),
       Category.countDocuments().catch(() => 0),
-      Backup.countDocuments().catch(() => 0),
-      SEO.countDocuments().catch(() => 0)
+      Backup.countDocuments().catch(() => 0)
     ]);
 
     // Statistiques analytics et graphiques
@@ -234,18 +232,12 @@ export default async function handler(
 
     // Métriques de performance
     const lastBackup = await Backup.findOne({}, {}, { sort: { createdAt: -1 } }).catch(() => null);
-    const seoStats = await SEO.aggregate([
-      { $group: { _id: null, avgScore: { $avg: '$analysis.score' } } }
-    ]).catch(() => []);
-
-    const seoScore = seoStats[0]?.avgScore || 0;
     const daysSinceBackup = lastBackup ? 
       Math.floor((Date.now() - lastBackup.createdAt.getTime()) / (1000 * 60 * 60 * 24)) : 999;
 
     let systemHealth: 'excellent' | 'good' | 'warning' | 'critical' = 'excellent';
     if (daysSinceBackup > 7) systemHealth = 'critical';
     else if (daysSinceBackup > 3) systemHealth = 'warning';
-    else if (seoScore < 70) systemHealth = 'good';
 
     const dashboardStats: DashboardStats = {
       overview: {
@@ -256,14 +248,12 @@ export default async function handler(
         totalEducation,
         totalMedia,
         totalCategories,
-        totalBackups,
-        totalSEOEntries
+        totalBackups
       },
       analytics,
       charts,
       performance: {
         lastBackup: lastBackup?.createdAt || null,
-        seoScore: Math.round(seoScore),
         systemHealth
       }
     };
