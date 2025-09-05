@@ -24,6 +24,14 @@
 - ✅ Formation et éducation
 - ✅ Upload et gestion de fichiers
 
+### 🔒 Sécurité et authentification
+- ✅ **Authentification 2FA** (Two-Factor Authentication)
+- ✅ **Envoi d'emails** de vérification avec Resend
+- ✅ **Codes temporaires** avec expiration automatique
+- ✅ **Interface sécurisée** de vérification
+- ✅ **Tokens JWT** pour la session
+- ✅ **Protection avancée** de l'administration
+
 ### 🔄 Système de sauvegarde avancé
 - ✅ **Sauvegardes automatiques** (complètes, incrémentales, différentielles)
 - ✅ **Versioning** de toutes les entités
@@ -45,7 +53,9 @@
 - **Frontend**: Next.js 14, React, TypeScript
 - **Styling**: Tailwind CSS
 - **Base de données**: MongoDB avec Mongoose
-- **Authentification**: NextAuth.js
+- **Authentification**: NextAuth.js + 2FA
+- **Email**: Resend pour l'envoi d'emails 2FA
+- **Sécurité**: JWT, codes temporaires
 - **Upload**: Multer
 - **Sauvegarde**: node-cron, compression
 - **SEO**: Analyse automatique, génération de métadonnées
@@ -76,6 +86,11 @@ MONGODB_URI=mongodb://localhost:27017/portfolio-admin
 # Authentification
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=votre-secret-key
+JWT_SECRET=votre-jwt-secret-pour-2fa
+
+# Configuration 2FA
+RESEND_API_KEY=votre-cle-api-resend
+TWO_FA_EMAIL_FROM=noreply@votre-domaine.com
 
 # Upload
 UPLOAD_DIR=./uploads
@@ -112,11 +127,13 @@ Accédez à `/admin/seo` pour configurer :
 
 ### Interface d'administration
 
-1. **Dashboard principal** : `/admin`
-2. **Gestion des projets** : `/admin/projects`
-3. **Gestion des compétences** : `/admin/skills`
-4. **Système de sauvegarde** : `/admin/versions`
-5. **Optimisation SEO** : `/admin/seo`
+1. **Connexion sécurisée** : `/admin/login` (avec 2FA)
+2. **Vérification 2FA** : `/admin/verify-2fa`
+3. **Dashboard principal** : `/admin`
+4. **Gestion des projets** : `/admin/projects`
+5. **Gestion des compétences** : `/admin/skills`
+6. **Système de sauvegarde** : `/admin/versions`
+7. **Optimisation SEO** : `/admin/seo`
 
 ### Sauvegarde et restauration
 
@@ -133,6 +150,24 @@ POST /api/backup/restore
 {
   "backupId": "backup-id",
   "conflictResolution": "overwrite" // ou "skip", "merge"
+}
+```
+
+### Authentification 2FA
+
+```typescript
+// Envoyer un code 2FA
+POST /api/auth/send-2fa
+{
+  "email": "admin@example.com",
+  "password": "votre-mot-de-passe"
+}
+
+// Vérifier le code 2FA
+POST /api/auth/verify-2fa
+{
+  "email": "admin@example.com",
+  "code": "123456"
 }
 ```
 
@@ -167,6 +202,11 @@ GET /api/seo/analyze
 - `GET /api/seo/sitemap` - Génération du sitemap
 - `GET /api/seo/robots` - Configuration robots.txt
 
+#### Authentification 2FA
+- `POST /api/auth/send-2fa` - Envoyer le code 2FA
+- `POST /api/auth/verify-2fa` - Vérifier le code 2FA
+- `GET /api/auth/session` - Vérifier la session
+
 #### Contenu
 - `GET /api/projects` - Liste des projets
 - `POST /api/projects` - Créer un projet
@@ -188,6 +228,29 @@ GET /api/seo/analyze
 - **Nettoyage automatique** des anciennes sauvegardes
 - **Interface de comparaison** entre versions
 - **Restauration sélective** par entité
+
+## 🔒 Système d'authentification 2FA
+
+### Fonctionnement
+
+Le système d'authentification à deux facteurs (2FA) ajoute une couche de sécurité supplémentaire :
+
+1. **Première étape** : Saisie de l'email et mot de passe
+2. **Deuxième étape** : Réception d'un code de vérification par email
+3. **Validation** : Saisie du code pour accéder à l'administration
+
+### Configuration requise
+
+- **Service email** : Resend configuré avec une clé API valide
+- **Variables d'environnement** : JWT_SECRET et RESEND_API_KEY
+- **Base de données** : Collection TwoFactorAuth pour les codes temporaires
+
+### Sécurité
+
+- **Codes temporaires** : Expiration automatique après 10 minutes
+- **Tokens JWT** : Session sécurisée après validation
+- **Nettoyage automatique** : Suppression des codes utilisés
+- **Protection CSRF** : Validation des requêtes
 
 ## 🚀 Optimisation SEO
 
