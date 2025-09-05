@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -48,7 +48,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({
   }, []);
 
   // Fonction pour envoyer les données analytics
-  const sendAnalytics = async (data: any, action: string = 'visit') => {
+  const sendAnalytics = useCallback(async (data: any, action: string = 'visit') => {
     if (!enabled) return;
     
     try {
@@ -66,10 +66,10 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({
     } catch (error) {
       console.error('Erreur lors de l\'envoi des analytics:', error);
     }
-  };
+  }, [enabled]);
 
   // Fonction pour tracker une page
-  const trackPageView = async (page: string) => {
+  const trackPageView = useCallback(async (page: string) => {
     if (!enabled || !sessionIdRef.current) return;
 
     // Si on track déjà une page, on termine d'abord le tracking précédent
@@ -87,7 +87,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({
     isTrackingRef.current = true;
 
     await sendAnalytics({ page }, 'visit');
-  };
+  }, [enabled, sendAnalytics]);
 
   // Fonction pour tracker un événement personnalisé
   const trackEvent = async (eventName: string, eventData?: any) => {
@@ -131,7 +131,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({
     return () => {
       router.events.off('routeChangeComplete', handleRouteChange);
     };
-  }, [router, enabled]);
+  }, [router, enabled, trackPageView]);
 
   // Tracker la sortie de la page
   useEffect(() => {
@@ -177,7 +177,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({
       window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [enabled]);
+  }, [enabled, sendAnalytics, trackPageView]);
 
   const contextValue: AnalyticsContextType = {
     trackEvent,

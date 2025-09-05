@@ -103,7 +103,7 @@ export default async function handler(
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 heures
       },
-      process.env.NEXTAUTH_SECRET
+      process.env.NEXTAUTH_SECRET!
     );
 
     console.log(`Authentification 2FA réussie pour ${email}`);
