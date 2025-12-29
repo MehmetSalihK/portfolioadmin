@@ -23,7 +23,7 @@
   
   <p>Fini les modifications manuelles du code source ! Gérez tout depuis une interface élégante.</p>
 
-[Voir la démo](https://votre-demo.vercel.app) • [Documentation](#-installation-rapide) • [Signaler un bug](https://github.com/mehmetsalihkuscu/portfolio-admin/issues)
+[Voir la démo](https://votre-demo.vercel.app) • [Documentation](#-installation--démarrage) • [Signaler un bug](https://github.com/mehmetsalihkuscu/portfolio-admin/issues)
 
 </div>
 
@@ -32,12 +32,15 @@
 ## 📋 Table des matières
 
 - [🎯 À propos](#-à-propos)
-- [✨ Fonctionnalités Clés](#-fonctionnalités-clés)
+- [✨ Fonctionnalités Détaillées](#-fonctionnalités-détaillées)
 - [🛡️ Sécurité & Architecture](#%EF%B8%8F-sécurité--architecture)
-- [💻 Interface d'Administration](#-interface-dadministration)
+- [💻 Guide Interface Admin](#-guide-interface-admin)
 - [🛠 Stack Technique](#-stack-technique)
-- [📥 Installation & Démarrage](#-installation--démarrage)
-- [🚀 Déploiement](#-déploiement)
+- [📁 Structure du Projet](#-structure-du-projet)
+- [🌐 API Routes](#-api-routes)
+- [📥 Installation Complète](#-installation-complète)
+- [⚙️ Configuration](#%EF%B8%8F-configuration)
+- [🔧 Dépannage (FAQ)](#-dépannage-faq)
 - [🤝 Contribution](#-contribution)
 - [📄 Licence](#-licence)
 
@@ -58,30 +61,32 @@
 
 ---
 
-## ✨ Fonctionnalités Clés
+## ✨ Fonctionnalités Détaillées
 
 ### 🎨 Gestion de Contenu (CMS)
 
-- **Éditeur Riche** : Mise en forme avancée (gras, italique, listes...) sans HTML.
+- **Éditeur Riche (WYSIWYG)** : Mise en forme (gras, italique, listes, couleurs) sans écrire de HTML.
 - **Prévisualisation Live** : Voyez vos changements avant de publier.
-- **Gestion des Médias** : Upload, redimensionnement et optimisation automatique des images.
+- **SEO Automatisé** : Métadonnées et OpenGraph générés dynamiquement.
 
 ### 🔐 Authentification & Sécurité
 
-- **NextAuth.js** : Système de session robuste.
-- **Double Authentification (2FA)** : Protection via Email (Resend).
-- **Rôles** : Distinction claire entre Admin et Visiteur public.
+- **NextAuth.js** : Système de session robuste avec rotation de tokens.
+- **Double Authentification (2FA)** : Codes temporaires envoyés par Email (via Resend).
+- **Rôles** : Distinction claire entre Admin (accès total) et Visiteur (lecture seule).
 
 ### 📊 Projets & Compétences
 
 - **CRUD Complet** : Ajoutez, modifiez, supprimez vos projets.
-- **Drag & Drop** : Réorganisez vos projets facilement (Coming Soon).
-- **Modales Interactives** : Présentation détaillée de chaque réalisation.
+- **Catégorisation** : Triez vos projets par tags ou technologies.
+- **Modales Interactives** : Présentation détaillée avec galerie d'images et liens.
+- **Drag & Drop** : Réorganisez l'ordre d'affichage (Coming Soon).
 
-### 🌍 Autres
+### 📄 Gestion du CV
 
-- **Bilingue par défaut** : Prêt pour l'internationalisation.
-- **SEO Ready** : Métadonnées dynamiques et Sitemap généré automatiquement.
+- **Upload PDF** : Mise à jour simple de votre CV.
+- **Modale de visualisation** : Les recruteurs peuvent lire votre CV sans quitter le site.
+- **Actions Rapides** : Boutons "Télécharger" ou "Ouvrir" intégrés.
 
 ---
 
@@ -94,12 +99,12 @@ Nous appliquons une politique de **"Secure by Default"**.
 | **🛡️ Rate Limiting**  | Protection anti-DDoS et Brute-Force (`10 req/min` sur login, `100 req/min` API). |
 | **🔒 Validation Zod** | Schémas stricts pour toutes les entrées (API & Formulaires).                     |
 | **🧹 Sanitization**   | Nettoyage HTML via `DOMPurify` pour prévenir les XSS.                            |
-| **⛓️ HTTP Headers**   | Configuration durcie (HSTS, CSP, X-Frame-Options).                               |
-| **🕵️ Anti-Snooping**  | Blocage de la console et du `localStorage` en production.                        |
+| **⛓️ HTTP Headers**   | Configuration durcie (HSTS, CSP, X-Frame-Options, No-Sniff).                     |
+| **🕵️ Anti-Snooping**  | Blocage de la console et du `localStorage` accès en production.                  |
 
 ---
 
-## 💻 Interface d'Administration
+## 💻 Guide Interface Admin
 
 Une interface pensée pour l'efficacité.
 
@@ -111,16 +116,15 @@ Vue d'ensemble de votre activité, liens rapides vers les sections clés et stat
 
 Formulaires intuitifs pour décrire vos réalisations :
 
-- **Titre & Sous-titre**
-- **Description riche**
-- **Stack technique** (icônes automatiques)
-- **Liens** (GitHub, Live Demo)
-- **Galerie d'images**
+- **Infos de base** : Titre, sous-titre, dates.
+- **Contenu riche** : Description détaillée de la mission.
+- **Stack technique** : Suggestion automatique d'icônes.
+- **Médias** : Galerie d'images avec redimensionnement automatique.
 
-### 👤 Profil & CV
+### 📍 Localisation
 
-- Mettez à jour votre **Bio** et vos **Réseaux Sociaux**.
-- Uploadez votre **CV (PDF)** : Il sera accessible via une modale élégante sur le site public.
+- **Autocomplétion** : Saisie facile d'adresses (API Géo).
+- **Validation** : Formatage automatique.
 
 ---
 
@@ -136,6 +140,7 @@ Une architecture moderne, performante et maintenable.
 | **TypeScript**    | ![TypeScript](https://img.shields.io/badge/TypeScript-blue?style=flat-square&logo=typescript&logoColor=white) | Typage strict pour la robustesse |
 | **Tailwind CSS**  | ![Tailwind](https://img.shields.io/badge/Tailwind-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white) | Styling utilitaire et rapide     |
 | **Framer Motion** | ![Framer](https://img.shields.io/badge/Framer-0055FF?style=flat-square&logo=framer&logoColor=white)           | Animations fluides               |
+| **TipTap**        | ![TipTap](https://img.shields.io/badge/TipTap-black?style=flat-square)                                        | Éditeur de texte riche           |
 
 ### ⚙️ Backend
 
@@ -155,9 +160,50 @@ Une architecture moderne, performante et maintenable.
 
 ---
 
-## 📥 Installation & Démarrage
+## 📁 Structure du Projet
 
-Suivez ces étapes pour lancer votre propre instance en moins de 5 minutes.
+```bash
+portfolio-admin/
+├── src/
+│   ├── components/      # 🧱 Composants Réutilisables
+│   │   ├── admin/       # UI Administration
+│   │   ├── modals/      # CV, Projets...
+│   │   └── ui/          # Boutons, Inputs, Cards...
+│   ├── pages/
+│   │   ├── api/         # ⚡ API Endpoints (Backend)
+│   │   ├── admin/       # 🔐 Pages Admin
+│   │   └── index.tsx    # 🏠 Page d'accueil publique
+│   ├── styles/          # 🎨 Global CSS & Tailwind
+│   ├── lib/             # 🛠 Utilitaires (DB, Auth...)
+│   └── models/          # 💾 Schémas Mongoose
+├── public/              # 🖼 Images, Favicons...
+└── ...
+```
+
+---
+
+## 🌐 API Routes
+
+Documentation succincte des endpoints disponibles.
+
+| Méthode  | Endpoint             | Description            | Accès     |
+| :------- | :------------------- | :--------------------- | :-------- |
+| `GET`    | `/api/projects`      | Liste tous les projets | Public    |
+| `POST`   | `/api/projects`      | Crée un projet         | **Admin** |
+| `PUT`    | `/api/projects/[id]` | Modifie un projet      | **Admin** |
+| `DELETE` | `/api/projects/[id]` | Supprime un projet     | **Admin** |
+| `GET`    | `/api/homepage`      | Données page d'accueil | Public    |
+| `POST`   | `/api/auth/send-2fa` | Envoi code connexion   | Public    |
+
+---
+
+## 📥 Installation Complète
+
+### Pré-requis
+
+- Node.js 18+
+- Compte MongoDB Atlas (Gratuit)
+- Compte GitHub (pour l'OAuth)
 
 ### 1️⃣ Cloner le projet
 
@@ -170,36 +216,30 @@ cd portfolio-admin
 
 ```bash
 npm install
-# ou
-yarn install
-# ou
-pnpm install
 ```
 
-### 3️⃣ Configuration (.env.local)
+### 3️⃣ Variables d'Environnement
 
-Copiez le fichier d'exemple et remplissez vos clés.
-
-```bash
-cp .env.example .env.local
-```
-
-**Variables requises :**
+Créez `.env.local` et configurez :
 
 ```env
 # 📦 Database
-MONGODB_URI=mongodb+srv://...
+MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/portfolio
 
 # 🔐 Auth
 NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=votre_super_secret
+NEXTAUTH_SECRET=générez_une_chaine_aléatoire
+# GitHub OAuth
+GITHUB_ID=votre_client_id
+GITHUB_SECRET=votre_client_secret
 
 # 📧 Emails (2FA)
 RESEND_API_KEY=re_123...
 RESEND_EMAIL=onboarding@resend.dev
 
-# 👤 Admin Initial
-ADMIN_EMAIL=mon.email@gmail.com
+# 👤 Admin
+ADMIN_EMAIL=votre@email.com
+ADMIN_PASSWORD=votre_mot_de_passe
 ```
 
 ### 4️⃣ Lancer en local
@@ -208,25 +248,40 @@ ADMIN_EMAIL=mon.email@gmail.com
 npm run dev
 ```
 
-Rendez-vous sur [http://localhost:3000](http://localhost:3000) 🚀
-
 ---
 
-## 🚀 Déploiement
+## 🔧 Dépannage (FAQ)
 
-Le projet est optimisé pour **Vercel**.
+<details>
+<summary><strong>🔴 Erreur de connexion MongoDB ?</strong></summary>
+<br>
+Vérifiez que :
+1. Votre IP est autorisée dans MongoDB Atlas (Network Access).
+2. L'URI dans `.env.local` est correcte et entre guillemets si nécessaire.
+3. Le nom d'utilisateur/mot de passe ne contient pas de caractères spéciaux non échappés.
+</details>
 
-1.  Forkez ce repo.
-2.  Importez-le sur Vercel.
-3.  Ajoutez vos variables d'environnement dans les _Settings_ du projet Vercel.
-4.  Cliquez sur **Deploy**.
+<details>
+<summary><strong>🔑 Erreur d'authentification GitHub ?</strong></summary>
+<br>
+Vérifiez que :
+1. L'URL de callback dans GitHub Apps est bien `http://localhost:3000/api/auth/callback/github`.
+2. Le Client ID et Secret sont corrects.
+</details>
+
+<details>
+<summary><strong>✉️ Les emails 2FA n'arrivent pas ?</strong></summary>
+<br>
+1. Vérifiez vos logs serveur pour voir si Resend renvoie une erreur.
+2. Assurez-vous d'avoir validé le domaine d'envoi si vous êtes en production.
+3. En mode test, vous ne pouvez envoyer qu'à l'email de votre compte Resend.
+</details>
 
 ---
 
 ## 🤝 Contribution
 
 Les contributions sont les bienvenues !
-Si vous avez une idée d'amélioration, n'hésitez pas.
 
 1.  **Forkez** le projet
 2.  Créez votre branche (`git checkout -b feature/SuperFeature`)
