@@ -1,0 +1,43 @@
+import { useEffect } from 'react';
+
+export const useSecurity = () => {
+  useEffect(() => {
+    // Fonction pour nettoyer TOUTES les données de stockage
+    const clearAllStorage = () => {
+      try {
+        if (localStorage.length > 0) localStorage.clear();
+        if (sessionStorage.length > 0) sessionStorage.clear();
+      } catch (e) {
+        // Ignorer
+      }
+    };
+
+    // Silence total de la console
+    const silenceConsole = () => {
+      const noop = () => {};
+      console.log = noop;
+      console.warn = noop;
+      console.error = noop;
+      console.info = noop;
+      console.debug = noop;
+      console.clear();
+    };
+
+    // Exécuter immédiatement au montage
+    clearAllStorage();
+    silenceConsole();
+    
+    // Aussi écouter les erreurs globales pour les étouffer
+    window.onerror = () => true;
+    window.onunhandledrejection = () => true;
+
+    window.addEventListener('storage', clearAllStorage);
+
+    return () => {
+      // Nettoyage des écouteurs uniquement
+      window.removeEventListener('storage', clearAllStorage);
+    };
+  }, []);
+};
+
+export default useSecurity;

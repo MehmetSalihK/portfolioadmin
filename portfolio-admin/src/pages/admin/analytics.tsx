@@ -62,7 +62,14 @@ export default function AnalyticsPage() {
 
   const fetchMaintenanceStatus = useCallback(async () => {
     try {
-      const response = await fetch('/api/maintenance');
+      const response = await fetch('/api/maintenance', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
+      });
       if (!response.ok) throw new Error('Failed to fetch maintenance status');
       const data = await response.json();
       setMaintenanceStatus(data);

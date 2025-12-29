@@ -3,6 +3,9 @@ import connectDB from '@/lib/db';
 import Message from '@/models/Message';
 import { Resend } from 'resend';
 import { ContactEmail } from '@/emails/ContactEmail';
+import { contactSchema } from '@/utils/schemas';
+import { sanitizeInput } from '@/utils/sanitize';
+
 if (!process.env.RESEND_API_KEY) {
   console.error('RESEND_API_KEY n\'est pas définie dans les variables d\'environnement');
 }
@@ -16,19 +19,29 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // ... handler start
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
   try {
     await connectDB();
-    console.log('Connexion à la base de données réussie');
+    
+    // Sanitize first to remove HTML potentially
+    const cleanedBody = sanitizeInput(req.body);
 
-    const { firstName, lastName, company, phone, email, subject, message } = req.body;
-    console.log('Données reçues:', { firstName, lastName, company, phone, email, subject, message });
-    if (!firstName || !lastName || !email || !subject || !message) {
-      return res.status(400).json({ message: 'Veuillez remplir tous les champs requis' });
+    // Validate with Zod
+    const validation = contactSchema.safeParse(cleanedBody);
+    
+    if (!validation.success) {
+      return res.status(400).json({ 
+        message: 'Données invalides', 
+        errors: validation.error.errors.map((e: any) => e.message)
+      });
     }
+
+    const { firstName, lastName, company, phone, email, subject, message } = validation.data;
+
     const newMessage = await Message.create({
       firstName,
       lastName,

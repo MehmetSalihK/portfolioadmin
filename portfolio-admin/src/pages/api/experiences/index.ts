@@ -9,6 +9,11 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const session = await getServerSession(req, res, authOptions);
+
+  if (!session) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
   await connectDB();
 
   if (req.method === 'GET') {
@@ -29,11 +34,7 @@ export default async function handler(
 
   switch (req.method) {
     case 'POST':
-      const session = await getServerSession(req, res, authOptions);
-      if (!session) {
-        return res.status(401).json({ message: 'Non autorisé' });
-      }
-
+      // Session déjà vérifiée en haut
       try {
         const { startDate, endDate, ...otherData } = req.body;
         

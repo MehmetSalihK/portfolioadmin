@@ -37,6 +37,8 @@ import {
 import { HiArrowDown } from 'react-icons/hi';
 import { FiExternalLink, FiGithub, FiSettings, FiCode, FiStar, FiAlertTriangle, FiX, FiDownload, FiFileText } from 'react-icons/fi';
 import parse from 'html-react-parser';
+import DOMPurify from 'isomorphic-dompurify';
+import { sanitizeInput } from '@/utils/sanitize';
 import { 
   SiTypescript, 
   SiJavascript, 
@@ -1102,7 +1104,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                         Description
                       </h3>
                       <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                        {selectedProject.description}
+                        {parse(DOMPurify.sanitize(selectedProject.description))}
                       </p>
                     </div>
                     
@@ -1595,7 +1597,18 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
   try {
     await connectDB();
 
-    // Maintenance check removed to rely on middleware and prevent ISR redirect loops
+    // Verify maintenance mode (Dual check with middleware for safety)
+    const Maintenance = (await import('@/models/Maintenance')).default;
+    const maintenanceStatus = await Maintenance.findOne().lean();
+    
+    if (maintenanceStatus && (maintenanceStatus as any).isEnabled) {
+      return {
+        redirect: {
+          destination: '/maintenance',
+          permanent: false,
+        },
+      };
+    }
 
     let homeData = await HomePage.findOne().lean();
     if (!homeData) {

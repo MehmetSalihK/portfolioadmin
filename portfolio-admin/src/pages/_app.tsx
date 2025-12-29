@@ -4,12 +4,17 @@ import { SessionProvider } from 'next-auth/react';
 import { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import { Analytics } from '@vercel/analytics/next';
+import useSecurity from '@/utils/hooks/useSecurity';
 import Navbar from '@/components/layout/Navbar';
 import AutoSync from '@/components/admin/AutoSync';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 
 function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const router = useRouter();
+  
+  // Activer la sécurité globale
+  useSecurity();
+  
   const isAdminPage = router.pathname.startsWith('/admin');
   const isMaintenancePage = router.pathname === '/maintenance';
 

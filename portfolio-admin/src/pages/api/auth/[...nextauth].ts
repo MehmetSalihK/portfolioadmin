@@ -2,6 +2,7 @@ import NextAuth, { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import connectDB from '@/lib/db';
 import Admin from '@/models/Admin';
+import { loginSchema } from '@/utils/schemas';
 
 if (!process.env.NEXTAUTH_SECRET) {
   throw new Error('NEXTAUTH_SECRET is not defined');
@@ -26,12 +27,24 @@ export const authOptions: NextAuthOptions = {
             throw new Error('Veuillez fournir un email et un mot de passe');
           }
 
+          // Valider les entrées avec Zod
+          const result = loginSchema.safeParse({
+            email: credentials.email,
+            password: credentials.password
+          });
+
+          if (!result.success) {
+            console.error('Validation error:', result.error.errors);
+            throw new Error(result.error.errors[0].message);
+          }
+
           await connectDB();
           console.log('Connected to database');
           console.log('Attempting login for:', credentials.email);
           
           // Vérifier si c'est une authentification 2FA déjà vérifiée
           if (credentials.password === 'verified-2fa') {
+            // ... (rest of 2FA logic)
             console.log('2FA already verified, creating session...');
             
             // Vérifier si c'est l'admin par défaut

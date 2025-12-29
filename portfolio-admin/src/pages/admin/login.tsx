@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
 import { authOptions } from '../api/auth/[...nextauth]';
+import { loginSchema } from '@/utils/schemas';
 import { FiMail, FiLock, FiLogIn, FiUser, FiShield, FiZap, FiAlertCircle, FiArrowRight } from 'react-icons/fi';
 import { RiAdminLine } from 'react-icons/ri';
 
@@ -64,6 +65,9 @@ export default function AdminLogin() {
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [backgroundAnimationsEnabled, setBackgroundAnimationsEnabled] = useState(true);
 
+  // ... inside component
+
+  // ... inside component
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
@@ -73,8 +77,17 @@ export default function AdminLogin() {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
+    // Validation Zod client-side
+    const validation = loginSchema.safeParse({ email, password });
+    if (!validation.success) {
+      setError(validation.error.errors[0].message);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       console.log('Tentative de connexion avec 2FA...');
+      // ... rest of the code
       
       // Étape 1: Envoyer le code 2FA
       const response = await fetch('/api/auth/send-2fa', {
