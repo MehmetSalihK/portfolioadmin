@@ -2,15 +2,18 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Fonction pour vérifier le statut de maintenance
-async function getMaintenanceStatus() {
+async function getMaintenanceStatus(request: NextRequest) {
   try {
-    // En production, vous devriez utiliser l'URL complète de votre site
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    // Utiliser l'URL de la requête pour s'assurer qu'on appelle la bonne API
+    const baseUrl = process.env.NEXTAUTH_URL || request.nextUrl.origin;
     const response = await fetch(`${baseUrl}/api/maintenance`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-store'
       },
+      cache: 'no-store',
+      next: { revalidate: 0 } // Pour Next.js 13+
     });
     
     if (response.ok) {
@@ -43,7 +46,7 @@ export async function middleware(request: NextRequest) {
   }
   
   // Vérifier le statut de maintenance
-  const maintenanceStatus = await getMaintenanceStatus();
+  const maintenanceStatus = await getMaintenanceStatus(request);
   
   if (maintenanceStatus.isEnabled) {
     // Vérifier si l'IP est dans la liste des IPs autorisées
