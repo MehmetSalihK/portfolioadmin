@@ -1,308 +1,483 @@
 # 🎨 Portfolio Admin Dashboard
 
 <div align="center">
-
-**🌍 Langues / Languages / Diller**
-
-[![Français](https://img.shields.io/badge/Langue-Français-blue?style=for-the-badge&logo=flag-icon&logoColor=white)](README.md)
-[![English](https://img.shields.io/badge/Language-English-red?style=for-the-badge&logo=flag-icon&logoColor=white)](README_EN.md)
-[![Türkçe](https://img.shields.io/badge/Dil-Türkçe-white?style=for-the-badge&logo=flag-icon&logoColor=red)](README_TR.md)
-
----
-
-[![Next.js](https://img.shields.io/badge/Next.js-14.0.0-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-7.0-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Vercel](https://img.shields.io/badge/Vercel-Deploy-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
-[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
-
-  <br />
   
-  <h3>🚀 A modern No-Code solution to manage your professional portfolio</h3>
+  **🌍 Languages / Langues / Diller:**
+  [🇫🇷 Français](README.md) | [🇬🇧 English](README_EN.md) | [🇹🇷 Türkçe](README_TR.md)
   
-  <p>No more manual source code edits! Manage everything from an elegant interface.</p>
-
-[View Demo](https://your-demo.vercel.app) • [Documentation](#-complete-installation) • [Report Bug](https://github.com/mehmetsalihkuscu/portfolio-admin/issues)
-
 </div>
 
-<br />
+<div align="center">
+  
+  [![Next.js](https://img.shields.io/badge/Next.js-14.0.0-black.svg)](https://nextjs.org/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-blue.svg)](https://www.typescriptlang.org/)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.0-38B2AC.svg)](https://tailwindcss.com/)
+  [![MongoDB](https://img.shields.io/badge/MongoDB-7.0-green.svg)](https://www.mongodb.com/)
+  [![Vercel](https://img.shields.io/badge/Vercel-000000.svg?logo=vercel)](https://vercel.com/)
+  [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+  
+</div>
+
+<div align="center">
+  <p><em>A modern no-code solution to manage your professional portfolio</em></p>
+</div>
 
 ## 📋 Table of Contents
 
 - [🎯 About](#-about)
-- [✨ Detailed Features](#-detailed-features)
-- [🛡️ Security & Architecture](#%EF%B8%8F-security--architecture)
-- [💻 Admin Interface Guide](#-admin-interface-guide)
-- [🛠 Tech Stack](#-tech-stack)
+- [🚀 Online Demo](#-online-demo)
+- [✨ Key Features](#-key-features)
+- [💻 Admin Interface](#-admin-interface)
+- [🛠 Technologies Used](#-technologies-used)
+- [📥 Quick Installation](#-quick-installation)
+- [⚙️ Configuration](#%EF%B8%8F-configuration)
 - [📁 Project Structure](#-project-structure)
 - [🌐 API Routes](#-api-routes)
-- [📥 Complete Installation](#-complete-installation)
-- [⚙️ Configuration](#%EF%B8%8F-configuration)
-- [🔧 Troubleshooting (FAQ)](#-troubleshooting-faq)
+- [🚧 Project Status](#-project-status)
+- [🔧 Troubleshooting](#-troubleshooting)
 - [🤝 Contribution](#-contribution)
 - [📄 License](#-license)
 
----
-
 ## 🎯 About
 
-**Portfolio Admin** was born from a simple need: allow developers to focus on what they love (coding) without wasting time maintaining their portfolio content.
+Portfolio Admin is a modern and intuitive **no-code** solution for managing your professional portfolio online. No more manual source code edits! Thanks to an elegant and powerful admin interface, you can:
 
-> "Your portfolio should evolve as fast as your skills."
+- ✅ **Modify content** of your portfolio in real-time
+- ✅ **Manage projects** with an interactive modal system
+- ✅ **Customize your CV** with integrated modal display
+- ✅ **Optimize presence** with integrated analytics
+- ✅ **Maintain your site** with a professional maintenance mode
 
-### Why use Portfolio Admin?
+> 🎯 **Goal**: Allow developers to focus on their code rather than maintaining their portfolio content
 
-- **⚡ Save Time**: Edit text or add a project in 30 seconds.
-- **🎨 Premium Design**: A polished, responsive, and animated interface by default.
-- **🔐 Maximum Security**: Your data is protected by industry standards.
-- **📱 100% Responsive**: Manage your site from your mobile.
+## 🚀 Online Demo
 
----
+🌐 **Demo Site**: [View Demo](https://your-demo.vercel.app)
 
-## ✨ Detailed Features
+📱 **Admin Interface**: [Admin Dashboard](https://your-demo.vercel.app/admin)
 
-### 🎨 Content Management (CMS)
+> 💡 **Tip**: Use the demo credentials to test the admin interface
 
-- **Rich Editor (WYSIWYG)**: Formatting (bold, italic, lists, colors) without writing HTML.
-- **Live Preview**: See your changes before publishing.
-- **Automated SEO**: Dynamically generated Metadata and OpenGraph.
+## ✨ Key Features
 
-### 🔐 Authentication & Security
+- 🎨 **No-Code Management**
 
-- **NextAuth.js**: Robust session system with token rotation.
-- **Two-Factor Authentication (2FA)**: Temporary codes sent via Email (using Resend).
-- **Roles**: Clear distinction between Admin (full access) and Visitor (read-only).
+  - Content modification without touching code
+  - Intuitive user interface
+  - Real-time updates
+  - Change preview
 
-### 📊 Projects & Skills
+- 🔐 **Secure Authentication**
 
-- **Full CRUD**: Add, edit, delete your projects.
-- **Categorization**: Sort your projects by tags or technologies.
-- **Interactive Modals**: Detailed presentation with image gallery and links.
-- **Drag & Drop**: Reorganize display order (Coming Soon).
+  - NextAuth.js for session management
+  - Admin route protection
+  - GitHub authentication
 
-### 📄 CV Management
+- 📊 **Project Management**
 
-- **PDF Upload**: Simple update of your CV.
-- **Viewing Modal**: Recruiters can read your CV without leaving the site.
-- **Quick Actions**: Integrated "Download" or "Open" buttons.
+  - Add/Edit/Delete projects without coding
+  - Image upload with preview
+  - Drag & drop organization (coming soon)
+  - Category management
+  - **Interactive Modal Display**
+    - Modals to view complete details
+    - Background interaction prevention
+    - Intuitive closing (outside click or X button)
+    - Smooth animations and responsive design
 
----
+- 📝 **Content Management**
 
-## 🛡️ Security & Architecture
+  - Intuitive rich text editor
+  - Advanced formatting (bold, italic, colors...)
+  - Homepage section editing
+  - Social links customization
 
-We apply a **"Secure by Default"** policy.
+- 📄 **CV Display**
+  - **Interactive CV Modal**: View CV directly on homepage
+  - **Integrated Preview**: PDF display in iframe without leaving page
+  - **Quick Actions**: Buttons to download or open in new tab
+  - **Responsive Design**: Interface adapted to all screens
+  - **Optimized User Experience**: Smooth animations and intuitive closing
 
-| Feature               | Description                                                                         |
-| :-------------------- | :---------------------------------------------------------------------------------- |
-| **🛡️ Rate Limiting**  | Protection against DDoS and Brute-Force (`10 req/min` on login, `100 req/min` API). |
-| **🔒 Zod Validation** | Strict schemas for all inputs (API & Forms).                                        |
-| **🧹 Sanitization**   | HTML cleanup via `DOMPurify` to prevent XSS.                                        |
-| **⛓️ HTTP Headers**   | Hardened configuration (HSTS, CSP, X-Frame-Options, No-Sniff).                      |
-| **🕵️ Anti-Snooping**  | Blocking console, `localStorage`, and dev tools access in production.               |
+## 💻 Admin Interface
 
----
+The admin interface allows you to:
 
-## 💻 Admin Interface Guide
+### 1. Homepage
 
-An interface designed for efficiency.
+- Edit main title
+- Customize subtitle
+- Edit "About" section
+- Manage your social links (GitHub, LinkedIn, Twitter)
 
-### 🏠 Main Dashboard
+### 2. Projects
 
-Overview of your activity, quick links to key sections, and visit statistics (via Vercel Analytics).
+- Add new projects
+- Edit existing projects
+- Delete projects
+- Reorganize display order
 
-### 📝 Project Editing
+### 3. Text Formatting
 
-Intuitive forms to describe your achievements:
+Our rich text editor allows you to:
 
-- **Basic Info**: Title, subtitle, dates.
-- **Rich Content**: Detailed description of the mission.
-- **Tech Stack**: Automatic icon suggestion.
-- **Media**: Image gallery with automatic resizing.
+- Bold, italic, underline
+- Change text color
+- Create bullet lists
+- Align text (left, center, right)
+- Add titles and subtitles
 
-### 📍 Location
+### 4. Media Management
 
-- **Autocomplete**: Easy address entry (Geo API).
-- **Validation**: Automatic formatting.
+- Upload images for projects
+- Automatic resizing
+- Image optimization
+- Gallery management
 
----
+### 5. CV Display
 
-## 🛠 Tech Stack
+- **Interactive Modal**: CV displays in an elegant modal
+- **Direct Visualization**: PDF preview without leaving homepage
+- **User Actions**: Download and open in new tab
+- **Modern Interface**: Design consistent with site theme
+- **Accessibility**: Keyboard navigation and intuitive closing
 
-A modern, performant, and maintainable architecture.
+### 6. Geographic Position Management
+
+- **Smart Auto-completion**: Real-time address suggestions
+- **Intuitive Interface**: Easy input with contextual suggestions
+- **Automatic Validation**: Standardized address format
+- **Dynamic Display**: Position updated instantly on site
+- **Geolocation**: Support for postal codes and cities
+
+### 7. Analytics and Tracking
+
+- **Vercel Analytics**: Automatic visitor and page view tracking
+- **Real-time Data**: Instant traffic statistics
+- **Privacy Respect**: Analytics without third-party cookies
+- **Optimized Performance**: Minimal impact on site performance
+- **Transparent Integration**: Automatic configuration without intervention
+
+All these modifications are done directly from the admin interface, without needing to touch the code!
+
+## 🛠 Technologies Used
+
+<div align="center">
 
 ### 🎨 Frontend
 
-| Tech              | Badge                                                                                                         | Description                    |
-| :---------------- | :------------------------------------------------------------------------------------------------------------ | :----------------------------- |
-| **Next.js 14**    | ![Next.js](https://img.shields.io/badge/Next.js-black?style=flat-square&logo=next.js)                         | App Router & Server Components |
-| **TypeScript**    | ![TypeScript](https://img.shields.io/badge/TypeScript-blue?style=flat-square&logo=typescript&logoColor=white) | Strict typing for robustness   |
-| **Tailwind CSS**  | ![Tailwind](https://img.shields.io/badge/Tailwind-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white) | Utility-first and fast styling |
-| **Framer Motion** | ![Framer](https://img.shields.io/badge/Framer-0055FF?style=flat-square&logo=framer&logoColor=white)           | Smooth animations              |
-| **TipTap**        | ![TipTap](https://img.shields.io/badge/TipTap-black?style=flat-square)                                        | Rich text editor               |
+| Technology                                                                                | Version  | Description                  |
+| ----------------------------------------------------------------------------------------- | -------- | ---------------------------- |
+| ![Next.js](https://img.shields.io/badge/Next.js-14.0.0-black?logo=next.js)                | `14.0.0` | React full-stack Framework   |
+| ![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-blue?logo=typescript)         | `5.0.0`  | Static typing for JavaScript |
+| ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.0-38B2AC?logo=tailwind-css) | `3.4.0`  | Utility CSS Framework        |
+| ![TipTap](https://img.shields.io/badge/TipTap-2.0.0-orange)                               | `2.0.0`  | Rich text editor             |
 
-### ⚙️ Backend
+### 🔧 Backend & Database
 
-| Tech         | Badge                                                                                                     | Description             |
-| :----------- | :-------------------------------------------------------------------------------------------------------- | :---------------------- |
-| **Node.js**  | ![Node](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white)     | JavaScript Runtime      |
-| **MongoDB**  | ![Mongo](https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white)      | Flexible NoSQL Database |
-| **Mongoose** | ![Mongoose](https://img.shields.io/badge/Mongoose-880000?style=flat-square&logo=mongoose&logoColor=white) | ODM for MongoDB         |
+| Technology                                                              | Version | Description                |
+| ----------------------------------------------------------------------- | ------- | -------------------------- |
+| ![MongoDB](https://img.shields.io/badge/MongoDB-7.0-green?logo=mongodb) | `7.0`   | NoSQL Database             |
+| ![NextAuth.js](https://img.shields.io/badge/NextAuth.js-4.0.0-purple)   | `4.0.0` | Authentication for Next.js |
+| ![Mongoose](https://img.shields.io/badge/Mongoose-8.0.0-red)            | `8.0.0` | ODM for MongoDB            |
 
-### 🔒 Security & Tools
+### 📊 Analytics & Deployment
 
-| Tech         | Badge                                                                                                  | Usage                |
-| :----------- | :----------------------------------------------------------------------------------------------------- | :------------------- |
-| **NextAuth** | ![Auth](https://img.shields.io/badge/NextAuth-purple?style=flat-square&logo=nextdotjs&logoColor=white) | Session Management   |
-| **Zod**      | ![Zod](https://img.shields.io/badge/Zod-3068B7?style=flat-square&logo=zod&logoColor=white)             | Data Validation      |
-| **Resend**   | ![Resend](https://img.shields.io/badge/Resend-black?style=flat-square&logo=resend&logoColor=white)     | Transactional Emails |
+| Technology                                                                           | Description                      |
+| ------------------------------------------------------------------------------------ | -------------------------------- |
+| ![Vercel Analytics](https://img.shields.io/badge/Vercel_Analytics-black?logo=vercel) | Performance and visitor tracking |
+| ![Vercel](https://img.shields.io/badge/Vercel-black?logo=vercel)                     | Deployment Platform              |
 
----
+### 🛠 Development Tools
+
+| Tool                                                                    | Description                  |
+| ----------------------------------------------------------------------- | ---------------------------- |
+| ![ESLint](https://img.shields.io/badge/ESLint-4B32C3?logo=eslint)       | JavaScript/TypeScript Linter |
+| ![Prettier](https://img.shields.io/badge/Prettier-F7B93E?logo=prettier) | Code Formatter               |
+| ![Git](https://img.shields.io/badge/Git-F05032?logo=git)                | Version Control              |
+
+</div>
+
+## 📥 Quick Installation
+
+### 🚀 Installation in 5 minutes
+
+#### 1️⃣ Clone the project
+
+```bash
+# Clone the repository
+git clone https://github.com/mehmetsalihkuscu/portfolio-admin.git
+cd portfolio-admin/portfolio-admin
+```
+
+#### 2️⃣ Install dependencies
+
+```bash
+# With npm (recommended)
+npm install
+
+# Or with yarn
+yarn install
+
+# Or with pnpm (faster)
+pnpm install
+```
+
+#### 3️⃣ Environment Configuration
+
+```bash
+# Create configuration file
+cp .env.example .env.local
+
+# Edit environment variables
+nano .env.local  # or your preferred editor
+```
+
+#### 4️⃣ Start Development Server
+
+```bash
+# Start in development mode
+npm run dev
+
+# The site will be accessible at http://localhost:3000
+```
+
+#### 5️⃣ Access Admin Interface
+
+```bash
+# Admin interface available at:
+# http://localhost:3000/admin
+```
+
+### ⚡ Quick Installation with Script
+
+```bash
+# Automatic installation script
+curl -fsSL https://raw.githubusercontent.com/mehmetsalihkuscu/portfolio-admin/main/install.sh | bash
+```
+
+> 💡 **Tip**: Make sure you have Node.js 18+ and npm installed on your system
+
+## ⚙️ Configuration
+
+Create a `.env.local` file with the following variables:
+
+```env
+# Database (MongoDB)
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/
+
+# Authentication (NextAuth.js)
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your_nextauth_secret
+
+# Admin credentials
+ADMIN_EMAIL=your_admin_email
+ADMIN_PASSWORD=your_admin_password
+
+# GitHub OAuth
+GITHUB_ID=your_github_id
+GITHUB_SECRET=your_github_secret
+
+# Resend API Configuration
+RESEND_API_KEY=your_resend_api_key
+RESEND_EMAIL=your_resend_email
+```
 
 ## 📁 Project Structure
 
-```bash
+```
 portfolio-admin/
 ├── src/
-│   ├── components/      # 🧱 Reusable Components
-│   │   ├── admin/       # UI Administration
-│   │   ├── modals/      # CV, Projects...
-│   │   └── ui/          # Buttons, Inputs, Cards...
-│   ├── pages/
-│   │   ├── api/         # ⚡ API Endpoints (Backend)
-│   │   ├── admin/       # 🔐 Admin Pages
-│   │   └── index.tsx    # 🏠 Public Homepage
-│   ├── styles/          # 🎨 Global CSS & Tailwind
-│   ├── lib/             # 🛠 Utilities (DB, Auth...)
-│   └── models/          # 💾 Mongoose Schemas
-├── public/              # 🖼 Images, Favicons...
+│   ├── components/      # Reusable Components
+│   │   ├── ProjectCard.tsx        # Project card with modal
+│   │   ├── EnhancedProjectCard.tsx # Enhanced version with modal
+│   │   ├── modals/
+│   │   │   └── CVModal.tsx        # CV display modal
+│   │   └── ...                    # Other components
+│   ├── pages/          # Pages and API routes
+│   ├── styles/         # Global styles
+│   ├── lib/           # Utilities and configuration
+│   └── models/        # MongoDB Models
+├── public/            # Static Assets
 └── ...
 ```
 
----
-
 ## 🌐 API Routes
 
-Brief documentation of available endpoints.
+### GET /api/homepage
 
-| Method   | Endpoint             | Description       | Access    |
-| :------- | :------------------- | :---------------- | :-------- |
-| `GET`    | `/api/projects`      | List all projects | Public    |
-| `POST`   | `/api/projects`      | Create a project  | **Admin** |
-| `PUT`    | `/api/projects/[id]` | Update a project  | **Admin** |
-| `DELETE` | `/api/projects/[id]` | Delete a project  | **Admin** |
-| `GET`    | `/api/homepage`      | Homepage data     | Public    |
-| `POST`   | `/api/auth/send-2fa` | Send login code   | Public    |
+- Retrieves homepage data
 
----
+### POST /api/homepage
 
-## 📥 Complete Installation
+- Updates homepage data
 
-### Prerequisites
+### GET /api/projects
 
-- Node.js 18+
-- MongoDB Atlas Account (Free)
-- GitHub Account (for OAuth)
+- Lists all projects
 
-### 1️⃣ Clone the project
+### POST /api/projects
+
+- Creates a new project
+
+### PUT /api/projects/[id]
+
+- Updates an existing project
+
+### DELETE /api/projects/[id]
+
+- Deletes a project
+
+## 🚧 Current Project Status
+
+### ✅ Completed Features
+
+- Secure authentication with GitHub
+- Rich text editor for homepage
+  - Text formatting (bold, italic, underline)
+  - Color change
+  - Text alignment
+- Homepage content management
+  - Title and subtitle editing
+  - "About" section editing
+  - Social links management
+- Basic image upload
+- MongoDB database structure
+- **Advanced Project Display**
+  - Interactive modals for complete project details
+  - Styled "Read more" buttons (blue and underlined)
+  - Large format image display in modals
+  - Complete description with technologies and links
+  - Background interaction prevention
+  - Closing by outside click or close button
+  - Smooth animations and responsive design
+  - Dark mode support
+  - Page scroll blocking when modals open
+
+### 🔄 In Development
+
+- Complete admin interface
+  - Main dashboard with statistics
+  - Intuitive navigation between sections
+  - Dark/light theme
+- Advanced project management
+  - Drag & drop interface for reorganization
+  - Project categorization
+  - Tags and filters
+- Enhanced media system
+  - Image gallery
+  - Cropping and resizing
+  - Automatic optimization
+- Real-time modification preview
+
+### 📝 Planned Features
+
+- Analytics and statistics
+  - Visit tracking
+  - Time spent per page
+- Backup and version system
+- Data export/import
+- Maintenance mode
+- Advanced SEO optimization
+- Automated tests
+- Complete API documentation
+
+## ⚠️ Important Note
+
+This project is currently in active development. Some features may be unstable or incomplete. Contributions and feedback are welcome!
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+1. **MongoDB Connection Error**
 
 ```bash
-git clone https://github.com/mehmetsalihkuscu/portfolio-admin.git
-cd portfolio-admin
+# Check that your MongoDB URI is correct
+# Ensure your IP is authorized in MongoDB Atlas
 ```
 
-### 2️⃣ Install dependencies
+2. **Authentication Error**
 
 ```bash
-npm install
+# Check your GitHub environment variables
+# Ensure OAuth callbacks are correctly configured
 ```
-
-### 3️⃣ Environment Variables
-
-Create `.env.local` and configure:
-
-```env
-# 📦 Database
-MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/portfolio
-
-# 🔐 Auth
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=generate_a_random_string
-# GitHub OAuth
-GITHUB_ID=your_client_id
-GITHUB_SECRET=your_client_secret
-
-# 📧 Emails (2FA)
-RESEND_API_KEY=re_123...
-RESEND_EMAIL=onboarding@resend.dev
-
-# 👤 Admin
-ADMIN_EMAIL=your@email.com
-ADMIN_PASSWORD=your_password
-```
-
-### 4️⃣ Run locally
-
-```bash
-npm run dev
-```
-
----
-
-## 🔧 Troubleshooting (FAQ)
-
-<details>
-<summary><strong>🔴 MongoDB Connection Error?</strong></summary>
-<br>
-Check that:
-1. Your IP is authorized in MongoDB Atlas (Network Access).
-2. The URI in `.env.local` is correct and in quotes if necessary.
-3. The username/password does not contain unescaped special characters.
-</details>
-
-<details>
-<summary><strong>🔑 GitHub Authentication Error?</strong></summary>
-<br>
-Check that:
-1. The callback URL in GitHub Apps is `http://localhost:3000/api/auth/callback/github`.
-2. The Client ID and Secret are correct.
-</details>
-
-<details>
-<summary><strong>✉️ 2FA Emails not arriving?</strong></summary>
-<br>
-1. Check your server logs to see if Resend returns an error.
-2. Ensure you have verified the sending domain if you are in production.
-3. In test mode, you can only send to your Resend account email.
-</details>
-
----
 
 ## 🤝 Contribution
 
-Contributions are welcome!
+Contributions are welcome! Here is how you can contribute:
 
-1.  **Fork** the project
-2.  Create your branch (`git checkout -b feature/SuperFeature`)
-3.  Commit your changes (`git commit -m '✨ Add SuperFeature'`)
-4.  Push (`git push origin feature/SuperFeature`)
-5.  Open a **Pull Request**
+### 🐛 Report a Bug
 
----
+1. Check if the bug has not already been reported in [Issues](https://github.com/mehmetsalihkuscu/portfolio-admin/issues)
+2. Create a new issue with the "Bug Report" template
+3. Describe the problem in detail with reproduction steps
+
+### ✨ Propose a Feature
+
+1. Create an issue with the "Feature Request" template
+2. Describe the desired feature and its utility
+3. Wait for approval before starting development
+
+### 🔧 Contribute Code
+
+1. **Fork** the project
+2. Create a branch for your feature (`git checkout -b feature/AmazingFeature`)
+3. **Commit** your changes (`git commit -m 'Add some AmazingFeature'`)
+4. **Push** to the branch (`git push origin feature/AmazingFeature`)
+5. Open a **Pull Request**
+
+### 📝 Contribution Guidelines
+
+- Follow existing code conventions
+- Add tests for new features
+- Update documentation if necessary
+- Use clear and descriptive commit messages
+
+### 🏆 Contributors
+
+Thanks to all contributors who participated in this project!
+
+<a href="https://github.com/mehmetsalihkuscu/portfolio-admin/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=mehmetsalihkuscu/portfolio-admin" />
+</a>
 
 ## 📄 License
 
-Distributed under the **MIT** license. See `LICENSE` for more information.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+
+```
+MIT License
+
+Copyright (c) 2024 Mehmet Salih Kuscu
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
 
 ---
 
 <div align="center">
+  <p><strong>Developed with ❤️ by <a href="https://github.com/mehmetsalihkuscu">Mehmet Salih Kuscu</a></strong></p>
+  <p><em>For efficient no-code portfolio management</em></p>
   
-  **Made with ❤️ by [Mehmet Salih Kuscu](https://github.com/mehmetsalihkuscu)**
-  
-  [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/mehmetsalihkuscu)
-  [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/mehmetsalihkuscu)
-  [![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:contact@mehmetsalihk.fr)
-
+  [![GitHub](https://img.shields.io/badge/GitHub-mehmetsalihkuscu-black?logo=github)](https://github.com/mehmetsalihkuscu)
+  [![LinkedIn](https://img.shields.io/badge/LinkedIn-Mehmet%20Salih%20Kuscu-blue?logo=linkedin)](https://linkedin.com/in/mehmetsalihkuscu)
+  [![Email](https://img.shields.io/badge/Email-contact@mehmetsalihk.fr-red?logo=gmail)](mailto:contact@mehmetsalihk.fr)
 </div>
