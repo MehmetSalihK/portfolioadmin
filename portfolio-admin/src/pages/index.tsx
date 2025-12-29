@@ -1595,18 +1595,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
   try {
     await connectDB();
 
-    // Vérifier le mode maintenance
-    const Maintenance = (await import('@/models/Maintenance')).default;
-    const maintenanceStatus = await Maintenance.findOne().lean();
-    
-    if (maintenanceStatus && (maintenanceStatus as any).isEnabled) {
-      return {
-        redirect: {
-          destination: '/maintenance',
-          permanent: false,
-        },
-      };
-    }
+    // Maintenance check removed to rely on middleware and prevent ISR redirect loops
 
     let homeData = await HomePage.findOne().lean();
     if (!homeData) {
