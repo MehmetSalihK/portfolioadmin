@@ -61,17 +61,20 @@ Portfolio Admin est une solution **no-code** moderne et intuitive pour gérer vo
 ## ✨ Fonctionnalités principales
 
 - 🎨 **Gestion No-Code**
+
   - Modification du contenu sans toucher au code
   - Interface utilisateur intuitive
   - Mise à jour en temps réel
   - Prévisualisation des changements
 
 - 🔐 **Authentification Sécurisée**
+
   - NextAuth.js pour la gestion des sessions
   - Protection des routes admin
   - Authentification GitHub
 
 - 📊 **Gestion des Projets**
+
   - Ajout/Modification/Suppression de projets sans coder
   - Upload d'images avec prévisualisation
   - Organisation par drag & drop (à venir)
@@ -83,6 +86,7 @@ Portfolio Admin est une solution **no-code** moderne et intuitive pour gérer vo
     - Animations fluides et design responsive
 
 - 📝 **Gestion du Contenu**
+
   - Éditeur de texte riche intuitif
   - Mise en forme avancée (gras, italique, couleurs...)
   - Modification des sections de la page d'accueil
@@ -95,24 +99,38 @@ Portfolio Admin est une solution **no-code** moderne et intuitive pour gérer vo
   - **Design responsive** : Interface adaptée à tous les écrans
   - **Expérience utilisateur optimisée** : Animations fluides et fermeture intuitive
 
-## 💻 Interface d'Administration
+## �️ Sécurité Avancée
+
+La sécurité est au cœur de Portfolio Admin avec une architecture "Secure by Default" :
+
+- **Rate Limiting** : Protection contre les attaques DDOS et Brute-Force (`10 req/min` pour l'auth).
+- **Validation Zod** : Vérification stricte de toutes les données entrantes (login API, formulaires).
+- **Sanitization HTML** : Protection XSS via `isomorphic-dompurify` pour tout le contenu riche.
+- **Headers HTTP Durcis** : HSTS, CSP, X-Frame-Options configurés par défaut.
+- **Hook de Sécurité** : Nettoyage automatique du `localStorage` et de la console en production.
+
+## �💻 Interface d'Administration
 
 L'interface d'administration vous permet de :
 
 ### 1. Page d'Accueil
+
 - Modifier le titre principal
 - Personnaliser le sous-titre
 - Éditer la section "À propos"
 - Gérer vos liens sociaux (GitHub, LinkedIn, Twitter)
 
 ### 2. Projets
+
 - Ajouter de nouveaux projets
 - Modifier les projets existants
 - Supprimer des projets
 - Réorganiser l'ordre d'affichage
 
 ### 3. Mise en Forme du Texte
+
 Notre éditeur de texte riche permet de :
+
 - Mettre en gras, italique, souligné
 - Changer la couleur du texte
 - Créer des listes à puces
@@ -120,12 +138,14 @@ Notre éditeur de texte riche permet de :
 - Ajouter des titres et sous-titres
 
 ### 4. Gestion des Médias
+
 - Upload d'images pour les projets
 - Redimensionnement automatique
 - Optimisation des images
 - Gestion de la galerie
 
 ### 5. Affichage du CV
+
 - **Modale interactive** : Le CV s'affiche dans une modale élégante
 - **Visualisation directe** : Aperçu du PDF sans quitter la page d'accueil
 - **Actions utilisateur** : Téléchargement et ouverture dans un nouvel onglet
@@ -133,6 +153,7 @@ Notre éditeur de texte riche permet de :
 - **Accessibilité** : Navigation au clavier et fermeture intuitive
 
 ### 6. Gestion de la Position Géographique
+
 - **Auto-complétion intelligente** : Suggestions d'adresses françaises en temps réel
 - **Interface intuitive** : Saisie facilitée avec suggestions contextuelles
 - **Validation automatique** : Format d'adresse standardisé
@@ -140,6 +161,7 @@ Notre éditeur de texte riche permet de :
 - **Géolocalisation** : Support des codes postaux et villes françaises
 
 ### 7. Analytics et Suivi
+
 - **Vercel Analytics** : Suivi automatique des visiteurs et pages vues
 - **Données en temps réel** : Statistiques de trafic instantanées
 - **Respect de la vie privée** : Analytics sans cookies tiers
@@ -153,32 +175,44 @@ Toutes ces modifications se font directement depuis l'interface d'administration
 <div align="center">
 
 ### 🎨 Frontend
-| Technologie | Version | Description |
-|-------------|---------|-------------|
-| ![Next.js](https://img.shields.io/badge/Next.js-14.0.0-black?logo=next.js) | `14.0.0` | Framework React full-stack |
-| ![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-blue?logo=typescript) | `5.0.0` | Typage statique pour JavaScript |
-| ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.0-38B2AC?logo=tailwind-css) | `3.4.0` | Framework CSS utilitaire |
-| ![TipTap](https://img.shields.io/badge/TipTap-2.0.0-orange) | `2.0.0` | Éditeur de texte riche |
+
+| Technologie                                                                               | Version  | Description                     |
+| ----------------------------------------------------------------------------------------- | -------- | ------------------------------- |
+| ![Next.js](https://img.shields.io/badge/Next.js-14.0.0-black?logo=next.js)                | `14.0.0` | Framework React full-stack      |
+| ![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-blue?logo=typescript)         | `5.0.0`  | Typage statique pour JavaScript |
+| ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.0-38B2AC?logo=tailwind-css) | `3.4.0`  | Framework CSS utilitaire        |
+| ![TipTap](https://img.shields.io/badge/TipTap-2.0.0-orange)                               | `2.0.0`  | Éditeur de texte riche          |
 
 ### 🔧 Backend & Base de données
-| Technologie | Version | Description |
-|-------------|---------|-------------|
-| ![MongoDB](https://img.shields.io/badge/MongoDB-7.0-green?logo=mongodb) | `7.0` | Base de données NoSQL |
-| ![NextAuth.js](https://img.shields.io/badge/NextAuth.js-4.0.0-purple) | `4.0.0` | Authentification pour Next.js |
-| ![Mongoose](https://img.shields.io/badge/Mongoose-8.0.0-red) | `8.0.0` | ODM pour MongoDB |
 
-### 📊 Analytics & Déploiement
-| Technologie | Description |
-|-------------|-------------|
+| Technologie                                                             | Version | Description                   |
+| ----------------------------------------------------------------------- | ------- | ----------------------------- |
+| ![MongoDB](https://img.shields.io/badge/MongoDB-7.0-green?logo=mongodb) | `7.0`   | Base de données NoSQL         |
+| ![NextAuth.js](https://img.shields.io/badge/NextAuth.js-4.0.0-purple)   | `4.0.0` | Authentification pour Next.js |
+| ![Mongoose](https://img.shields.io/badge/Mongoose-8.0.0-red)            | `8.0.0` | ODM pour MongoDB              |
+
+### � Sécurité
+
+| Technologie    | Description                  |
+| -------------- | ---------------------------- |
+| **Zod**        | Validation de schéma stricte |
+| **DOMPurify**  | Sanitization HTML (XSS)      |
+| **Rate Limit** | Protection API               |
+
+### �📊 Analytics & Déploiement
+
+| Technologie                                                                          | Description                         |
+| ------------------------------------------------------------------------------------ | ----------------------------------- |
 | ![Vercel Analytics](https://img.shields.io/badge/Vercel_Analytics-black?logo=vercel) | Suivi des performances et visiteurs |
-| ![Vercel](https://img.shields.io/badge/Vercel-black?logo=vercel) | Plateforme de déploiement |
+| ![Vercel](https://img.shields.io/badge/Vercel-black?logo=vercel)                     | Plateforme de déploiement           |
 
 ### 🛠 Outils de développement
-| Outil | Description |
-|-------|-------------|
-| ![ESLint](https://img.shields.io/badge/ESLint-4B32C3?logo=eslint) | Linter JavaScript/TypeScript |
-| ![Prettier](https://img.shields.io/badge/Prettier-F7B93E?logo=prettier) | Formateur de code |
-| ![Git](https://img.shields.io/badge/Git-F05032?logo=git) | Contrôle de version |
+
+| Outil                                                                   | Description                  |
+| ----------------------------------------------------------------------- | ---------------------------- |
+| ![ESLint](https://img.shields.io/badge/ESLint-4B32C3?logo=eslint)       | Linter JavaScript/TypeScript |
+| ![Prettier](https://img.shields.io/badge/Prettier-F7B93E?logo=prettier) | Formateur de code            |
+| ![Git](https://img.shields.io/badge/Git-F05032?logo=git)                | Contrôle de version          |
 
 </div>
 
@@ -187,6 +221,7 @@ Toutes ces modifications se font directement depuis l'interface d'administration
 ### 🚀 Installation en 5 minutes
 
 #### 1️⃣ Cloner le projet
+
 ```bash
 # Clonez le repository
 git clone https://github.com/mehmetsalihkuscu/portfolio-admin.git
@@ -194,6 +229,7 @@ cd portfolio-admin/portfolio-admin
 ```
 
 #### 2️⃣ Installer les dépendances
+
 ```bash
 # Avec npm (recommandé)
 npm install
@@ -206,6 +242,7 @@ pnpm install
 ```
 
 #### 3️⃣ Configuration de l'environnement
+
 ```bash
 # Créer le fichier de configuration
 cp .env.example .env.local
@@ -215,6 +252,7 @@ nano .env.local  # ou votre éditeur préféré
 ```
 
 #### 4️⃣ Lancer le serveur de développement
+
 ```bash
 # Démarrer en mode développement
 npm run dev
@@ -223,12 +261,14 @@ npm run dev
 ```
 
 #### 5️⃣ Accéder à l'interface d'administration
+
 ```bash
 # Interface d'admin disponible sur :
 # http://localhost:3000/admin
 ```
 
 ### ⚡ Installation rapide avec un seul script
+
 ```bash
 # Script d'installation automatique
 curl -fsSL https://raw.githubusercontent.com/mehmetsalihkuscu/portfolio-admin/main/install.sh | bash
@@ -283,26 +323,33 @@ portfolio-admin/
 ## 🌐 API Routes
 
 ### GET /api/homepage
+
 - Récupère les données de la page d'accueil
 
 ### POST /api/homepage
+
 - Met à jour les données de la page d'accueil
 
 ### GET /api/projects
+
 - Liste tous les projets
 
 ### POST /api/projects
+
 - Crée un nouveau projet
 
 ### PUT /api/projects/[id]
+
 - Met à jour un projet existant
 
 ### DELETE /api/projects/[id]
+
 - Supprime un projet
 
 ## 🚧 État Actuel du Projet
 
 ### ✅ Fonctionnalités Terminées
+
 - Authentification sécurisée avec GitHub
 - Éditeur de texte riche pour la page d'accueil
   - Formatage du texte (gras, italique, souligné)
@@ -326,6 +373,7 @@ portfolio-admin/
   - Blocage du défilement de la page lors de l'ouverture des modales
 
 ### 🔄 En Cours de Développement
+
 - Interface d'administration complète
   - Dashboard principal avec statistiques
   - Navigation intuitive entre les sections
@@ -341,6 +389,7 @@ portfolio-admin/
 - Prévisualisation en temps réel des modifications
 
 ### 📝 Fonctionnalités Prévues
+
 - Analytics et statistiques
   - Suivi des visites
   - Temps passé par page
@@ -352,6 +401,7 @@ portfolio-admin/
 - Documentation API complète
 
 ## ⚠️ Note Importante
+
 Ce projet est actuellement en développement actif. Certaines fonctionnalités peuvent être instables ou incomplètes. Les contributions et retours sont les bienvenus !
 
 ## 🔧 Dépannage
@@ -359,12 +409,14 @@ Ce projet est actuellement en développement actif. Certaines fonctionnalités p
 ### Problèmes courants
 
 1. **Erreur de connexion MongoDB**
+
 ```bash
 # Vérifiez que votre URI MongoDB est correct
 # Assurez-vous que votre IP est autorisée dans MongoDB Atlas
 ```
 
 2. **Erreur d'authentification**
+
 ```bash
 # Vérifiez vos variables d'environnement GitHub
 # Assurez-vous que les callbacks OAuth sont correctement configurés
@@ -375,16 +427,19 @@ Ce projet est actuellement en développement actif. Certaines fonctionnalités p
 Les contributions sont les bienvenues ! Voici comment vous pouvez contribuer :
 
 ### 🐛 Signaler un bug
+
 1. Vérifiez que le bug n'a pas déjà été signalé dans les [Issues](https://github.com/mehmetsalihkuscu/portfolio-admin/issues)
 2. Créez une nouvelle issue avec le template "Bug Report"
 3. Décrivez le problème en détail avec des étapes de reproduction
 
 ### ✨ Proposer une fonctionnalité
+
 1. Créez une issue avec le template "Feature Request"
 2. Décrivez la fonctionnalité souhaitée et son utilité
 3. Attendez l'approbation avant de commencer le développement
 
 ### 🔧 Contribuer au code
+
 1. **Fork** le projet
 2. Créez une branche pour votre fonctionnalité (`git checkout -b feature/AmazingFeature`)
 3. **Committez** vos changements (`git commit -m 'Add some AmazingFeature'`)
@@ -392,6 +447,7 @@ Les contributions sont les bienvenues ! Voici comment vous pouvez contribuer :
 5. Ouvrez une **Pull Request**
 
 ### 📝 Guidelines de contribution
+
 - Suivez les conventions de code existantes
 - Ajoutez des tests pour les nouvelles fonctionnalités
 - Mettez à jour la documentation si nécessaire

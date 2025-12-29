@@ -29,17 +29,20 @@ Portfolio Admin is a "no-code" solution for managing your online portfolio. No m
 ## ✨ Features
 
 - 🎨 **No-Code Management**
+
   - Content modification without touching code
   - Intuitive user interface
   - Real-time updates
   - Change preview
 
 - 🔐 **Secure Authentication**
+
   - NextAuth.js for session management
   - Admin route protection
   - GitHub authentication
 
 - 📊 **Project Management**
+
   - Add/Edit/Delete projects without coding
   - Image upload with preview
   - Drag & drop organization (coming soon)
@@ -51,6 +54,7 @@ Portfolio Admin is a "no-code" solution for managing your online portfolio. No m
     - Smooth animations and responsive design
 
 - 📝 **Content Management**
+
   - Intuitive rich text editor
   - Advanced formatting (bold, italic, colors...)
   - Homepage section editing
@@ -63,24 +67,38 @@ Portfolio Admin is a "no-code" solution for managing your online portfolio. No m
   - **Responsive design**: Interface adapted to all screens
   - **Optimized user experience**: Smooth animations and intuitive closing
 
+## 🛡️ Advanced Security
+
+Security is at the core of Portfolio Admin with a "Secure by Default" architecture:
+
+- **Rate Limiting**: Protection against DDOS and Brute-Force attacks (`10 req/min` for auth).
+- **Zod Validation**: Strict verification of all incoming data (API login, forms).
+- **HTML Sanitization**: XSS protection via `isomorphic-dompurify` for all rich content.
+- **Hardened HTTP Headers**: HSTS, CSP, X-Frame-Options configured by default.
+- **Security Hook**: Automatic cleanup of `localStorage` and console in production.
+
 ## 💻 Admin Interface
 
 The admin interface allows you to:
 
 ### 1. Homepage
+
 - Edit main title
 - Customize subtitle
 - Edit "About" section
 - Manage your social links (GitHub, LinkedIn, Twitter)
 
 ### 2. Projects
+
 - Add new projects
 - Edit existing projects
 - Delete projects
 - Reorganize display order
 
 ### 3. Text Formatting
+
 Our rich text editor allows you to:
+
 - Bold, italic, underline
 - Change text color
 - Create bullet lists
@@ -88,12 +106,14 @@ Our rich text editor allows you to:
 - Add titles and subtitles
 
 ### 4. Media Management
+
 - Image upload for projects
 - Automatic resizing
 - Image optimization
 - Gallery management
 
 ### 5. CV Display
+
 - **Interactive modal**: CV displays in elegant modal
 - **Direct visualization**: PDF preview without leaving homepage
 - **User actions**: Download and open in new tab
@@ -101,6 +121,7 @@ Our rich text editor allows you to:
 - **Accessibility**: Keyboard navigation and intuitive closing
 
 ### 6. Geographic Position Management
+
 - **Smart auto-completion**: Real-time French address suggestions
 - **Intuitive interface**: Easy input with contextual suggestions
 - **Automatic validation**: Standardized address format
@@ -108,6 +129,7 @@ Our rich text editor allows you to:
 - **Geolocation**: Support for French postal codes and cities
 
 ### 7. Analytics and Tracking
+
 - **Vercel Analytics**: Automatic visitor and page view tracking
 - **Real-time data**: Instant traffic statistics
 - **Privacy respect**: Analytics without third-party cookies
@@ -121,17 +143,26 @@ All these modifications are done directly from the admin interface, without need
 The project uses the following technologies:
 
 - **Frontend**
+
   - Next.js 14
   - TypeScript
   - Tailwind CSS
   - TipTap Editor
 
 - **Backend**
+
   - MongoDB
   - NextAuth.js
   - Next.js API Routes
 
+- **Security**
+
+  - Zod (Schema Validation)
+  - DOMPurify (XSS Protection)
+  - Rate Limiting (API Protection)
+
 - **Analytics**
+
   - Vercel Analytics
 
 - **Tools**
@@ -142,12 +173,14 @@ The project uses the following technologies:
 ## 📥 Installation
 
 1. Clone the repository
+
 ```bash
 git clone https://github.com/your-username/portfolio-admin.git
 cd portfolio-admin
 ```
 
 2. Install dependencies
+
 ```bash
 npm install
 # or
@@ -155,11 +188,13 @@ yarn install
 ```
 
 3. Configure environment variables
+
 ```bash
 cp .env.example .env.local
 ```
 
 4. Start development server
+
 ```bash
 npm run dev
 # or
@@ -213,26 +248,33 @@ portfolio-admin/
 ## 🌐 API Routes
 
 ### GET /api/homepage
+
 - Retrieves homepage data
 
 ### POST /api/homepage
+
 - Updates homepage data
 
 ### GET /api/projects
+
 - Lists all projects
 
 ### POST /api/projects
+
 - Creates a new project
 
 ### PUT /api/projects/[id]
+
 - Updates an existing project
 
 ### DELETE /api/projects/[id]
+
 - Deletes a project
 
 ## 🚧 Current Project Status
 
 ### ✅ Completed Features
+
 - Secure authentication with GitHub
 - Rich text editor for homepage
   - Text formatting (bold, italic, underline)
@@ -256,6 +298,7 @@ portfolio-admin/
   - Page scroll blocking when modals open
 
 ### 🔄 In Development
+
 - Complete admin interface
   - Main dashboard with statistics
   - Intuitive navigation between sections
@@ -271,6 +314,7 @@ portfolio-admin/
 - Real-time modification preview
 
 ### 📝 Planned Features
+
 - Analytics and statistics
   - Visit tracking
   - Time spent per page
@@ -282,6 +326,7 @@ portfolio-admin/
 - Complete API documentation
 
 ## ⚠️ Important Note
+
 This project is currently in active development. Some features may be unstable or incomplete. Contributions and feedback are welcome!
 
 ## 🔧 Troubleshooting
@@ -289,12 +334,14 @@ This project is currently in active development. Some features may be unstable o
 ### Common Issues
 
 1. **MongoDB connection error**
+
 ```bash
 # Check that your MongoDB URI is correct
 # Make sure your IP is authorized in MongoDB Atlas
 ```
 
 2. **Authentication error**
+
 ```bash
 # Check your GitHub environment variables
 ```

@@ -29,17 +29,20 @@ Portfolio Admin, çevrimiçi portföyünüzü yönetmek için bir "kod yazmadan"
 ## ✨ Özellikler
 
 - 🎨 **Kod Yazmadan Yönetim**
+
   - Koda dokunmadan içerik değişikliği
   - Sezgisel kullanıcı arayüzü
   - Gerçek zamanlı güncellemeler
   - Değişikliklerin önizlemesi
 
 - 🔐 **Güvenli Kimlik Doğrulama**
+
   - Oturum yönetimi için NextAuth.js
   - Yönetici rota koruması
   - GitHub kimlik doğrulaması
 
 - 📊 **Proje Yönetimi**
+
   - Kod yazmadan proje ekleme/düzenleme/silme
   - Önizlemeli resim yükleme
   - Sürükle ve bırak organizasyonu (yakında)
@@ -51,6 +54,7 @@ Portfolio Admin, çevrimiçi portföyünüzü yönetmek için bir "kod yazmadan"
     - Akıcı animasyonlar ve duyarlı tasarım
 
 - 📝 **İçerik Yönetimi**
+
   - Sezgisel zengin metin editörü
   - Gelişmiş biçimlendirme (kalın, italik, renkler...)
   - Ana sayfa bölümü düzenleme
@@ -63,24 +67,38 @@ Portfolio Admin, çevrimiçi portföyünüzü yönetmek için bir "kod yazmadan"
   - **Duyarlı tasarım**: Tüm ekranlara uyarlanmış arayüz
   - **Optimize edilmiş kullanıcı deneyimi**: Akıcı animasyonlar ve sezgisel kapatma
 
+## 🛡️ Gelişmiş Güvenlik
+
+Portfolio Admin, "Varsayılan Olarak Güvenli" mimarisi ile güvenliği merkeze alır:
+
+- **Hız Sınırlama (Rate Limiting)**: DDOS ve Kaba Kuvvet (Brute-Force) saldırılarına karşı koruma (auth için `10 istek/dk`).
+- **Zod Doğrulama**: Tüm gelen verilerin (API girişi, formlar) sıkı doğrulanması.
+- **HTML Temizleme (Sanitization)**: Tüm zengin içerik için `isomorphic-dompurify` ile XSS koruması.
+- **Güçlendirilmiş HTTP Başlıkları**: HSTS, CSP, X-Frame-Options varsayılan olarak yapılandırılmıştır.
+- **Güvenlik Kancası (Hook)**: Prodüksiyonda `localStorage` ve konsolun otomatik temizlenmesi.
+
 ## 💻 Yönetici Arayüzü
 
 Yönetici arayüzü şunları yapmanıza olanak tanır:
 
 ### 1. Ana Sayfa
+
 - Ana başlığı düzenleme
 - Alt başlığı özelleştirme
 - "Hakkında" bölümünü düzenleme
 - Sosyal bağlantılarınızı yönetme (GitHub, LinkedIn, Twitter)
 
 ### 2. Projeler
+
 - Yeni projeler ekleme
 - Mevcut projeleri düzenleme
 - Projeleri silme
 - Görüntüleme sırasını yeniden düzenleme
 
 ### 3. Metin Biçimlendirme
+
 Zengin metin editörümüz şunları yapmanıza olanak tanır:
+
 - Kalın, italik, altı çizili
 - Metin rengini değiştirme
 - Madde işaretli listeler oluşturma
@@ -88,12 +106,14 @@ Zengin metin editörümüz şunları yapmanıza olanak tanır:
 - Başlık ve alt başlık ekleme
 
 ### 4. Medya Yönetimi
+
 - Projeler için resim yükleme
 - Otomatik yeniden boyutlandırma
 - Resim optimizasyonu
 - Galeri yönetimi
 
 ### 5. CV Görüntüleme
+
 - **Etkileşimli modal**: CV zarif bir modalda görüntülenir
 - **Doğrudan görselleştirme**: Ana sayfadan ayrılmadan PDF önizlemesi
 - **Kullanıcı eylemleri**: İndirme ve yeni sekmede açma
@@ -101,6 +121,7 @@ Zengin metin editörümüz şunları yapmanıza olanak tanır:
 - **Erişilebilirlik**: Klavye navigasyonu ve sezgisel kapatma
 
 ### 6. Coğrafi Konum Yönetimi
+
 - **Akıllı otomatik tamamlama**: Gerçek zamanlı Fransız adres önerileri
 - **Sezgisel arayüz**: Bağlamsal önerilerle kolay giriş
 - **Otomatik doğrulama**: Standartlaştırılmış adres formatı
@@ -108,6 +129,7 @@ Zengin metin editörümüz şunları yapmanıza olanak tanır:
 - **Coğrafi konum**: Fransız posta kodları ve şehir desteği
 
 ### 7. Analitik ve İzleme
+
 - **Vercel Analytics**: Otomatik ziyaretçi ve sayfa görüntüleme takibi
 - **Gerçek zamanlı veri**: Anlık trafik istatistikleri
 - **Gizlilik saygısı**: Üçüncü taraf çerez olmadan analitik
@@ -121,17 +143,26 @@ Tüm bu değişiklikler doğrudan yönetici arayüzünden yapılır, koda dokunm
 Proje aşağıdaki teknolojileri kullanır:
 
 - **Frontend**
+
   - Next.js 14
   - TypeScript
   - Tailwind CSS
   - TipTap Editor
 
 - **Backend**
+
   - MongoDB
   - NextAuth.js
   - Next.js API Routes
 
+- **Güvenlik**
+
+  - Zod (Şema Doğrulama)
+  - DOMPurify (XSS Koruması)
+  - Rate Limiting (API Koruması)
+
 - **Analitik**
+
   - Vercel Analytics
 
 - **Araçlar**
@@ -142,12 +173,14 @@ Proje aşağıdaki teknolojileri kullanır:
 ## 📥 Kurulum
 
 1. Depoyu klonlayın
+
 ```bash
 git clone https://github.com/kullanici-adiniz/portfolio-admin.git
 cd portfolio-admin
 ```
 
 2. Bağımlılıkları yükleyin
+
 ```bash
 npm install
 # veya
@@ -155,11 +188,13 @@ yarn install
 ```
 
 3. Ortam değişkenlerini yapılandırın
+
 ```bash
 cp .env.example .env.local
 ```
 
 4. Geliştirme sunucusunu başlatın
+
 ```bash
 npm run dev
 # veya
@@ -213,26 +248,33 @@ portfolio-admin/
 ## 🌐 API Rotaları
 
 ### GET /api/homepage
+
 - Ana sayfa verilerini alır
 
 ### POST /api/homepage
+
 - Ana sayfa verilerini günceller
 
 ### GET /api/projects
+
 - Tüm projeleri listeler
 
 ### POST /api/projects
+
 - Yeni bir proje oluşturur
 
 ### PUT /api/projects/[id]
+
 - Mevcut bir projeyi günceller
 
 ### DELETE /api/projects/[id]
+
 - Bir projeyi siler
 
 ## 🚧 Mevcut Proje Durumu
 
 ### ✅ Tamamlanan Özellikler
+
 - GitHub ile güvenli kimlik doğrulama
 - Ana sayfa için zengin metin editörü
   - Metin biçimlendirme (kalın, italik, altı çizili)
@@ -256,6 +298,7 @@ portfolio-admin/
   - Modaller açıldığında sayfa kaydırma engelleme
 
 ### 🔄 Geliştirme Aşamasında
+
 - Tam yönetici arayüzü
   - İstatistikli ana kontrol paneli
   - Bölümler arası sezgisel navigasyon
@@ -271,6 +314,7 @@ portfolio-admin/
 - Değişikliklerin gerçek zamanlı önizlemesi
 
 ### 📝 Planlanan Özellikler
+
 - Analitik ve istatistikler
   - Ziyaret takibi
   - Sayfa başına geçirilen zaman
@@ -282,6 +326,7 @@ portfolio-admin/
 - Tam API dokümantasyonu
 
 ## ⚠️ Önemli Not
+
 Bu proje şu anda aktif geliştirme aşamasındadır. Bazı özellikler kararsız veya eksik olabilir. Katkılar ve geri bildirimler memnuniyetle karşılanır!
 
 ## 🔧 Sorun Giderme
@@ -289,12 +334,14 @@ Bu proje şu anda aktif geliştirme aşamasındadır. Bazı özellikler kararsı
 ### Yaygın Sorunlar
 
 1. **MongoDB bağlantı hatası**
+
 ```bash
 # MongoDB URI'nizin doğru olduğunu kontrol edin
 # IP'nizin MongoDB Atlas'ta yetkilendirildiğinden emin olun
 ```
 
 2. **Kimlik doğrulama hatası**
+
 ```bash
 # GitHub ortam değişkenlerinizi kontrol edin
 ```
