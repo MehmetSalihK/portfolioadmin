@@ -18,6 +18,7 @@
 ## ✨ Fonctionnalités
 
 ### 🎯 Gestion de contenu
+
 - ✅ Gestion des projets avec médias
 - ✅ Compétences et catégories
 - ✅ Expériences professionnelles
@@ -25,14 +26,19 @@
 - ✅ Upload et gestion de fichiers
 
 ### 🔒 Sécurité et authentification
+
 - ✅ **Authentification 2FA** (Two-Factor Authentication)
 - ✅ **Envoi d'emails** de vérification avec Resend
 - ✅ **Codes temporaires** avec expiration automatique
 - ✅ **Interface sécurisée** de vérification
 - ✅ **Tokens JWT** pour la session
-- ✅ **Protection avancée** de l'administration
+- ✅ **Rate Limiting** (Protection DDOS/Brute-Force)
+- ✅ **Validation Zod** (Schémas stricts pour les entrées)
+- ✅ **Sanitization HTML** (Protection XSS avec DOMPurify)
+- ✅ **Headers de Sécurité** (HSTS, No-Sniff, X-Frame-Options)
 
 ### 🔄 Système de sauvegarde avancé
+
 - ✅ **Sauvegardes automatiques** (complètes, incrémentales, différentielles)
 - ✅ **Versioning** de toutes les entités
 - ✅ **Restauration** avec résolution de conflits
@@ -41,6 +47,7 @@
 - ✅ **Compression** et vérification d'intégrité
 
 ### 🚀 Optimisation SEO avancée
+
 - ✅ **Analyse automatique** du contenu
 - ✅ **Métadonnées** Open Graph et Twitter Cards
 - ✅ **Données structurées** JSON-LD
@@ -55,7 +62,7 @@
 - **Base de données**: MongoDB avec Mongoose
 - **Authentification**: NextAuth.js + 2FA
 - **Email**: Resend pour l'envoi d'emails 2FA
-- **Sécurité**: JWT, codes temporaires
+- **Sécurité**: JWT, Rate Limiting, Zod, DOMPurify
 - **Upload**: Multer
 - **Sauvegarde**: node-cron, compression
 - **SEO**: Analyse automatique, génération de métadonnées
@@ -63,22 +70,26 @@
 ## 📦 Installation
 
 1. **Cloner le repository**
+
 ```bash
 git clone https://github.com/votre-username/portfolio-admin.git
 cd portfolio-admin
 ```
 
 2. **Installer les dépendances**
+
 ```bash
 npm install
 ```
 
 3. **Configuration de l'environnement**
+
 ```bash
 cp .env.example .env.local
 ```
 
 4. **Configurer les variables d'environnement**
+
 ```env
 # Base de données
 MONGODB_URI=mongodb://localhost:27017/portfolio-admin
@@ -102,6 +113,7 @@ SITE_NAME=Votre Portfolio
 ```
 
 5. **Démarrer le serveur de développement**
+
 ```bash
 npm run dev
 ```
@@ -111,6 +123,7 @@ npm run dev
 ### Sauvegarde automatique
 
 Le système de sauvegarde est configuré par défaut avec :
+
 - **Sauvegarde complète** : Quotidienne à 2h00
 - **Sauvegarde incrémentale** : Toutes les 6 heures
 - **Sauvegarde différentielle** : Hebdomadaire le dimanche
@@ -118,6 +131,7 @@ Le système de sauvegarde est configuré par défaut avec :
 ### Configuration SEO
 
 Accédez à `/admin/seo` pour configurer :
+
 - Métadonnées globales du site
 - Paramètres Open Graph
 - Configuration Twitter Cards
@@ -190,6 +204,7 @@ GET /api/seo/analyze
 ### Endpoints principaux
 
 #### Sauvegarde
+
 - `GET /api/backup` - Liste des sauvegardes
 - `POST /api/backup` - Créer une sauvegarde
 - `POST /api/backup/restore` - Restaurer une sauvegarde
@@ -197,17 +212,20 @@ GET /api/seo/analyze
 - `GET /api/backup/schedule` - Tâches programmées
 
 #### SEO
+
 - `GET /api/seo` - Analyse SEO globale
 - `POST /api/seo/optimize` - Optimisation automatique
 - `GET /api/seo/sitemap` - Génération du sitemap
 - `GET /api/seo/robots` - Configuration robots.txt
 
 #### Authentification 2FA
+
 - `POST /api/auth/send-2fa` - Envoyer le code 2FA
 - `POST /api/auth/verify-2fa` - Vérifier le code 2FA
 - `GET /api/auth/session` - Vérifier la session
 
 #### Contenu
+
 - `GET /api/projects` - Liste des projets
 - `POST /api/projects` - Créer un projet
 - `PUT /api/projects/[id]` - Modifier un projet
@@ -250,7 +268,25 @@ Le système d'authentification à deux facteurs (2FA) ajoute une couche de sécu
 - **Codes temporaires** : Expiration automatique après 10 minutes
 - **Tokens JWT** : Session sécurisée après validation
 - **Nettoyage automatique** : Suppression des codes utilisés
-- **Protection CSRF** : Validation des requêtes
+
+### Protection CSRF : Validation des requêtes
+
+## 🛡️ Architecture de Sécurité Avancée
+
+### 1. Protection Réseau (Middleware)
+
+- **Rate Limiting** : Limite stricte des requêtes par IP (`10 req/min` pour l'auth, `100 req/min` pour l'API).
+- **Headers HTTP** : Configuration durcie via `next.config.js` (CSP, HSTS, etc.).
+
+### 2. Intégrité des Données
+
+- **Validation Zod** : Toutes les entrées (Login, Contact, Settings) sont validées par des schémas stricts avant traitement.
+- **Sanitization** : Nettoyage systématique des entrées et du rendu HTML via `isomorphic-dompurify` pour prévenir les XSS.
+
+### 3. Contrôle d'Accès
+
+- **Vérification de Session** : Audit strict sur toutes les routes API sensibles.
+- **Hook de Sécurité** : Nettoyage proactif du stockage local et de la console en production.
 
 ## 🚀 Optimisation SEO
 
@@ -290,6 +326,7 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 ## 🆘 Support
 
 Pour toute question ou problème :
+
 - Ouvrir une issue sur GitHub
 - Consulter la documentation API
 - Vérifier les logs de sauvegarde dans `/admin/versions`
