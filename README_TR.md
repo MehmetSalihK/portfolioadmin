@@ -92,6 +92,20 @@ Portfolio Admin, profesyonel portföyünüzü çevrimiçi yönetmek için modern
   - Ana sayfa bölüm düzenleme
   - Sosyal bağlantı özelleştirmesi
 
+- 🖼️ **Gelişmiş Medya Sistemi**
+
+  - **Medya Yöneticisi**: Sürükle & Bırak ile yükleme
+  - **Resim Düzenleme**: Entegre kırpma ve yakınlaştırma (`react-easy-crop`)
+  - **Optimizasyon**: Yüklemeden önce otomatik görüntü sıkıştırma
+  - **Galeri**: Proje resim galerisi yönetimi
+
+- 🎨 **Daha Temiz ve Standartlaştırılmış UI Tasarımı**
+
+  - Tüm sayfalarda minimalist ve modern arayüz
+  - Tutarlı Karanlık/Aydınlık tema
+  - Daha iyi okunabilirlik için görsel gürültünün azaltılması
+  - Standartlaştırılmış bileşenler (Kartlar, Butonlar, Girişler)
+
 - 📄 **CV Görüntüleme**
   - **Etkileşimli CV Modalı**: CV'yi doğrudan ana sayfada görüntüleme
   - **Entegre Önizleme**: Sayfadan ayrılmadan iframe içinde PDF görüntüleme
@@ -129,10 +143,15 @@ Zengin metin editörümüz şunları sağlar:
 
 ### 4. Medya Yönetimi
 
-- Projeler için resim yükleme
-- Otomatik yeniden boyutlandırma
-- Resim optimizasyonu
-- Galeri yönetimi
+- **Entegre Medya Yöneticisi**: Önizlemeli sezgisel yükleme
+- **Resim Editörü**: Kırpma ve yakınlaştırma ayarı
+- **Otomatik Optimizasyon**: İstemci tarafı görüntü boyutu azaltma
+- **Proje Galerisi**: Çoklu resim organizasyonu
+
+### 4b. Proje Organizasyonu
+
+- **Sürükle & Bırak**: Projelerinizi sürükleyerek yeniden sıralayın
+- **Filtreler & Etiketler**: Kategorileri ve teknolojileri kolayca yönetin
 
 ### 5. CV Görüntüleme
 
@@ -157,6 +176,16 @@ Zengin metin editörümüz şunları sağlar:
 - **Gizlilik Saygısı**: Üçüncü taraf çerezler olmadan analitik
 - **Optimize Edilmiş Performans**: Site performansına minimal etki
 - **Şeffaf Entegrasyon**: Müdahale olmadan otomatik yapılandırma
+
+### 8. Güvenlik Mimarisi (Güvenlik Revizyonu)
+
+Proje artık kurumsal düzeyde güvenlik entegre ediyor:
+
+- **API Koruması**: Tüm hassas uç noktalarda sıkı `admin` rolü doğrulaması.
+- **İçerik Güvenlik Politikası (CSP)**: Yetkisiz kaynakları engellemek için yapılandırılmış güçlü HTTP başlıkları.
+- **Hız Sınırlama (Rate Limiting)**: Kaba Kuvvet ve DDOS saldırılarına karşı koruma.
+- **Sterilizasyon (Sanitization)**: `isomorphic-dompurify` ile otomatik giriş temizleme (XSS) ve `zod` ile sıkı doğrulama.
+- **Güvenli Kimlik Doğrulama**: `HttpOnly` çerezleri ve güvenli oturum yönetimi kullanımı.
 
 Tüm bu değişiklikler doğrudan yönetici arayüzünden yapılır, koda dokunmanıza gerek yoktur!
 

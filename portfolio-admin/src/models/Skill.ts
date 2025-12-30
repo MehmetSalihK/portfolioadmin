@@ -23,6 +23,8 @@ const skillSchema = new mongoose.Schema({
     ref: 'Category',
     required: true
   }
+}, {
+  timestamps: true
 });
 
 const Skill = mongoose.models.Skill || mongoose.model('Skill', skillSchema);

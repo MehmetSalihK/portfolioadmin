@@ -92,6 +92,20 @@ Portfolio Admin est une solution **no-code** moderne et intuitive pour gérer vo
   - Modification des sections de la page d'accueil
   - Personnalisation des liens sociaux
 
+- 🖼️ **Système Média Avancé**
+
+  - **Media Manager** : Upload par glisser-déposer
+  - **Édition d'images** : Recadrage et zoom intégrés (`react-easy-crop`)
+  - **Optimisation** : Compression automatique des images avant upload
+  - **Galerie** : Gestion d'une galerie d'images par projet
+
+- 🎨 **Design UI "Clean" & Standardisé**
+
+  - Interface minimaliste et moderne sur toutes les pages
+  - Thème sombre/clair cohérent
+  - Suppression du bruit visuel pour une meilleure lisibilité
+  - Composants standardisés (Cartes, Boutons, Inputs)
+
 - 📄 **Affichage du CV**
   - **Modale CV interactive** : Visualisation du CV directement sur la page d'accueil
   - **Aperçu intégré** : Affichage du PDF dans une iframe sans quitter la page
@@ -129,10 +143,15 @@ Notre éditeur de texte riche permet de :
 
 ### 4. Gestion des Médias
 
-- Upload d'images pour les projets
-- Redimensionnement automatique
-- Optimisation des images
-- Gestion de la galerie
+- **Media Manager Intégré** : Upload intuitif avec prévisualisation
+- **Éditeur d'Images** : Recadrage (crop) et ajustement du zoom
+- **Optimisation Automatique** : Réduction du poids des images côté client
+- **Galerie de Projet** : Organisation des images multiples
+
+### 4b. Organisation des Projets
+
+- **Drag & Drop** : Réorganisez vos projets simplement en les glissant
+- **Filtres & Tags** : Gérez les catégories et technologies facilement
 
 ### 5. Affichage du CV
 
@@ -157,6 +176,16 @@ Notre éditeur de texte riche permet de :
 - **Respect de la vie privée** : Analytics sans cookies tiers
 - **Performance optimisée** : Impact minimal sur les performances du site
 - **Intégration transparente** : Configuration automatique sans intervention
+
+### 8. Architecture de Sécurité (Security Overhaul)
+
+Le projet intègre désormais une sécurité de niveau entreprise :
+
+- **Protection API** : Vérification stricte du rôle `admin` sur tous les endpoints sensibles.
+- **Content Security Policy (CSP)** : Headers HTTP robustes configurés pour bloquer les sources non autorisées.
+- **Rate Limiting** : Protection contre les attaques par force brute et DDOS.
+- **Sanitization** : Nettoyage automatique des entrées (XSS) avec `isomorphic-dompurify` et validation stricte avec `zod`.
+- **Authentification Sécurisée** : Utilisation de cookies `HttpOnly` et gestion sécurisée des sessions.
 
 Toutes ces modifications se font directement depuis l'interface d'administration, sans avoir besoin de toucher au code !
 

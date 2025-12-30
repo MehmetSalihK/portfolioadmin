@@ -11,6 +11,83 @@ interface Send2FACodeParams {
   code: string;
 }
 
+// ... existing imports ...
+
+interface ContactEmailParams {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+export const sendContactEmail = async ({ name, email, subject, message }: ContactEmailParams) => {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: 'Portfolio Contact <contact@resend.dev>',
+      to: ['salihketur60@gmail.com'],
+      replyTo: email, // Permet de répondre directement à l'expéditeur
+      subject: `[Portfolio] Nouveau message : ${subject}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Nouveau message de contact</title>
+          <style>
+            body { font-family: sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+            .content { background: white; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; }
+            .footer { margin-top: 20px; font-size: 12px; color: #64748b; text-align: center; }
+            .label { font-weight: bold; color: #475569; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h2>Nouveau message reçu</h2>
+              <p>Vous avez reçu un nouveau message depuis le formulaire de contact de votre portfolio.</p>
+            </div>
+            <div class="content">
+              <p><span class="label">De :</span> ${name} (${email})</p>
+              <p><span class="label">Sujet :</span> ${subject}</p>
+              <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+              <p><span class="label">Message :</span></p>
+              <div style="white-space: pre-wrap; background: #f8fafc; padding: 15px; border-radius: 4px;">${message}</div>
+            </div>
+            <div class="footer">
+              <p>Cet email a été envoyé automatiquement par votre portfolio.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+      text: `
+Nouveau message de contact
+
+De : ${name} (${email})
+Sujet : ${subject}
+
+Message :
+${message}
+
+-------------------
+Envoyé depuis votre portfolio
+      `
+    });
+
+    if (error) {
+      console.error('Erreur Resend:', error);
+      throw new Error('Échec de l\'envoi de l\'email');
+    }
+
+    return { success: true, messageId: data?.id };
+  } catch (error) {
+    console.error('Erreur sendContactEmail:', error);
+    throw error;
+  }
+};
+
 export const send2FACode = async ({ userEmail, code }: Send2FACodeParams) => {
   try {
     const { data, error } = await resend.emails.send({
@@ -172,4 +249,5 @@ export const generate2FACode = (): string => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-export default { send2FACode, generate2FACode };
+const emailService = { send2FACode, generate2FACode, sendContactEmail };
+export default emailService;

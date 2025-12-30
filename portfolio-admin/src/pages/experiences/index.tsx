@@ -24,10 +24,9 @@ interface ExperiencesPageProps {
 }
 
 export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
-  // Tracking analytics pour la page Expériences
   useAnalytics({
     enabled: true,
-    updateInterval: 30000, // 30 secondes
+    updateInterval: 30000,
     trackTimeSpent: true
   });
 
@@ -37,120 +36,80 @@ export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
     <Layout>
       <Head>
         <title>Mes Expériences - Portfolio</title>
-        <meta name="description" content="Liste de mes expériences professionnelles" />
+        <meta name="description" content="Mon parcours professionnel et mes missions" />
       </Head>
 
-      <main className="min-h-screen pt-20 pb-16 bg-white dark:bg-gray-900 transition-colors duration-300">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-4xl font-bold mb-12 text-center text-gray-900 dark:text-white">
-              Mes Expériences
-            </h1>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
+        <div className="container mx-auto px-4 pt-24 pb-12">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white text-center mb-12">Mes Expériences</h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-              {experiences.map((experience) => (
+          <div className="max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 gap-8">
+              {experiences.map((experience, index) => (
                 <motion.div
                   key={experience._id}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`rounded-lg p-6 ${
-                    theme === 'dark' 
-                      ? 'bg-[#1E293B] hover:bg-[#233047]' 
-                      : 'bg-white hover:bg-gray-50'
-                  } shadow-lg transition-all duration-300`}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-8 hover:shadow-xl transition-all duration-300 relative overflow-hidden"
                 >
-                  <div className="flex flex-col h-full">
-                    <div className="mb-4">
-                      <h2 className={`text-xl font-semibold mb-2 ${
-                        theme === 'dark' ? 'text-white' : 'text-gray-900'
-                      }`}>
+                   {/* Connector Line for Timeline Effect (Optional) */}
+                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-purple-500 opacity-60"></div>
+
+                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                         {experience.title}
                       </h2>
-                      
-                      <div className={`flex items-center mb-2 ${
-                        theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
-                      }`}>
-                        <FiBriefcase className="w-4 h-4 mr-2" />
+                      <div className="flex items-center text-blue-600 dark:text-blue-400 font-medium text-lg">
+                        <FiBriefcase className="w-5 h-5 mr-2" />
                         {experience.company}
                       </div>
-
-                      <div className={`flex items-center mb-2 ${
-                        theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
-                      }`}>
+                    </div>
+                    
+                    <div className="flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center">
+                        <FiCalendar className="w-4 h-4 mr-2" />
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">
+                          {new Date(experience.startDate).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                          {' - '}
+                          {experience.endDate 
+                            ? new Date(experience.endDate).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+                            : <span className="text-green-600 dark:text-green-400">Aujourd'hui</span>
+                          }
+                        </span>
+                      </div>
+                      <div className="flex items-center">
                         <FiMapPin className="w-4 h-4 mr-2" />
                         {experience.location}
                       </div>
-
-                      <div className={`flex items-center mb-4 ${
-                        theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
-                      }`}>
-                        <FiCalendar className="w-4 h-4 mr-2" />
-                        {new Date(experience.startDate).toLocaleDateString('fr-FR', {
-                          month: 'long',
-                          year: 'numeric'
-                        })}
-                        {' - '}
-                        {experience.endDate 
-                          ? new Date(experience.endDate).toLocaleDateString('fr-FR', {
-                              month: 'long',
-                              year: 'numeric'
-                            })
-                          : 'Présent'
-                        }
-                      </div>
-                    </div>
-
-                    <div className="flex-grow">
-                      <p className={`mb-4 line-clamp-3 ${
-                        theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
-                      }`}>
-                        {experience.description}
-                      </p>
-                    </div>
-
-                    <div className={`mt-4 pt-4 border-t ${
-                      theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
-                    }`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <FiClock className={`w-4 h-4 mr-2 ${
-                            theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-                          }`} />
-                          <span className={`text-sm ${
-                            theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-                          }`}>
-                            {experience.endDate ? 'Terminé' : 'Poste actuel'}
-                          </span>
-                        </div>
-                        
-                        {experience.companyUrl && (
-                          <a
-                            href={experience.companyUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={`flex items-center transition-colors ${
-                              theme === 'dark' 
-                                ? 'text-blue-400 hover:text-blue-300' 
-                                : 'text-blue-600 hover:text-blue-700'
-                            }`}
-                          >
-                            <FiLink className="w-4 h-4 mr-1" />
-                            Site web
-                          </a>
-                        )}
-                      </div>
                     </div>
                   </div>
+
+                  <div className="prose dark:prose-invert max-w-none mb-6 text-gray-600 dark:text-gray-300">
+                    <p>{experience.description}</p>
+                  </div>
+
+                  {experience.companyUrl && (
+                    <div className="flex justify-end">
+                      <a
+                        href={experience.companyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                      >
+                        <FiLink className="w-4 h-4 mr-1" />
+                        Visiter le site de l'entreprise
+                      </a>
+                    </div>
+                  )}
                 </motion.div>
               ))}
             </div>
-          </motion.div>
+          </div>
         </div>
-      </main>
+      </div>
     </Layout>
   );
 }

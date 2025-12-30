@@ -1,86 +1,76 @@
-import { format } from 'date-fns';
-import { FiMail, FiFolder, FiBriefcase, FiAward } from 'react-icons/fi';
+import React from 'react';
+import { FiPlus, FiEdit2, FiTrash2, FiClock, FiCode, FiBriefcase, FiFolder } from 'react-icons/fi';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
-interface Activity {
-  _id: string;
-  type: 'message' | 'project' | 'skill' | 'experience';
-  action: 'create' | 'update' | 'delete';
-  itemId: string;
-  itemName: string;
-  createdAt: string;
+interface ActivityItem {
+  id: string;
+  type: 'project' | 'skill' | 'experience';
+  action: 'created' | 'updated' | 'deleted';
+  title: string;
+  date: string;
 }
 
 interface RecentActivityProps {
-  activities: Activity[];
+  activities: ActivityItem[];
 }
 
-const getIcon = (type: Activity['type']) => {
-  switch (type) {
-    case 'message':
-      return <FiMail className="h-5 w-5" />;
-    case 'project':
-      return <FiFolder className="h-5 w-5" />;
-    case 'skill':
-      return <FiAward className="h-5 w-5" />;
-    case 'experience':
-      return <FiBriefcase className="h-5 w-5" />;
-  }
-};
-
-const getActionColor = (action: Activity['action']) => {
-  switch (action) {
-    case 'create':
-      return 'text-green-500 bg-green-100 dark:bg-green-900/20';
-    case 'update':
-      return 'text-blue-500 bg-blue-100 dark:bg-blue-900/20';
-    case 'delete':
-      return 'text-red-500 bg-red-100 dark:bg-red-900/20';
-  }
-};
-
 export default function RecentActivity({ activities }: RecentActivityProps) {
+  const getIcon = (type: string) => {
+    switch (type) {
+      case 'project': return <FiFolder className="w-4 h-4" />;
+      case 'skill': return <FiCode className="w-4 h-4" />;
+      case 'experience': return <FiBriefcase className="w-4 h-4" />;
+      default: return <FiClock className="w-4 h-4" />;
+    }
+  };
+
+  const getActionColor = (action: string) => {
+    switch (action) {
+      case 'created': return 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400';
+      case 'updated': return 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'deleted': return 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400';
+      default: return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+    }
+  };
+
+  if (!activities || activities.length === 0) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-center text-gray-500 dark:text-gray-400">
+        Aucune activité récente
+      </div>
+    );
+  }
+
   return (
-    <div className="flow-root">
-      <ul role="list" className="-mb-8">
-        {activities.map((activity, activityIdx) => (
-          <li key={activity._id}>
-            <div className="relative pb-8">
-              {activityIdx !== activities.length - 1 ? (
-                <span
-                  className="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200 dark:bg-gray-700"
-                  aria-hidden="true"
-                />
-              ) : null}
-              <div className="relative flex items-start space-x-3">
-                <div
-                  className={`relative rounded-full p-2 ${getActionColor(
-                    activity.action
-                  )}`}
-                >
-                  {getIcon(activity.type)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div>
-                    <div className="text-sm">
-                      <span className="font-medium text-gray-900 dark:text-white">
-                        {activity.itemName}
-                      </span>
-                    </div>
-                    <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                      {activity.action.charAt(0).toUpperCase() +
-                        activity.action.slice(1)}{' '}
-                      {activity.type}
-                    </p>
-                  </div>
-                  <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    <p>{format(new Date(activity.createdAt), 'PPpp')}</p>
-                  </div>
-                </div>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Activité Récente</h3>
+      </div>
+      <div className="divide-y divide-gray-200 dark:divide-gray-700">
+        {activities.map((activity, index) => (
+          <div key={`${activity.id}-${index}`} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+            <div className="flex items-center gap-4">
+              <div className={`p-2 rounded-lg ${getActionColor(activity.action)}`}>
+                {getIcon(activity.type)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  {activity.title}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {activity.type === 'project' ? 'Projet' : activity.type === 'skill' ? 'Compétence' : 'Expérience'} 
+                  {' • '}
+                  {activity.action === 'created' ? 'Ajouté' : activity.action === 'updated' ? 'Modifié' : 'Supprimé'}
+                </p>
+              </div>
+              <div className="text-xs text-gray-400 whitespace-nowrap">
+                {formatDistanceToNow(new Date(activity.date), { addSuffix: true, locale: fr })}
               </div>
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

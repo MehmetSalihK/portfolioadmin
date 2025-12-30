@@ -92,6 +92,20 @@ Portfolio Admin is a modern and intuitive **no-code** solution for managing your
   - Homepage section editing
   - Social links customization
 
+- 🖼️ **Advanced Media System**
+
+  - **Media Manager**: Drag & Drop upload
+  - **Image Editing**: Integrated cropping and zoom (`react-easy-crop`)
+  - **Optimization**: Automatic image compression before upload
+  - **Gallery**: Manage project image gallery
+
+- 🎨 **Cleaner & Standardized UI Design**
+
+  - Minimalist and modern interface across all pages
+  - Consistent Dark/Light theme
+  - Reduced visual noise for better readability
+  - Standardized components (Cards, Buttons, Inputs)
+
 - 📄 **CV Display**
   - **Interactive CV Modal**: View CV directly on homepage
   - **Integrated Preview**: PDF display in iframe without leaving page
@@ -129,10 +143,15 @@ Our rich text editor allows you to:
 
 ### 4. Media Management
 
-- Upload images for projects
-- Automatic resizing
-- Image optimization
-- Gallery management
+- **Integrated Media Manager**: Intuitive upload with preview
+- **Image Editor**: Crop and zoom adjustment
+- **Automatic Optimization**: Client-side image size reduction
+- **Project Gallery**: Multiple image organization
+
+### 4b. Project Organization
+
+- **Drag & Drop**: Reorder your projects simply by dragging
+- **Filters & Tags**: Easily manage categories and technologies
 
 ### 5. CV Display
 
@@ -157,6 +176,16 @@ Our rich text editor allows you to:
 - **Privacy Respect**: Analytics without third-party cookies
 - **Optimized Performance**: Minimal impact on site performance
 - **Transparent Integration**: Automatic configuration without intervention
+
+### 8. Security Architecture (Security Overhaul)
+
+The project now integrates enterprise-grade security:
+
+- **API Protection**: Strict `admin` role verification on all sensitive endpoints.
+- **Content Security Policy (CSP)**: Robust HTTP headers configured to block unauthorized sources.
+- **Rate Limiting**: Protection against Brute-Force and DDOS attacks.
+- **Sanitization**: Automatic input cleaning (XSS) with `isomorphic-dompurify` and strict validation with `zod`.
+- **Secure Authentication**: Use of `HttpOnly` cookies and secure session management.
 
 All these modifications are done directly from the admin interface, without needing to touch the code!
 

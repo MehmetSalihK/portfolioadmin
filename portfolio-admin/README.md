@@ -58,12 +58,12 @@
 ## 🛠 Technologies
 
 - **Frontend**: Next.js 14, React, TypeScript
-- **Styling**: Tailwind CSS
+- **Styling**: Tailwind CSS, Framer Motion
 - **Base de données**: MongoDB avec Mongoose
 - **Authentification**: NextAuth.js + 2FA
 - **Email**: Resend pour l'envoi d'emails 2FA
-- **Sécurité**: JWT, Rate Limiting, Zod, DOMPurify
-- **Upload**: Multer
+- **Sécurité**: JWT, Rate Limiting, Zod, DOMPurify, CSP
+- **Media**: Multer, React Easy Crop, Browser Image Compression
 - **Sauvegarde**: node-cron, compression
 - **SEO**: Analyse automatique, génération de métadonnées
 

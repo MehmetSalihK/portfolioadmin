@@ -10,8 +10,15 @@ export default async function handler(
 ) {
   const session = await getServerSession(req, res, authOptions);
 
-  if (!session) {
+  if (!session && req.method !== 'GET') {
     return res.status(401).json({ error: 'Non autorisé' });
+  }
+
+  // Strict Admin Role Check for potentially destructive actions
+  if (req.method !== 'GET') {
+    if ((session?.user as any)?.role !== 'admin') {
+      return res.status(403).json({ error: 'Interdit : Droits administrateur requis' });
+    }
   }
 
   await dbConnect();
@@ -19,8 +26,23 @@ export default async function handler(
   try {
     switch (req.method) {
       case 'GET':
-        const projects = await Project.find({}).lean();
+        const { category, tags } = req.query;
+        const query: any = {};
+
+        if (category && category !== 'All') {
+          query.category = String(category); // Ensure string
+        }
+
+        if (tags) {
+          // Escape special characters for regex to prevent ReDoS
+          const escapedTags = String(tags).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          query.tags = { $regex: new RegExp(escapedTags, 'i') };
+        }
+
+        // Sort by 'order' ascending, then by 'createdAt' descending
+        const projects = await Project.find(query).sort({ order: 1, createdAt: -1 }).lean();
         
+        // Re-add the projectsWithStats logic if it was intended to be kept
         const projectsWithStats = projects.map(project => {
           if (!project.stats) {
             project.stats = {

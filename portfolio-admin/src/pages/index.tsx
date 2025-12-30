@@ -4,7 +4,6 @@ import { GetStaticProps } from 'next';
 import Layout from '@/components/layout/Layout';
 import Button from '@/components/ui/Button';
 import EnhancedProjectCard from '@/components/projects/EnhancedProjectCard';
-import ParticlesBackground from '@/components/effects/ParticlesBackground';
 import { Analytics } from "@vercel/analytics/next"
 import CVModal from '@/components/modals/CVModal';
 import connectDB from '@/lib/db';
@@ -71,6 +70,11 @@ interface Project {
   demoUrl?: string;
   githubUrl?: string;
   featured?: boolean;
+  gallery?: string[];
+  category?: string;
+  tags?: string[];
+  difficulty?: string;
+  status?: string;
 }
 
 interface Experience {
@@ -589,13 +593,12 @@ export default function Home({ projects, experiences, skills, homeData = default
       />
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900">
-        <ParticlesBackground />
+      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-900">
         
-        {/* Decorative elements */}
+        {/* Simple decorative gradient - subtle */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-blue-100/50 dark:bg-blue-900/20 rounded-full blur-3xl opacity-30"></div>
+          <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-purple-100/50 dark:bg-purple-900/20 rounded-full blur-3xl opacity-30"></div>
         </div>
         
         <motion.div
@@ -775,10 +778,7 @@ export default function Home({ projects, experiences, skills, homeData = default
 
       <main ref={mainRef}>
         {/* About Section */}
-        <section id="about" className="w-full py-16 sm:py-20 lg:py-24 px-4 bg-white dark:bg-gray-900 relative overflow-hidden">
-          {/* Background decoration */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10"></div>
-          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
+        <section id="about" className="w-full py-20 px-4 bg-white dark:bg-gray-800 relative overflow-hidden">
           
           <div className="max-w-6xl mx-auto relative z-10">
             <motion.div

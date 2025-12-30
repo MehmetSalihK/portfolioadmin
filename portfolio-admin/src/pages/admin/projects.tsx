@@ -7,6 +7,7 @@ import { FiPlus, FiX, FiEye, FiGithub, FiExternalLink, FiStar, FiEdit2, FiTrash2
 import GitHubSync from '@/components/admin/github/GitHubSync';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
+import ProjectForm from '@/components/admin/projects/ProjectForm';
 import {
   DndContext,
   closestCenter,
@@ -43,6 +44,7 @@ interface Project {
   description: string;
   technologies: string[];
   imageUrl: string;
+  gallery?: string[];
   demoUrl?: string;
   githubUrl?: string;
   featured: boolean;
@@ -64,25 +66,8 @@ export default function ProjectsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    imageUrl: '',
-    demoUrl: '',
-    githubUrl: '',
-    featured: false,
-    showOnHomepage: true,
-    category: 'web',
-    tags: [] as string[],
-    status: 'completed',
-    difficulty: 'intermediate',
-    priority: 'medium'
-  });
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadType, setUploadType] = useState<'url' | 'file'>('url');
+  
   const [isDragMode, setIsDragMode] = useState(false);
   
   // États pour les filtres
@@ -181,49 +166,17 @@ export default function ProjectsPage() {
     }
   }, [status, router, fetchProjects, fetchSkills]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
-    }));
-  };
-
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSkillToggle = (skillName: string) => {
-    setSelectedSkills(prev => {
-      if (prev.includes(skillName)) {
-        return prev.filter(s => s !== skillName);
-      } else {
-        return [...prev, skillName];
-      }
-    });
-  };
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/admin/login');
+    } else {
+      fetchProjects();
+      fetchSkills();
+    }
+  }, [status, router, fetchProjects, fetchSkills]);
 
   const handleEditClick = (project: Project) => {
     setEditingProject(project);
-    setFormData({
-      title: project.title,
-      description: project.description,
-      imageUrl: project.imageUrl,
-      demoUrl: project.demoUrl || '',
-      githubUrl: project.githubUrl || '',
-      featured: project.featured,
-      showOnHomepage: project.showOnHomepage ?? true,
-      category: project.category || 'web',
-      tags: project.tags || [],
-      status: project.status || 'completed',
-      difficulty: project.difficulty || 'intermediate',
-      priority: project.priority || 'medium'
-    });
-    setSelectedSkills(project.technologies);
     setIsModalOpen(true);
   };
 
@@ -263,7 +216,7 @@ export default function ProjectsPage() {
       const newProjects = arrayMove(projects, oldIndex, newIndex);
       
       // Mettre à jour l'ordre local immédiatement
-      const updatedProjects = newProjects.map((project, index) => ({
+      const updatedProjects = newProjects.map((project: Project, index: number) => ({
         ...project,
         order: index
       }));
@@ -278,7 +231,7 @@ export default function ProjectsPage() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            projectIds: updatedProjects.map(p => p._id)
+            items: updatedProjects.map((p: Project) => ({ id: p._id, order: p.order }))
           }),
         });
 
@@ -326,26 +279,6 @@ export default function ProjectsPage() {
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      title: '',
-      description: '',
-      imageUrl: '',
-      demoUrl: '',
-      githubUrl: '',
-      featured: false,
-      showOnHomepage: true,
-      category: 'web',
-      tags: [] as string[],
-      status: 'completed',
-      difficulty: 'intermediate',
-      priority: 'medium'
-    });
-    setSelectedSkills([]);
-    setEditingProject(null);
-    setImagePreview(null);
-  };
-
   // Fonction de filtrage des projets
   const filteredProjects = projects.filter(project => {
     const matchesSearch = searchTerm === '' || 
@@ -364,87 +297,6 @@ export default function ProjectsPage() {
            matchesDifficulty && matchesPriority && matchesTags;
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const url = editingProject 
-        ? `/api/projects/${editingProject._id}`
-        : '/api/projects';
-      
-      const method = editingProject ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          technologies: selectedSkills,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to ${editingProject ? 'update' : 'create'} project`);
-      }
-
-      await fetchProjects();
-      setIsModalOpen(false);
-      resetForm();
-      toast.success(`Project ${editingProject ? 'updated' : 'created'} successfully`);
-      
-      // Notifier la prévisualisation du changement
-      notifyChange(`project_${editingProject ? 'updated' : 'created'}_${Date.now()}`);
-    } catch (error) {
-      console.error('Error submitting project:', error);
-      toast.error(`Failed to ${editingProject ? 'update' : 'create'} project`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleImageUpload = async (file: File) => {
-    setIsUploading(true);
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Erreur lors de l\'upload');
-      }
-
-      const data = await response.json();
-      setFormData(prev => ({ ...prev, imageUrl: data.url }));
-      setImagePreview(URL.createObjectURL(file));
-      toast.success('Image uploadée avec succès');
-    } catch (error) {
-      console.error('Erreur upload:', error);
-      toast.error('Erreur lors de l\'upload de l\'image');
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleImageUpload(e.target.files[0]);
-    }
-  };
-
-  const groupedSkills = skills.reduce((acc, skill) => {
-    if (!acc[skill.category]) {
-      acc[skill.category] = [];
-    }
-    acc[skill.category].push(skill);
-    return acc;
-  }, {} as Record<string, Skill[]>);
 
   // Composant pour les cartes de projet triables
   const SortableProjectCard = ({ project }: { project: Project }) => {
@@ -749,7 +601,7 @@ export default function ProjectsPage() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => {
-                resetForm();
+                setEditingProject(null);
                 setIsModalOpen(true);
               }}
               className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-all duration-200 hover:scale-105"
@@ -835,6 +687,17 @@ export default function ProjectsPage() {
                 ))}
               </select>
             </div>
+
+            {/* Tags Filter */}
+             <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tag</label>
+              <input
+                type="text"
+                placeholder="Filtrer par tag..."
+                onChange={(e) => setSelectedTags(e.target.value ? e.target.value.split(',').map(t => t.trim()) : [])}
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
 
           {/* Compteur de résultats */}
@@ -866,422 +729,62 @@ export default function ProjectsPage() {
         )}
 
         {/* Modal d'ajout/modification de projet */}
-        <AnimatePresence>
-          {isModalOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            >
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-[#1E1E1E] rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-              >
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold text-white">
-                    {editingProject ? 'Edit Project' : 'Add New Project'}
-                  </h2>
-                  <button
-                    onClick={() => {
-                      setIsModalOpen(false);
-                      resetForm();
-                    }}
-                    className="text-gray-400 hover:text-white transition-colors duration-200"
-                  >
-                    <FiX className="text-xl" />
-                  </button>
-                </div>
+        <ProjectForm
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditingProject(null);
+          }}
+          title={editingProject ? 'Edit Project' : 'Add New Project'}
+          initialData={editingProject ? {
+            title: editingProject.title,
+            description: editingProject.description,
+            image: editingProject.imageUrl,
+            gallery: editingProject.gallery || [],
+            demoUrl: editingProject.demoUrl,
+            githubUrl: editingProject.githubUrl || '',
+            technologies: editingProject.technologies,
+          } : undefined}
+          onSubmit={async (data) => {
+            try {
+              const url = editingProject 
+                ? `/api/projects/${editingProject._id}`
+                : '/api/projects';
+              
+              const method = editingProject ? 'PUT' : 'POST';
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Nouveaux champs de catégorisation */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Catégorie
-                      </label>
-                      <select
-                        name="category"
-                        value={formData.category}
-                        onChange={handleSelectChange}
-                        className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-[#404040] focus:outline-none transition-colors duration-200"
-                        required
-                      >
-                        {PROJECT_CATEGORIES.slice(1).map(category => (
-                          <option key={category.value} value={category.value}>{category.label}</option>
-                        ))}
-                      </select>
-                    </div>
+              // Map 'image' back to 'imageUrl' for the API
+              const apiData = {
+                ...data,
+                imageUrl: data.image, 
+                // remove 'image' if API doesn't want it, though extra fields usually ignored
+              };
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Statut
-                      </label>
-                      <select
-                        name="status"
-                        value={formData.status}
-                        onChange={handleSelectChange}
-                        className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-[#404040] focus:outline-none transition-colors duration-200"
-                        required
-                      >
-                        {PROJECT_STATUSES.slice(1).map(status => (
-                          <option key={status.value} value={status.value}>{status.label}</option>
-                        ))}
-                      </select>
-                    </div>
+              const response = await fetch(url, {
+                method,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(apiData),
+              });
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Difficulté
-                      </label>
-                      <select
-                        name="difficulty"
-                        value={formData.difficulty}
-                        onChange={handleSelectChange}
-                        className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-[#404040] focus:outline-none transition-colors duration-200"
-                        required
-                      >
-                        {PROJECT_DIFFICULTIES.slice(1).map(difficulty => (
-                          <option key={difficulty.value} value={difficulty.value}>{difficulty.label}</option>
-                        ))}
-                      </select>
-                    </div>
+              if (!response.ok) {
+                throw new Error(`Failed to ${editingProject ? 'update' : 'create'} project`);
+              }
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Priorité
-                      </label>
-                      <select
-                        name="priority"
-                        value={formData.priority}
-                        onChange={handleSelectChange}
-                        className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-[#404040] focus:outline-none transition-colors duration-200"
-                        required
-                      >
-                        {PROJECT_PRIORITIES.slice(1).map(priority => (
-                          <option key={priority.value} value={priority.value}>{priority.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Tags (séparés par des virgules)
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.tags.join(', ')}
-                      onChange={(e) => {
-                        const tags = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag);
-                        setFormData(prev => ({ ...prev, tags }));
-                      }}
-                      placeholder="react, typescript, nextjs"
-                      className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-[#404040] focus:outline-none transition-colors duration-200"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Entrez les tags séparés par des virgules
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Project Title
-                    </label>
-                    <input
-                      type="text"
-                      name="title"
-                      value={formData.title}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-[#404040] focus:outline-none transition-colors duration-200"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Description
-                    </label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleChange}
-                      rows={4}
-                      className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-[#404040] focus:outline-none transition-colors duration-200"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Technologies
-                    </label>
-                    <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                      {Object.entries(groupedSkills).map(([category, skills]) => {
-                        const selectedCount = skills.filter(skill => 
-                          selectedSkills.includes(skill.name)
-                        ).length;
-                        
-                        return (
-                          <details key={category} className="group bg-[#1A1A1A] rounded-lg">
-                            <summary className="flex items-center justify-between cursor-pointer p-3 hover:bg-[#252525] rounded-lg transition-all duration-200">
-                              <div className="flex items-center gap-3">
-                                <span className="text-sm font-medium text-gray-300">{category}</span>
-                                {selectedCount > 0 && (
-                                  <span className="px-2 py-0.5 text-xs rounded-full bg-blue-500/20 text-blue-400">
-                                    {selectedCount} selected
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-500">{skills.length} technologies</span>
-                                <svg 
-                                  className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform duration-200" 
-                                  fill="none" 
-                                  viewBox="0 0 24 24" 
-                                  stroke="currentColor"
-                                >
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                              </div>
-                            </summary>
-                            <div className="p-3 pt-2">
-                              <div className="flex flex-wrap gap-2">
-                                {skills.map((skill) => (
-                                  <button
-                                    key={skill._id}
-                                    type="button"
-                                    onClick={() => handleSkillToggle(skill.name)}
-                                    className={`
-                                      px-3 py-1.5 rounded-full text-sm font-medium 
-                                      transition-all duration-200 
-                                      ${selectedSkills.includes(skill.name)
-                                        ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20 scale-105'
-                                        : 'bg-[#252525] text-gray-300 hover:bg-[#2A2A2A] hover:scale-105'
-                                      }
-                                    `}
-                                  >
-                                    {skill.name}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          </details>
-                        );
-                      })}
-                    </div>
-                    <div className="mt-3">
-                      {selectedSkills.length > 0 ? (
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="text-gray-400">
-                            {selectedSkills.length} technologie{selectedSkills.length > 1 ? 's' : ''} sélectionnée{selectedSkills.length > 1 ? 's' : ''}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setSelectedSkills([])}
-                            className="text-red-400 hover:text-red-300 transition-colors duration-200"
-                          >
-                            Tout effacer
-                          </button>
-                        </div>
-                      ) : (
-                        <p className="text-red-400 text-sm">Veuillez sélectionner au moins une technologie</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Image du projet
-                    </label>
-                    <div className="space-y-4">
-                      <div className="flex gap-4">
-                        <button
-                          type="button"
-                          onClick={() => setUploadType('url')}
-                          className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
-                            uploadType === 'url'
-                              ? 'bg-blue-500 text-white'
-                              : 'bg-[#2A2A2A] text-gray-300 hover:bg-[#333333]'
-                          }`}
-                        >
-                          URL
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setUploadType('file')}
-                          className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
-                            uploadType === 'file'
-                              ? 'bg-blue-500 text-white'
-                              : 'bg-[#2A2A2A] text-gray-300 hover:bg-[#333333]'
-                          }`}
-                        >
-                          Upload
-                        </button>
-                      </div>
-
-                      {uploadType === 'url' ? (
-                        <input
-                          type="url"
-                          name="imageUrl"
-                          value={formData.imageUrl}
-                          onChange={handleChange}
-                          placeholder="https://example.com/image.jpg"
-                          className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-[#404040] focus:outline-none transition-colors duration-200"
-                          required
-                        />
-                      ) : (
-                        <div className="space-y-4">
-                          <div className="relative">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleImageChange}
-                              className="hidden"
-                              id="image-upload"
-                              disabled={isUploading}
-                            />
-                            <label
-                              htmlFor="image-upload"
-                              className={`
-                                flex items-center justify-center w-full px-4 py-6 border-2 border-dashed
-                                rounded-lg cursor-pointer transition-colors duration-200
-                                ${isUploading
-                                  ? 'border-gray-600 bg-[#1A1A1A] cursor-not-allowed'
-                                  : 'border-[#2A2A2A] hover:border-[#404040] bg-[#252525]'
-                                }
-                              `}
-                            >
-                              {isUploading ? (
-                                <div className="flex items-center gap-2 text-gray-400">
-                                  <FiLoader className="w-5 h-5 animate-spin" />
-                                  <span>Upload en cours...</span>
-                                </div>
-                              ) : (
-                                <div className="text-center">
-                                  <FiUpload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                                  <p className="text-sm text-gray-300">
-                                    Cliquez ou glissez une image ici
-                                  </p>
-                                  <p className="text-xs text-gray-500 mt-1">
-                                    PNG, JPG, GIF jusqu'à 5MB
-                                  </p>
-                                </div>
-                              )}
-                            </label>
-                          </div>
-
-                          {(imagePreview || formData.imageUrl) && (
-                            <div className="relative w-full aspect-video rounded-lg overflow-hidden">
-                              <Image
-                                src={imagePreview || formData.imageUrl}
-                                alt="Prévisualisation"
-                                fill
-                                className="object-cover"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setImagePreview(null);
-                                  setFormData(prev => ({ ...prev, imageUrl: '' }));
-                                }}
-                                className="absolute top-2 right-2 p-1 rounded-full bg-red-500/80 text-white hover:bg-red-500 transition-colors duration-200"
-                              >
-                                <FiX className="w-4 h-4" />
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Demo URL (optional)
-                    </label>
-                    <input
-                      type="url"
-                      name="demoUrl"
-                      value={formData.demoUrl}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-[#404040] focus:outline-none transition-colors duration-200"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      GitHub URL (optional)
-                    </label>
-                    <input
-                      type="url"
-                      name="githubUrl"
-                      value={formData.githubUrl}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-[#404040] focus:outline-none transition-colors duration-200"
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-6">
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        name="featured"
-                        checked={formData.featured}
-                        onChange={handleChange}
-                        className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-500"
-                      />
-                      <label className="ml-2 text-sm text-gray-300">
-                        Featured Project
-                      </label>
-                    </div>
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        name="showOnHomepage"
-                        checked={formData.showOnHomepage}
-                        onChange={handleChange}
-                        className="w-4 h-4 text-gray-600 border-gray-300 rounded focus:ring-gray-500"
-                      />
-                      <label className="ml-2 text-sm text-gray-300">
-                        Afficher sur la page d'accueil
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end gap-3 pt-4">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsModalOpen(false);
-                        resetForm();
-                      }}
-                      className="px-4 py-2 text-gray-400 hover:text-white transition-colors duration-200"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting || selectedSkills.length === 0}
-                      className="px-4 py-2 bg-[#2A2A2A] hover:bg-[#333333] text-white rounded-lg transition-colors duration-200 disabled:opacity-50 flex items-center gap-2"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <FiLoader className="animate-spin" />
-                          <span>Saving...</span>
-                        </>
-                      ) : (
-                        <span>{editingProject ? 'Update Project' : 'Create Project'}</span>
-                      )}
-                    </button>
-                  </div>
-                </form>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              await fetchProjects();
+              setIsModalOpen(false);
+              setEditingProject(null);
+              toast.success(`Project ${editingProject ? 'updated' : 'created'} successfully`);
+              
+              // Notifier la prévisualisation du changement
+              notifyChange(`project_${editingProject ? 'updated' : 'created'}_${Date.now()}`);
+            } catch (error) {
+              console.error('Error submitting project:', error);
+              toast.error(`Failed to ${editingProject ? 'update' : 'create'} project`);
+            }
+          }}
+        />
       </div>
       
       {/* Composant de prévisualisation en temps réel */}

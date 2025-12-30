@@ -63,7 +63,6 @@ export default function MaintenancePage({ maintenanceData }: MaintenancePageProp
         <meta name="description" content="Site en maintenance" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </Head>
 
       <div className={`min-h-screen bg-gray-900 flex items-center justify-center p-4 transition-opacity duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>

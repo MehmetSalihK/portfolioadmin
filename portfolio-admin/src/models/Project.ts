@@ -85,6 +85,9 @@ const ProjectSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide an image URL for this project.'],
   },
+  gallery: [{
+    type: String,
+  }],
   technologies: [{
     type: String,
     required: true,

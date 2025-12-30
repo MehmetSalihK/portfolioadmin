@@ -98,6 +98,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ error: 'Non autorisé' });
     }
 
+    // Strict Admin Role Check
+    if ((session.user as any).role !== 'admin') {
+      return res.status(403).json({ error: 'Interdit : Droits administrateur requis' });
+    }
+
     if (req.method === 'POST') {
       if (!isVercel) {
         if (!existsSync(uploadDir)) {
