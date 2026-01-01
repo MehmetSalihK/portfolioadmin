@@ -43,25 +43,25 @@ export default function ContactPage({ settings = { email: '', github: '', linked
   // Fonction pour géocoder la position
   const geocodePosition = async (position: string) => {
     if (!position) return;
-    
+
     try {
       const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(position)}&limit=1`);
       const data = await response.json();
-      
+
       if (data.features && data.features.length > 0) {
         const feature = data.features[0];
         const [lng, lat] = feature.geometry.coordinates;
         const cityName = feature.properties.city || feature.properties.label;
-        
+
         setLocationData({
           name: cityName,
           coordinates: { lat, lng }
         });
-        
+
         // Générer l'URL Google Maps avec les coordonnées
         const googleMapsUrl = `https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${lat},${lng}&zoom=13`;
-        // Pour l'instant, utiliser l'ancienne méthode avec le nom de la ville
-        const fallbackUrl = `https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d35034.27598397238!2d${lng}!3d${lat}!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2s${encodeURIComponent(cityName)}!5e0!3m2!1sfr!2sfr!4v1738647148138!5m2!1sfr!2sfr`;
+        // Utiliser l'URL standard d'intégration qui est plus fiable sans clé API spécifique pour ce cas d'usage
+        const fallbackUrl = `https://maps.google.com/maps?q=${encodeURIComponent(cityName)}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
         setMapUrl(fallbackUrl);
       }
     } catch (error) {
@@ -75,7 +75,7 @@ export default function ContactPage({ settings = { email: '', github: '', linked
     } else {
       // Valeurs par défaut si pas de position
       setLocationData({ name: 'Nogent-sur-Oise, France', coordinates: { lat: 49.2586, lng: 2.4826 } });
-      setMapUrl('https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d35034.27598397238!2d2.4825724346456397!3d49.2586183631009!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e64a38b9d28da5%3A0x1c0af141f1252070!2s60180%20Nogent-sur-Oise!5e0!3m2!1sfr!2sfr!4v1738647148138!5m2!1sfr!2sfr');
+      setMapUrl('https://maps.google.com/maps?q=Nogent-sur-Oise,%20France&t=&z=13&ie=UTF8&iwloc=&output=embed');
     }
   }, [settings.position]);
 
@@ -89,8 +89,10 @@ export default function ContactPage({ settings = { email: '', github: '', linked
       });
       if (response.ok) {
         toast.success('Message envoyé avec succès !');
-        setFormData({ firstName: '', lastName: '', company: '', phone: '', 
-                     email: '', subject: '', message: '' });
+        setFormData({
+          firstName: '', lastName: '', company: '', phone: '',
+          email: '', subject: '', message: ''
+        });
       }
     } catch (error) {
       toast.error('Erreur lors de l\'envoi du message');
@@ -199,7 +201,7 @@ export default function ContactPage({ settings = { email: '', github: '', linked
                 {/* Card des liens de contact */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
                   <p className="text-gray-600 dark:text-gray-400 mb-6">
-                    N'hésitez pas à me contacter pour discuter de vos projets ou pour toute autre question. 
+                    N'hésitez pas à me contacter pour discuter de vos projets ou pour toute autre question.
                     Je vous répondrai dans les plus brefs délais.
                   </p>
 
@@ -225,8 +227,8 @@ export default function ContactPage({ settings = { email: '', github: '', linked
                         </div>
                         <div>
                           <div className="text-gray-900 dark:text-white font-medium">LinkedIn</div>
-                          <a href={settings.linkedin} target="_blank" rel="noopener noreferrer" 
-                             className="text-blue-400 hover:text-blue-300">
+                          <a href={settings.linkedin} target="_blank" rel="noopener noreferrer"
+                            className="text-blue-400 hover:text-blue-300">
                             {settings.linkedin.replace('https://www.linkedin.com/in/', '')}
                           </a>
                         </div>
@@ -241,7 +243,7 @@ export default function ContactPage({ settings = { email: '', github: '', linked
                         <div>
                           <div className="text-gray-900 dark:text-white font-medium">GitHub</div>
                           <a href={settings.github} target="_blank" rel="noopener noreferrer"
-                             className="text-blue-400 hover:text-blue-300">
+                            className="text-blue-400 hover:text-blue-300">
                             {settings.github.replace('https://github.com/', '')}
                           </a>
                         </div>
@@ -284,7 +286,7 @@ export const getStaticProps: GetStaticProps = async () => {
   try {
     await connectDB();
     const settings = await Setting.findOne().lean() as any;
-    
+
     return {
       props: {
         settings: {

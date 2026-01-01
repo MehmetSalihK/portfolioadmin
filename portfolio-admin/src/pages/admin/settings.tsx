@@ -131,7 +131,7 @@ export default function SettingsPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setCurrentCV(data);
+        setCurrentCV(data.cv);
         toast.success('CV uploadé avec succès!');
       } else {
         const error = await response.json();
@@ -182,7 +182,7 @@ export default function SettingsPage() {
     };
     setSettings(newSettings);
     localStorage.setItem('adminSettings', JSON.stringify(newSettings));
-    
+
     // Auto-complétion pour le champ position
     if (name === 'position' && value.length >= 2) {
       searchAddresses(value);
@@ -196,9 +196,9 @@ export default function SettingsPage() {
   const searchAddresses = async (query: string) => {
     setIsLoadingSuggestions(true);
     try {
-      const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5`);
+      const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&type=municipality&autocomplete=1&limit=5`);
       const data = await response.json();
-      
+
       if (data.features) {
         const suggestions = data.features.map((feature: any) => {
           const city = feature.properties.city;
@@ -231,7 +231,7 @@ export default function SettingsPage() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node) &&
-          positionInputRef.current && !positionInputRef.current.contains(event.target as Node)) {
+        positionInputRef.current && !positionInputRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
       }
     };
@@ -267,7 +267,7 @@ export default function SettingsPage() {
 
   return (
     <AdminLayout>
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -289,7 +289,7 @@ export default function SettingsPage() {
           </motion.button>
         </div>
 
-        <motion.div 
+        <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -361,7 +361,7 @@ export default function SettingsPage() {
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.55 }}
-                className="relative"
+                className="relative z-50"
               >
                 <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">
                   <div className="flex items-center gap-2">
@@ -402,7 +402,7 @@ export default function SettingsPage() {
                   </div>
                 )}
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Tapez au moins 2 caractères pour voir les suggestions d'adresses françaises
+                  Tapez au moins 2 caractères pour voir les suggestions de villes françaises
                 </p>
               </motion.div>
 
@@ -538,7 +538,7 @@ export default function SettingsPage() {
                 <FiFile className="text-blue-500" />
                 Gestion du CV
               </h3>
-              
+
               {currentCV ? (
                 <div className="bg-[#252525] rounded-lg p-4 border border-[#2A2A2A]">
                   <div className="flex items-center justify-between">
@@ -547,8 +547,8 @@ export default function SettingsPage() {
                       <div>
                         <p className="text-white font-medium">{currentCV.originalName}</p>
                         <p className="text-gray-400 text-sm">
-                          {(currentCV.size / 1024 / 1024).toFixed(2)} MB • 
-                          Uploadé le {new Date(currentCV.uploadDate).toLocaleDateString('fr-FR')}
+                          {currentCV.size ? (currentCV.size / 1024 / 1024).toFixed(2) : '0.00'} MB •
+                          Uploadé le {currentCV.uploadDate ? new Date(currentCV.uploadDate).toLocaleDateString('fr-FR') : 'Date inconnue'}
                         </p>
                       </div>
                     </div>
@@ -580,7 +580,7 @@ export default function SettingsPage() {
                   <p className="text-gray-400 mb-4">Aucun CV uploadé</p>
                 </div>
               )}
-              
+
               <div className="mt-4">
                 <input
                   ref={fileInputRef}

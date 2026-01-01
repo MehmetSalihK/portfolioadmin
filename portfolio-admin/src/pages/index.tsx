@@ -14,19 +14,19 @@ import HomePage from '@/models/HomePage';
 import Setting from '@/models/Setting';
 import { useRef, useEffect, useState } from 'react';
 import useAnalytics from '@/utils/hooks/useAnalytics';
-import { 
-  FaGithub, 
-  FaLinkedin, 
-  FaTwitter, 
+import {
+  FaGithub,
+  FaLinkedin,
+  FaTwitter,
   FaWhatsapp,
   FaTelegram,
-  FaReact, 
-  FaNodeJs, 
-  FaGit, 
-  FaDocker, 
-  FaAws, 
-  FaPython, 
-  FaJava, 
+  FaReact,
+  FaNodeJs,
+  FaGit,
+  FaDocker,
+  FaAws,
+  FaPython,
+  FaJava,
   FaPhp,
   FaNpm,
   FaWordpress,
@@ -38,10 +38,10 @@ import { FiExternalLink, FiGithub, FiSettings, FiCode, FiStar, FiAlertTriangle, 
 import parse from 'html-react-parser';
 import DOMPurify from 'isomorphic-dompurify';
 import { sanitizeInput } from '@/utils/sanitize';
-import { 
-  SiTypescript, 
-  SiJavascript, 
-  SiMongodb, 
+import {
+  SiTypescript,
+  SiJavascript,
+  SiMongodb,
   SiPostgresql,
   SiTailwindcss,
   SiNextdotjs,
@@ -129,6 +129,7 @@ interface HomePageProps {
     email: string;
     linkedin: string;
     phone: string;
+    position?: string;
   };
   skillsByCategory: Array<{
     _id: string;
@@ -208,10 +209,10 @@ const getIcon = (skillName: string) => {
     'Yarn': <SiYarn className="w-12 h-12" />,
     'PIP': <FaCode className="w-12 h-12" />
   };
-  
+
   const normalizedName = skillName.toLowerCase().trim();
-  
-  const icon = Object.entries(icons).find(([key]) => 
+
+  const icon = Object.entries(icons).find(([key]) =>
     key.toLowerCase() === normalizedName
   )?.[1];
 
@@ -407,9 +408,8 @@ export default function Home({ projects, experiences, skills, homeData = default
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className={`${
-              t.visible ? 'animate-enter' : 'animate-leave'
-            } max-w-md w-full bg-gradient-to-r from-green-500 to-green-600 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+            className={`${t.visible ? 'animate-enter' : 'animate-leave'
+              } max-w-md w-full bg-gradient-to-r from-green-500 to-green-600 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
           >
             <div className="flex-1 w-0 p-4">
               <div className="flex items-start">
@@ -484,9 +484,8 @@ export default function Home({ projects, experiences, skills, homeData = default
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className={`${
-              t.visible ? 'animate-enter' : 'animate-leave'
-            } max-w-md w-full bg-gradient-to-r from-red-500 to-red-600 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+            className={`${t.visible ? 'animate-enter' : 'animate-leave'
+              } max-w-md w-full bg-gradient-to-r from-red-500 to-red-600 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
           >
             <div className="flex-1 w-0 p-4">
               <div className="flex items-start">
@@ -572,7 +571,7 @@ export default function Home({ projects, experiences, skills, homeData = default
             <div className="flex items-center gap-3 bg-amber-500/90 text-amber-900 px-4 py-3 rounded-lg shadow-lg backdrop-blur-sm max-w-2xl">
               <FiAlertTriangle className="w-5 h-5 flex-shrink-0" />
               <p className="text-sm">
-                Ce site est actuellement en cours de développement (version bêta). 
+                Ce site est actuellement en cours de développement (version bêta).
                 Certaines fonctionnalités peuvent ne pas fonctionner correctement.
               </p>
               <button
@@ -594,13 +593,13 @@ export default function Home({ projects, experiences, skills, homeData = default
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-900">
-        
+
         {/* Simple decorative gradient - subtle */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-blue-100/50 dark:bg-blue-900/20 rounded-full blur-3xl opacity-30"></div>
           <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-purple-100/50 dark:bg-purple-900/20 rounded-full blur-3xl opacity-30"></div>
         </div>
-        
+
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -617,7 +616,7 @@ export default function Home({ projects, experiences, skills, homeData = default
               {homeData.title}
             </h1>
           </motion.div>
-          
+
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -656,7 +655,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                 </motion.svg>
               </Link>
             </motion.div>
-            
+
             <motion.div
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
@@ -669,7 +668,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                 {homeData.navigation?.contact || 'Me contacter'}
               </Link>
             </motion.div>
-            
+
             <motion.div
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
@@ -765,7 +764,7 @@ export default function Home({ projects, experiences, skills, homeData = default
             onClick={scrollToContent}
             whileHover={{ scale: 1.1, y: -2 }}
             animate={{ y: [0, 8, 0] }}
-            transition={{ 
+            transition={{
               y: { repeat: Infinity, duration: 2, ease: "easeInOut" },
               scale: { type: "spring", stiffness: 400, damping: 17 }
             }}
@@ -779,7 +778,7 @@ export default function Home({ projects, experiences, skills, homeData = default
       <main ref={mainRef}>
         {/* About Section */}
         <section id="about" className="w-full py-20 px-4 bg-white dark:bg-gray-800 relative overflow-hidden">
-          
+
           <div className="max-w-6xl mx-auto relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -793,7 +792,7 @@ export default function Home({ projects, experiences, skills, homeData = default
               </h2>
               <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -805,7 +804,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                 <div className="text-lg sm:text-xl text-gray-900 dark:text-gray-300 leading-relaxed max-w-none">
                   {parse(homeData.aboutText)}
                 </div>
-                
+
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -828,7 +827,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                   ))}
                 </motion.div>
               </div>
-              
+
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -871,7 +870,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Floating elements */}
                 <motion.div
                   animate={{ y: [0, -10, 0] }}
@@ -897,7 +896,7 @@ export default function Home({ projects, experiences, skills, homeData = default
           <div className="absolute inset-0 bg-grid-black/[0.02] dark:bg-grid-white/[0.02]"></div>
           <div className="absolute top-1/2 left-0 w-96 h-96 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl transform -translate-y-1/2"></div>
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-cyan-400/10 rounded-full blur-3xl"></div>
-          
+
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -914,7 +913,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                 Découvrez une sélection de mes réalisations récentes, alliant créativité et expertise technique.
               </p>
             </motion.div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {formattedProjects.map((project, index) => (
                 <motion.div
@@ -936,7 +935,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                       className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    
+
                     {project.featured && (
                       <motion.div
                         initial={{ scale: 0, rotate: -180 }}
@@ -948,7 +947,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                         <span>Featured</span>
                       </motion.div>
                     )}
-                    
+
                     {/* Overlay buttons */}
                     <div className="absolute inset-0 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
                       {project.demoUrl && (
@@ -979,8 +978,8 @@ export default function Home({ projects, experiences, skills, homeData = default
                       {project.title}
                     </h3>
                     <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
-                      {project.description.length > 100 
-                        ? `${project.description.substring(0, 100)}...` 
+                      {project.description.length > 100
+                        ? `${project.description.substring(0, 100)}...`
                         : project.description}
                       {project.description.length > 100 && (
                         <button
@@ -1032,7 +1031,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                           </motion.button>
                         )}
                       </div>
-                      
+
                       <motion.div
                         whileHover={{ rotate: 360 }}
                         transition={{ duration: 0.5 }}
@@ -1043,7 +1042,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                 </motion.div>
               ))}
             </div>
-            
+
             {formattedProjects.length === 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -1061,14 +1060,14 @@ export default function Home({ projects, experiences, skills, homeData = default
                 </p>
               </motion.div>
             )}
-            
+
             {/* Modal pour afficher les détails du projet */}
             {isModalOpen && selectedProject && (
-              <div 
+              <div
                 className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
                 onClick={closeModal}
               >
-                <div 
+                <div
                   className="bg-white dark:bg-gray-800 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
                   onClick={handleModalContentClick}
                 >
@@ -1084,7 +1083,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                       <FiX className="w-6 h-6 text-gray-500 dark:text-gray-400" />
                     </button>
                   </div>
-                  
+
                   {/* Contenu de la modale */}
                   <div className="p-6">
                     {/* Image du projet */}
@@ -1097,7 +1096,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                         className="w-full h-64 object-cover rounded-lg"
                       />
                     </div>
-                    
+
                     {/* Description complète */}
                     <div className="mb-6">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
@@ -1107,7 +1106,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                         {parse(DOMPurify.sanitize(selectedProject.description))}
                       </p>
                     </div>
-                    
+
                     {/* Technologies */}
                     <div className="mb-6">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
@@ -1124,7 +1123,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                         ))}
                       </div>
                     </div>
-                    
+
                     {/* Liens */}
                     <div className="flex gap-4">
                       {selectedProject.demoUrl && (
@@ -1165,7 +1164,7 @@ export default function Home({ projects, experiences, skills, homeData = default
           <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-teal-50/50 dark:from-green-900/10 dark:to-teal-900/10"></div>
           <div className="absolute top-1/4 right-0 w-96 h-96 bg-gradient-to-r from-green-400/10 to-teal-400/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-1/4 left-0 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-green-400/10 rounded-full blur-3xl"></div>
-          
+
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -1182,13 +1181,13 @@ export default function Home({ projects, experiences, skills, homeData = default
                 Mon parcours professionnel et les compétences acquises au fil des années.
               </p>
             </motion.div>
-            
+
             <div className="max-w-4xl mx-auto">
               {experiences.length > 0 ? (
                 <div className="relative">
                   {/* Timeline line */}
                   <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-green-500 to-teal-500 hidden md:block"></div>
-                  
+
                   {experiences.map((experience, index) => (
                     <motion.div
                       key={experience._id}
@@ -1206,7 +1205,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                         viewport={{ once: true }}
                         className="absolute left-6 w-4 h-4 bg-gradient-to-r from-green-500 to-teal-500 rounded-full border-4 border-white dark:border-gray-900 shadow-lg hidden md:block z-10"
                       ></motion.div>
-                      
+
                       <motion.div
                         whileHover={{ scale: 1.02, y: -4 }}
                         transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -1235,11 +1234,11 @@ export default function Home({ projects, experiences, skills, homeData = default
                             </span>
                           </motion.div>
                         </div>
-                        
+
                         <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed text-lg">
                           {experience.description}
                         </p>
-                        
+
                         <div className="flex flex-wrap gap-2">
                           {experience.technologies.map((tech, techIndex) => (
                             <motion.span
@@ -1255,7 +1254,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                             </motion.span>
                           ))}
                         </div>
-                        
+
                         {/* Decorative corner */}
                         <div className="absolute top-4 right-4 w-3 h-3 bg-gradient-to-r from-green-500 to-teal-500 rounded-full opacity-60"></div>
                       </motion.div>
@@ -1291,7 +1290,7 @@ export default function Home({ projects, experiences, skills, homeData = default
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10"></div>
           <div className="absolute top-1/4 left-0 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
-          
+
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -1308,7 +1307,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                 Vous avez un projet en tête ? N'hésitez pas à me contacter pour en discuter.
               </p>
             </motion.div>
-            
+
             <div className="max-w-4xl mx-auto">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
                 {/* Contact Info */}
@@ -1324,12 +1323,12 @@ export default function Home({ projects, experiences, skills, homeData = default
                       Restons en contact
                     </h3>
                     <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed mb-8">
-                      Je suis toujours ouvert aux nouvelles opportunités et collaborations. 
-                      Que ce soit pour un projet, une question ou simplement pour échanger, 
+                      Je suis toujours ouvert aux nouvelles opportunités et collaborations.
+                      Que ce soit pour un projet, une question ou simplement pour échanger,
                       n'hésitez pas à me contacter.
                     </p>
                   </div>
-                  
+
                   <div className="space-y-6">
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
@@ -1345,10 +1344,10 @@ export default function Home({ projects, experiences, skills, homeData = default
                       </div>
                       <div>
                         <h4 className="font-semibold text-gray-900 dark:text-white">Email</h4>
-                        <p className="text-gray-600 dark:text-gray-300">{homeData.contactInfo?.email || 'contact@portfolio.com'}</p>
+                        <p className="text-gray-600 dark:text-gray-300">{settings?.email || 'contact@portfolio.com'}</p>
                       </div>
                     </motion.div>
-                    
+
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
@@ -1358,14 +1357,14 @@ export default function Home({ projects, experiences, skills, homeData = default
                     >
                       <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center">
                         <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                         </svg>
                       </div>
                       <div>
                         <h4 className="font-semibold text-gray-900 dark:text-white">LinkedIn</h4>
-                        <a 
-                          href={settings?.linkedin || '#'} 
-                          target="_blank" 
+                        <a
+                          href={settings?.linkedin || '#'}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 dark:text-blue-400 hover:underline"
                         >
@@ -1373,7 +1372,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                         </a>
                       </div>
                     </motion.div>
-                    
+
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
@@ -1389,12 +1388,12 @@ export default function Home({ projects, experiences, skills, homeData = default
                       </div>
                       <div>
                         <h4 className="font-semibold text-gray-900 dark:text-white">Localisation</h4>
-                        <p className="text-gray-600 dark:text-gray-300">France</p>
+                        <p className="text-gray-600 dark:text-gray-300">{settings?.position || 'France'}</p>
                       </div>
                     </motion.div>
                   </div>
                 </motion.div>
-                
+
                 {/* Contact Form */}
                 <motion.div
                   initial={{ opacity: 0, x: 30 }}
@@ -1449,7 +1448,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                         />
                       </motion.div>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -1486,7 +1485,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                         />
                       </motion.div>
                     </div>
-                    
+
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
@@ -1505,7 +1504,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                         placeholder="votre.email@exemple.com"
                       />
                     </motion.div>
-                    
+
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
@@ -1524,7 +1523,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                         placeholder="Sujet de votre message"
                       />
                     </motion.div>
-                    
+
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
@@ -1543,7 +1542,7 @@ export default function Home({ projects, experiences, skills, homeData = default
                         placeholder="Décrivez votre projet ou votre demande..."
                       ></textarea>
                     </motion.div>
-                    
+
                     <motion.button
                       type="submit"
                       disabled={isSubmitting}
@@ -1579,13 +1578,13 @@ export default function Home({ projects, experiences, skills, homeData = default
           </div>
         </section>
       </main>
-      
 
-      
+
+
       {/* CV Modal */}
-      <CVModal 
-        isOpen={isCVModalOpen} 
-        onClose={() => setIsCVModalOpen(false)} 
+      <CVModal
+        isOpen={isCVModalOpen}
+        onClose={() => setIsCVModalOpen(false)}
       />
     </Layout>
   );
@@ -1600,7 +1599,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     // Verify maintenance mode (Dual check with middleware for safety)
     const Maintenance = (await import('@/models/Maintenance')).default;
     const maintenanceStatus = await Maintenance.findOne().lean();
-    
+
     if (maintenanceStatus && (maintenanceStatus as any).isEnabled) {
       return {
         redirect: {
@@ -1625,7 +1624,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     // Récupérer les projets sélectionnés pour la page d'accueil
     const projects = await Project.aggregate([
       {
-        $match: { 
+        $match: {
           archived: { $ne: true },
           showOnHomepage: true
         }
@@ -1642,7 +1641,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
         }
       },
       {
-        $sort: { 
+        $sort: {
           featured: -1,  // Projets featured en premier
           totalClicks: -1,  // Puis par popularité
           order: 1  // Puis par ordre défini
@@ -1652,7 +1651,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
         $limit: 6  // Augmenter la limite à 6 projets
       }
     ]);
-    
+
     // Utiliser directement les 3 projets les plus populaires de la base de données
     const allProjects = projects;
     const experiences = await Experience.find({}).sort({ startDate: -1 }).select('title company location startDate endDate description technologies').lean();
@@ -1661,7 +1660,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       ...exp,
       technologies: exp.technologies || []
     }));
-    
+
     // Récupérer les catégories visibles sans doublons
     const allCategories = await SkillCategory.find({ isVisible: true })
       .sort('displayOrder')
@@ -1677,7 +1676,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     }, []);
 
     // Récupérer les compétences non masquées avec categoryId valide
-    const skills = await Skill.find({ 
+    const skills = await Skill.find({
       isHidden: false,
       categoryId: { $exists: true, $ne: null }
     })
@@ -1690,7 +1689,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       name: category.name,
       displayOrder: category.displayOrder,
       skills: skills.filter(skill => (
-        skill.categoryId && 
+        skill.categoryId &&
         typeof skill.categoryId === 'object' &&
         'name' in skill.categoryId &&
         (skill.categoryId as Category).name === category.name
