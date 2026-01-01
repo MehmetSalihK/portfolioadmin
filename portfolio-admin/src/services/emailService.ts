@@ -105,129 +105,155 @@ export const send2FACode = async ({ userEmail, code }: Send2FACodeParams) => {
             body {
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
               line-height: 1.6;
-              color: #333;
-              max-width: 600px;
-              margin: 0 auto;
-              padding: 20px;
-              background-color: #f8fafc;
+              color: #e2e8f0;
+              margin: 0;
+              padding: 0;
+              background-color: #0f172a;
+            }
+            .wrapper {
+              width: 100%;
+              background-color: #0f172a;
+              padding: 40px 0;
             }
             .container {
-              background: white;
-              border-radius: 8px;
-              padding: 40px;
-              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              max-width: 500px;
+              margin: 0 auto;
+              background: #1e293b;
+              border-radius: 12px;
+              overflow: hidden;
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+              border: 1px solid #334155;
             }
             .header {
               text-align: center;
-              margin-bottom: 30px;
+              padding: 30px 40px;
+              background: #0f172a;
+              border-bottom: 1px solid #334155;
             }
             .logo {
+              font-size: 20px;
+              font-weight: 700;
+              color: #f8fafc;
+              letter-spacing: -0.5px;
+            }
+            .content {
+              padding: 40px;
+              text-align: center;
+            }
+            .title {
               font-size: 24px;
-              font-weight: bold;
-              color: #1f2937;
-              margin-bottom: 10px;
+              font-weight: 600;
+              color: #f8fafc;
+              margin-bottom: 24px;
+            }
+            .text {
+              color: #cbd5e1;
+              margin-bottom: 30px;
+              font-size: 16px;
+            }
+            .highlight {
+              color: #38bdf8;
+              font-weight: 500;
             }
             .code-container {
-              background: #f3f4f6;
-              border: 2px dashed #d1d5db;
+              background: #0f172a;
               border-radius: 8px;
               padding: 20px;
-              text-align: center;
               margin: 30px 0;
+              border: 1px solid #334155;
             }
             .code {
-              font-size: 32px;
-              font-weight: bold;
-              letter-spacing: 8px;
-              color: #1f2937;
               font-family: 'Courier New', monospace;
+              font-size: 32px;
+              font-weight: 700;
+              letter-spacing: 12px;
+              color: #38bdf8;
+              display: inline-block;
             }
-            .info {
-              background: #eff6ff;
-              border-left: 4px solid #3b82f6;
-              padding: 15px;
-              margin: 20px 0;
-              border-radius: 4px;
+            .details {
+              text-align: left;
+              background: #334155;
+              padding: 20px;
+              border-radius: 8px;
+              font-size: 14px;
+              color: #cbd5e1;
+              margin-top: 30px;
             }
-            .warning {
-              background: #fef3c7;
-              border-left: 4px solid #f59e0b;
-              padding: 15px;
-              margin: 20px 0;
-              border-radius: 4px;
+            .details li {
+              margin-bottom: 8px;
+            }
+            .details li:last-child {
+              margin-bottom: 0;
             }
             .footer {
               text-align: center;
-              margin-top: 30px;
-              padding-top: 20px;
-              border-top: 1px solid #e5e7eb;
-              color: #6b7280;
-              font-size: 14px;
+              padding: 30px;
+              color: #64748b;
+              font-size: 12px;
+              border-top: 1px solid #334155;
+              background: #0f172a;
+            }
+            @media only screen and (max-width: 600px) {
+              .content, .header { padding: 20px; }
+              .code { font-size: 28px; letter-spacing: 8px; }
             }
           </style>
         </head>
         <body>
-          <div class="container">
-            <div class="header">
-              <div class="logo">Portfolio Admin</div>
-              <h1>Code de vérification 2FA</h1>
-            </div>
-            
-            <p>Bonjour,</p>
-            
-            <p>Une tentative de connexion a été effectuée avec l'adresse email <strong>${userEmail}</strong> sur le panneau d'administration du portfolio.</p>
-            
-            <div class="info">
-              <strong>Information :</strong> Pour des raisons de sécurité, tous les codes de vérification sont envoyés uniquement à cette adresse (contact@mehmetsalihk.fr), peu importe l'email utilisé pour la connexion.
-            </div>
-            
-            <p>Voici votre code de vérification à 6 chiffres :</p>
-            
-            <div class="code-container">
-              <div class="code">${code}</div>
-            </div>
-            
-            <div class="warning">
-              <strong>Important :</strong>
-              <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Ce code expire dans <strong>10 minutes</strong></li>
-                <li>Vous avez <strong>3 tentatives maximum</strong> pour saisir le bon code</li>
-                <li>Ne partagez jamais ce code avec qui que ce soit</li>
-              </ul>
-            </div>
-            
-            <p>Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email en toute sécurité.</p>
-            
-            <div class="footer">
-              <p>Cet email a été envoyé automatiquement par le système Portfolio Admin.</p>
-              <p>© ${new Date().getFullYear()} Portfolio Admin - Tous droits réservés</p>
+          <div class="wrapper">
+            <div class="container">
+              <div class="header">
+                <div class="logo">Portfolio Admin</div>
+              </div>
+              
+              <div class="content">
+                <h1 class="title">Authentification Sécurisée</h1>
+                
+                <p class="text">Une tentative de connexion a été détectée avec l'email <span class="highlight">${userEmail}</span>.</p>
+                
+                <p class="text">Utilisez le code suivant pour valider votre identité :</p>
+                
+                <div class="code-container">
+                  <span class="code">${code}</span>
+                </div>
+                
+                <div class="details">
+                  <strong style="color: #f8fafc; display: block; margin-bottom: 10px;">Informations de sécurité :</strong>
+                  <ul style="margin: 0; padding-left: 20px;">
+                    <li>Ce code expire dans <strong>10 minutes</strong>.</li>
+                    <li>Ne partagez jamais ce code.</li>
+                    <li>Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer cet email.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="footer">
+                <p>&copy; ${new Date().getFullYear()} Portfolio Admin. Tous droits réservés.</p>
+                <p>Système de vérification sécurisé par Resend</p>
+              </div>
             </div>
           </div>
         </body>
         </html>
       `,
       text: `
-Code de vérification 2FA - Portfolio Admin
+--------------------------------------------------
+PORTFOLIO ADMIN - AUTHENTIFICATION SÉCURISÉE
+--------------------------------------------------
 
 Bonjour,
 
-Une tentative de connexion a été effectuée avec l'adresse email ${userEmail} sur le panneau d'administration du portfolio.
+Une tentative de connexion a été détectée pour le compte : ${userEmail}
 
-Pour des raisons de sécurité, tous les codes de vérification sont envoyés uniquement à cette adresse (contact@mehmetsalihk.fr), peu importe l'email utilisé pour la connexion.
-
-Voici votre code de vérification à 6 chiffres :
-
+VOTRE CODE DE VÉRIFICATION :
 ${code}
 
-IMPORTANT :
-- Ce code expire dans 10 minutes
-- Vous avez 3 tentatives maximum pour saisir le bon code
-- Ne partagez jamais ce code avec qui que ce soit
+Ce code est valide pour 10 minutes.
+Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer ce message.
 
-Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email en toute sécurité.
-
-Cet email a été envoyé automatiquement par le système Portfolio Admin.
-© ${new Date().getFullYear()} Portfolio Admin - Tous droits réservés
+--------------------------------------------------
+© ${new Date().getFullYear()} Portfolio Admin
+--------------------------------------------------
       `
     });
 
