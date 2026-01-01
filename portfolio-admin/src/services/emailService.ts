@@ -108,128 +108,155 @@ export const send2FACode = async ({ userEmail, code }: Send2FACodeParams) => {
               color: #e2e8f0;
               margin: 0;
               padding: 0;
-              background-color: #0f172a;
+              background-color: #020617; /* Slate 950 - Darker background */
             }
             .wrapper {
               width: 100%;
-              background-color: #0f172a;
+              background-color: #020617;
               padding: 40px 0;
             }
             .container {
-              max-width: 500px;
+              max-width: 480px;
               margin: 0 auto;
-              background: #1e293b;
-              border-radius: 12px;
+              background: #0f172a; /* Slate 900 */
+              border-radius: 16px;
               overflow: hidden;
-              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-              border: 1px solid #334155;
+              box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+              border: 1px solid #1e293b; /* Slate 800 */
             }
             .header {
               text-align: center;
-              padding: 30px 40px;
-              background: #0f172a;
-              border-bottom: 1px solid #334155;
+              padding: 30px;
+              background: linear-gradient(to bottom, #1e293b, #0f172a);
+              border-bottom: 1px solid #1e293b;
             }
             .logo {
-              font-size: 20px;
-              font-weight: 700;
+              font-size: 22px;
+              font-weight: 800;
               color: #f8fafc;
               letter-spacing: -0.5px;
+              text-transform: uppercase;
+              background: linear-gradient(to right, #60a5fa, #a855f7);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              display: inline-block;
             }
             .content {
-              padding: 40px;
+              padding: 40px 30px;
               text-align: center;
             }
+            .icon-shield {
+              font-size: 40px;
+              margin-bottom: 20px;
+              display: block;
+            }
             .title {
-              font-size: 24px;
+              font-size: 20px;
               font-weight: 600;
               color: #f8fafc;
-              margin-bottom: 24px;
+              margin: 0 0 24px 0;
             }
             .text {
-              color: #cbd5e1;
+              color: #94a3b8; /* Slate 400 */
               margin-bottom: 30px;
-              font-size: 16px;
+              font-size: 15px;
+              line-height: 1.7;
             }
             .highlight {
-              color: #38bdf8;
-              font-weight: 500;
+              color: #e2e8f0;
+              font-weight: 600;
             }
-            .code-container {
-              background: #0f172a;
-              border-radius: 8px;
-              padding: 20px;
-              margin: 30px 0;
-              border: 1px solid #334155;
+            .code-box {
+              background: rgba(15, 23, 42, 0.5);
+              border-radius: 12px;
+              padding: 24px;
+              margin: 32px 0;
+              border: 1px solid #334155; /* Slate 700 */
+              position: relative;
+              overflow: hidden;
             }
             .code {
               font-family: 'Courier New', monospace;
-              font-size: 32px;
+              font-size: 36px;
               font-weight: 700;
-              letter-spacing: 12px;
-              color: #38bdf8;
+              letter-spacing: 8px;
+              color: #38bdf8; /* Sky 400 */
+              text-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
               display: inline-block;
+              position: relative;
+              z-index: 10;
             }
-            .details {
-              text-align: left;
-              background: #334155;
-              padding: 20px;
+            .warning-box {
+              background: rgba(234, 179, 8, 0.1); /* Yellow 500 with opacity */
+              border: 1px solid rgba(234, 179, 8, 0.2);
               border-radius: 8px;
-              font-size: 14px;
-              color: #cbd5e1;
-              margin-top: 30px;
+              padding: 16px;
+              text-align: left;
+              margin-top: 32px;
             }
-            .details li {
+            .warning-title {
+              color: #fde047; /* Yellow 300 */
+              font-size: 13px;
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
               margin-bottom: 8px;
+              display: block;
             }
-            .details li:last-child {
-              margin-bottom: 0;
+            .warning-list {
+              margin: 0;
+              padding-left: 20px;
+              color: #cbd5e1; /* Slate 300 */
+              font-size: 13px;
+              text-align: left;
+            }
+            .warning-list li {
+              margin-bottom: 4px;
             }
             .footer {
               text-align: center;
-              padding: 30px;
-              color: #64748b;
+              padding: 24px;
+              color: #475569; /* Slate 600 */
               font-size: 12px;
-              border-top: 1px solid #334155;
-              background: #0f172a;
+              border-top: 1px solid #1e293b;
+              background: #020617;
             }
-            @media only screen and (max-width: 600px) {
-              .content, .header { padding: 20px; }
-              .code { font-size: 28px; letter-spacing: 8px; }
-            }
+            .footer p { margin: 4px 0; }
           </style>
         </head>
         <body>
           <div class="wrapper">
             <div class="container">
               <div class="header">
-                <div class="logo">Portfolio Admin</div>
+                <!-- Fallback text logo with gradient -->
+                <span class="logo">Portfolio Admin</span>
               </div>
               
               <div class="content">
-                <h1 class="title">Authentification Sécurisée</h1>
+                <span class="icon-shield">🛡️</span>
+                <h1 class="title">Code de vérification</h1>
                 
-                <p class="text">Une tentative de connexion a été détectée avec l'email <span class="highlight">${userEmail}</span>.</p>
+                <p class="text">
+                  Une tentative de connexion a été détectée sur votre compte pour <span class="highlight">${userEmail}</span>.
+                </p>
                 
-                <p class="text">Utilisez le code suivant pour valider votre identité :</p>
-                
-                <div class="code-container">
+                <div class="code-box">
                   <span class="code">${code}</span>
                 </div>
-                
-                <div class="details">
-                  <strong style="color: #f8fafc; display: block; margin-bottom: 10px;">Informations de sécurité :</strong>
-                  <ul style="margin: 0; padding-left: 20px;">
-                    <li>Ce code expire dans <strong>10 minutes</strong>.</li>
-                    <li>Ne partagez jamais ce code.</li>
-                    <li>Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer cet email.</li>
+
+                <div class="warning-box">
+                  <span class="warning-title">Informations de sécurité</span>
+                  <ul class="warning-list">
+                    <li>Ce code expire dans 10 minutes.</li>
+                    <li>Ne le partagez avec personne.</li>
+                    <li>Si vous n'êtes pas à l'origine de ceci, ignorez cet email.</li>
                   </ul>
                 </div>
               </div>
 
               <div class="footer">
                 <p>&copy; ${new Date().getFullYear()} Portfolio Admin. Tous droits réservés.</p>
-                <p>Système de vérification sécurisé par Resend</p>
+                <p>Envoyé automatiquement par le système de sécurité.</p>
               </div>
             </div>
           </div>
@@ -238,18 +265,21 @@ export const send2FACode = async ({ userEmail, code }: Send2FACodeParams) => {
       `,
       text: `
 --------------------------------------------------
-PORTFOLIO ADMIN - AUTHENTIFICATION SÉCURISÉE
+PORTFOLIO ADMIN - CODE DE VÉRIFICATION
 --------------------------------------------------
 
 Bonjour,
 
-Une tentative de connexion a été détectée pour le compte : ${userEmail}
+Une tentative de connexion a été détectée pour : ${userEmail}
 
-VOTRE CODE DE VÉRIFICATION :
+VOTRE CODE UNIQUE :
 ${code}
 
-Ce code est valide pour 10 minutes.
-Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer ce message.
+SÉCURITÉ :
+- Expire dans 10 minutes.
+- Ne partagez jamais ce code.
+
+Si vous n'avez pas demandé ce code, ignorez simplement ce message.
 
 --------------------------------------------------
 © ${new Date().getFullYear()} Portfolio Admin
