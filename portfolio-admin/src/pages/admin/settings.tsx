@@ -346,31 +346,31 @@ export default function SettingsPage() {
     }
   };
 
-  const uploadCroppedImage = async (blob: Blob) => {
-    const formData = new FormData();
-    formData.append('image', blob, 'profile.jpg');
+  const blobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
 
-    const toastId = toast.loading('Upload en cours...');
+  const uploadCroppedImage = async (blob: Blob) => {
+    const toastId = toast.loading('Traitement de l\'image...');
 
     try {
-      const response = await fetch('/api/admin/upload-image', {
-        method: 'POST',
-        body: formData,
-      });
+      // Convertir le blob en Base64
+      const base64Image = await blobToBase64(blob);
 
-      if (response.ok) {
-        const data = await response.json();
-        const newSettings = { ...settings, aboutImage: data.url };
-        setSettings(newSettings);
-        localStorage.setItem('adminSettings', JSON.stringify(newSettings));
-        toast.success('Photo de profil mise à jour !', { id: toastId });
-      } else {
-        const error = await response.json();
-        toast.error(error.error || "Erreur d'upload", { id: toastId });
-      }
+      // Mettre à jour l'état local immédiatement
+      const newSettings = { ...settings, aboutImage: base64Image };
+      setSettings(newSettings);
+      localStorage.setItem('adminSettings', JSON.stringify(newSettings));
+
+      toast.success('Image prête ! N\'oubliez pas de sauvegarder.', { id: toastId });
     } catch (error) {
-      console.error('Erreur upload:', error);
-      toast.error("Erreur serveur", { id: toastId });
+      console.error('Erreur conversion image:', error);
+      toast.error("Erreur lors du traitement de l'image", { id: toastId });
     }
   };
 
