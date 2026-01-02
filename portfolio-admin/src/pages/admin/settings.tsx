@@ -1,4 +1,7 @@
+
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/layouts/AdminLayout';
@@ -662,7 +665,13 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-6">
                   <div className="relative w-24 h-24 rounded-full overflow-hidden bg-[#252525] border border-[#2A2A2A] flex-shrink-0">
                     {settings.aboutImage ? (
-                      <img src={settings.aboutImage} alt="Profile" className="w-full h-full object-cover" />
+                      <Image
+                        src={settings.aboutImage}
+                        alt="Profile"
+                        fill
+                        className="object-cover"
+                        sizes="96px"
+                      />
                     ) : (
                       <div className="flex items-center justify-center w-full h-full text-gray-500">
                         <FaUser size={32} />

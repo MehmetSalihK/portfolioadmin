@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Layout from '@/components/layout/Layout';
 import { FaUser, FaCode, FaPaintBrush, FaTools, FaVideo, FaMobileAlt } from 'react-icons/fa';
@@ -78,10 +79,12 @@ export default function About() {
                 <div className="aspect-square relative rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-blue-500 to-purple-600 p-1">
                   <div className="absolute inset-0 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center overflow-hidden">
                     {settings.aboutImage ? (
-                      <img
+                      <Image
                         src={settings.aboutImage}
                         alt="Profile"
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 500px"
                       />
                     ) : (
                       <div className="text-9xl text-gray-200 dark:text-gray-700">
