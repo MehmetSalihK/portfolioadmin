@@ -27,8 +27,8 @@ export default async function handler(
   if (req.method === 'POST') {
     try {
       const isVercel = process.env.VERCEL || process.env.NODE_ENV === 'production';
-      const uploadDir = isVercel 
-        ? '/tmp' 
+      const uploadDir = isVercel
+        ? '/tmp'
         : path.join(process.cwd(), 'public', 'uploads', 'cv');
       if (!isVercel && !fs.existsSync(uploadDir)) {
         try {
@@ -43,9 +43,9 @@ export default async function handler(
         keepExtensions: true,
         maxFileSize: 10 * 1024 * 1024,
         filter: ({ mimetype }) => {
-          return mimetype === 'application/pdf' || 
-                 mimetype === 'image/png' || 
-                 mimetype === 'image/jpeg';
+          return mimetype === 'application/pdf' ||
+            mimetype === 'image/png' ||
+            mimetype === 'image/jpeg';
         }
       });
 
@@ -70,41 +70,36 @@ export default async function handler(
       const timestamp = Date.now();
       const extension = path.extname(file.originalFilename || '');
       const newFilename = `cv_${timestamp}${extension}`;
-      
-      let cvData = {};
-      
-      if (isVercel) {
-        const fileBuffer = fs.readFileSync(file.filepath);
-        const base64Data = fileBuffer.toString('base64');
-        
-        cvData = {
-          filename: newFilename,
-          originalName: file.originalFilename,
-          mimeType: file.mimetype,
-          size: file.size,
-          data: base64Data, // Stocker en base64
-          isActive: true
-        };
-      } else {
-        const newPath = path.join(uploadDir, newFilename);
-        fs.renameSync(file.filepath, newPath);
-        
-        cvData = {
-          filename: newFilename,
-          originalName: file.originalFilename,
-          mimeType: file.mimetype,
-          size: file.size,
-          isActive: true
-        };
+
+      // Always store in DB (Base64)
+      const fileBuffer = fs.readFileSync(file.filepath);
+      const base64Data = fileBuffer.toString('base64');
+
+      const cvData = {
+        filename: newFilename,
+        originalName: file.originalFilename,
+        mimeType: file.mimetype,
+        size: file.size,
+        data: base64Data,
+        isActive: true
+      };
+
+      // Clean up the temp file from disk immediately
+      try {
+        if (fs.existsSync(file.filepath)) {
+          fs.unlinkSync(file.filepath);
+        }
+      } catch (err) {
+        console.error('Error cleaning up temp file:', err);
       }
 
       const cvRecord = new CV(cvData);
 
       await cvRecord.save();
 
-      return res.status(200).json({ 
+      return res.status(200).json({
         message: 'CV uploadé avec succès',
-        cv: cvRecord 
+        cv: cvRecord
       });
     } catch (error) {
       console.error('Erreur upload CV:', error);
@@ -133,10 +128,10 @@ export default async function handler(
             fs.unlinkSync(filePath);
           }
         }
-        
+
         await CV.findByIdAndDelete(activeCV._id);
       }
-      
+
       return res.status(200).json({ message: 'CV supprimé avec succès' });
     } catch (error) {
       console.error('Erreur suppression CV:', error);

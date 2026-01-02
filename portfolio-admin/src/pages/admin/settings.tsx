@@ -20,7 +20,14 @@ import {
   FiTrash2,
   FiEye
 } from 'react-icons/fi';
-import { FaWhatsapp, FaTelegram } from 'react-icons/fa';
+import { FaWhatsapp, FaTelegram, FaUser } from 'react-icons/fa';
+import dynamic from 'next/dynamic';
+import 'react-quill/dist/quill.snow.css';
+
+import Cropper from 'react-easy-crop';
+import getCroppedImg from '../../utils/cropImage';
+
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 interface Settings {
   siteTitle: string;
@@ -33,6 +40,9 @@ interface Settings {
   twitter: string;
   whatsapp: string;
   telegram: string;
+  aboutTitle: string;
+  aboutBio: string;
+  aboutImage: string;
 }
 
 export default function SettingsPage() {
@@ -55,7 +65,10 @@ export default function SettingsPage() {
       linkedin: '',
       twitter: '',
       whatsapp: '',
-      telegram: ''
+      telegram: '',
+      aboutTitle: 'Mon Parcours',
+      aboutBio: '',
+      aboutImage: ''
     };
   });
   const [isSaving, setIsSaving] = useState(false);
@@ -67,6 +80,15 @@ export default function SettingsPage() {
   const [currentCV, setCurrentCV] = useState<any>(null);
   const [isUploadingCV, setIsUploadingCV] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // States for Image Cropping
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [isCropping, setIsCropping] = useState(false);
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -182,38 +204,55 @@ export default function SettingsPage() {
     };
     setSettings(newSettings);
     localStorage.setItem('adminSettings', JSON.stringify(newSettings));
+  };
 
-    // Auto-complétion pour le champ position
-    if (name === 'position' && value.length >= 2) {
-      searchAddresses(value);
-    } else if (name === 'position' && value.length < 2) {
+  // Effect-based Debounce for Position Search
+  useEffect(() => {
+    const query = settings.position;
+
+    // Clear existing timer on every change
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    // Don't search if too short or if it's likely a selected start (optimization)
+    if (!query || query.length < 2) {
       setPositionSuggestions([]);
       setShowSuggestions(false);
+      return;
     }
-  };
 
-  // Fonction pour rechercher des adresses
-  const searchAddresses = async (query: string) => {
-    setIsLoadingSuggestions(true);
-    try {
-      const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&type=municipality&autocomplete=1&limit=5`);
-      const data = await response.json();
+    // Set new timer
+    timeoutRef.current = setTimeout(async () => {
+      setIsLoadingSuggestions(true);
+      try {
+        console.log('Searching (Effect) for:', query);
+        const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5&autocomplete=1`);
+        if (!response.ok) throw new Error('API Error');
 
-      if (data.features) {
-        const suggestions = data.features.map((feature: any) => {
-          const city = feature.properties.city;
-          const postcode = feature.properties.postcode;
-          return `${city}, ${postcode}`;
-        });
-        setPositionSuggestions(suggestions);
-        setShowSuggestions(true);
+        const data = await response.json();
+        if (data.features) {
+          const suggestions = data.features.map((feature: any) => {
+            const props = feature.properties;
+            if (props.city && props.postcode) {
+              return `${props.city}, ${props.postcode}`;
+            }
+            return props.label;
+          }).filter(Boolean);
+
+          const uniqueSuggestions = Array.from(new Set(suggestions));
+          setPositionSuggestions(uniqueSuggestions as string[]);
+          // Only show if we have results and the input isn't exactly one of them (avoids reopening after click)
+          const exactMatch = uniqueSuggestions.some(s => s === query);
+          setShowSuggestions(uniqueSuggestions.length > 0 && !exactMatch);
+        }
+      } catch (error) {
+        console.error('Erreur recherche adresse:', error);
+      } finally {
+        setIsLoadingSuggestions(false);
       }
-    } catch (error) {
-      console.error('Erreur lors de la recherche d\'adresses:', error);
-    } finally {
-      setIsLoadingSuggestions(false);
-    }
-  };
+    }, 400); // 400ms debounce
+
+  }, [settings.position]);
+
 
   // Sélectionner une suggestion
   const selectSuggestion = (suggestion: string) => {
@@ -263,6 +302,79 @@ export default function SettingsPage() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // Read file and open crop modal
+  const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const imageDataUrl = await readFile(file);
+      setImageSrc(imageDataUrl as string);
+      setIsCropping(true);
+      // Reset input value to allow selecting same file again
+      e.target.value = '';
+    }
+  };
+
+  const readFile = (file: File) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => resolve(reader.result), false);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const onCropComplete = (croppedArea: any, croppedAreaPixels: any) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  };
+
+  const handleSaveCrop = async () => {
+    if (!imageSrc || !croppedAreaPixels) return;
+    try {
+      const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
+      if (croppedImage) {
+        await uploadCroppedImage(croppedImage);
+        setIsCropping(false);
+        setImageSrc(null);
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Erreur lors du recadrage");
+    }
+  };
+
+  const uploadCroppedImage = async (blob: Blob) => {
+    const formData = new FormData();
+    formData.append('image', blob, 'profile.jpg');
+
+    const toastId = toast.loading('Upload en cours...');
+
+    try {
+      const response = await fetch('/api/admin/upload-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const newSettings = { ...settings, aboutImage: data.url };
+        setSettings(newSettings);
+        localStorage.setItem('adminSettings', JSON.stringify(newSettings));
+        toast.success('Photo de profil mise à jour !', { id: toastId });
+      } else {
+        const error = await response.json();
+        toast.error(error.error || "Erreur d'upload", { id: toastId });
+      }
+    } catch (error) {
+      console.error('Erreur upload:', error);
+      toast.error("Erreur serveur", { id: toastId });
+    }
+  };
+
+  // Deprecated/Modified original handler
+  const handleProfileImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    // Now delegates to onFileChange
+    onFileChange(event);
   };
 
   return (
@@ -372,37 +484,43 @@ export default function SettingsPage() {
                     )}
                   </div>
                 </label>
-                <input
-                  ref={positionInputRef}
-                  type="text"
-                  name="position"
-                  value={settings.position}
-                  onChange={handleChange}
-                  placeholder="Ex: Nogent-sur-Oise, 60180"
-                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white rounded border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  autoComplete="off"
-                />
-                {showSuggestions && positionSuggestions.length > 0 && (
-                  <div
-                    ref={suggestionsRef}
-                    className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
-                  >
-                    {positionSuggestions.map((suggestion, index) => (
-                      <div
-                        key={index}
-                        onClick={() => selectSuggestion(suggestion)}
-                        className="px-3 py-2 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer border-b border-gray-200 dark:border-gray-600 last:border-b-0"
-                      >
-                        <div className="flex items-center gap-2">
-                          <FiMapPin className="text-blue-500 text-sm" />
-                          <span className="text-sm">{suggestion}</span>
+                <div className="relative">
+                  <input
+                    ref={positionInputRef}
+                    type="text"
+                    name="position"
+                    value={settings.position}
+                    onChange={handleChange}
+                    placeholder="Ex: Nogent-sur-Oise, 60180"
+                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white rounded border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    autoComplete="off"
+                  />
+                  {showSuggestions && positionSuggestions.length > 0 && (
+                    <div
+                      ref={suggestionsRef}
+                      className="absolute z-[100] w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-y-auto"
+                    >
+                      {positionSuggestions.map((suggestion, index) => (
+                        <div
+                          key={index}
+                          onClick={() => selectSuggestion(suggestion)}
+                          className="px-3 py-2 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer border-b border-gray-200 dark:border-gray-600 last:border-b-0"
+                        >
+                          <div className="flex items-center gap-2">
+                            <FiMapPin className="text-blue-500 text-sm" />
+                            <span className="text-sm">{suggestion}</span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Tapez au moins 2 caractères pour voir les suggestions de villes françaises
+                </p>
+                {/* DEBUG INFO: Temporary only */}
+                <p className="text-[10px] text-gray-500 mt-1">
+                  Debug: {isLoadingSuggestions ? 'Loading...' : 'Ready'} | Length: {positionSuggestions.length}
                 </p>
               </motion.div>
 
@@ -525,6 +643,139 @@ export default function SettingsPage() {
                 rows={4}
                 className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
+            </motion.div>
+
+            {/* Section À Propos */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.85 }}
+              className="border-t border-[#2A2A2A] pt-6"
+            >
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <FaUser className="text-blue-500" />
+                Configuration "À Propos"
+              </h3>
+
+              <div className="space-y-6">
+                {/* Photo Upload */}
+                <div className="flex items-center gap-6">
+                  <div className="relative w-24 h-24 rounded-full overflow-hidden bg-[#252525] border border-[#2A2A2A] flex-shrink-0">
+                    {settings.aboutImage ? (
+                      <img src={settings.aboutImage} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="flex items-center justify-center w-full h-full text-gray-500">
+                        <FaUser size={32} />
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-gray-400 text-sm font-medium mb-2">Photo de Profil</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={onFileChange}
+                      className="block w-full text-sm text-gray-400
+                          file:mr-4 file:py-2 file:px-4
+                          file:rounded-full file:border-0
+                          file:text-sm file:font-semibold
+                          file:bg-blue-500 file:text-white
+                          hover:file:bg-blue-600
+                          cursor-pointer"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Recommandé : Carré (500x500px min)</p>
+                  </div>
+                </div>
+
+                {/* Crop Modal */}
+                {isCropping && imageSrc && (
+                  <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-75 p-4">
+                    <div className="bg-[#1e1e1e] rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                      <div className="p-4 border-b border-[#2A2A2A] flex justify-between items-center">
+                        <h3 className="text-white font-semibold">Redimensionner la photo</h3>
+                        <button onClick={() => setIsCropping(false)} className="text-gray-400 hover:text-white">✕</button>
+                      </div>
+                      <div className="relative h-96 w-full bg-black">
+                        <Cropper
+                          image={imageSrc}
+                          crop={crop}
+                          zoom={zoom}
+                          aspect={1}
+                          onCropChange={setCrop}
+                          onCropComplete={onCropComplete}
+                          onZoomChange={setZoom}
+                        />
+                      </div>
+                      <div className="p-6 bg-[#1e1e1e] border-t border-[#2A2A2A] space-y-4">
+                        <div>
+                          <label className="text-gray-400 text-sm mb-1 block">Zoom</label>
+                          <input
+                            type="range"
+                            value={zoom}
+                            min={1}
+                            max={3}
+                            step={0.1}
+                            aria-labelledby="Zoom"
+                            onChange={(e) => setZoom(Number(e.target.value))}
+                            className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                          />
+                        </div>
+                        <div className="flex justify-end gap-3">
+                          <button
+                            onClick={() => setIsCropping(false)}
+                            className="px-4 py-2 rounded-lg text-gray-300 hover:bg-[#2A2A2A] transition-colors"
+                          >
+                            Annuler
+                          </button>
+                          <button
+                            onClick={handleSaveCrop}
+                            className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors font-medium"
+                          >
+                            Valider & Enregistrer
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Titre Bio */}
+                <div>
+                  <label className="block text-gray-400 text-sm font-medium mb-2">Titre du Parcours</label>
+                  <input
+                    type="text"
+                    name="aboutTitle"
+                    value={settings.aboutTitle}
+                    onChange={handleChange}
+                    placeholder="Ex: Mon Parcours"
+                    className="w-full px-3 py-2 bg-[#252525] text-white rounded border border-[#2A2A2A] focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-400 text-sm font-medium mb-2">Biographie / Parcours</label>
+                  <div className="rounded-md overflow-hidden border border-[#2A2A2A]">
+                    <ReactQuill
+                      theme="snow"
+                      value={settings.aboutBio}
+                      onChange={(content) => {
+                        const newSettings = { ...settings, aboutBio: content };
+                        setSettings(newSettings);
+                        localStorage.setItem('adminSettings', JSON.stringify(newSettings));
+                      }}
+                      modules={{
+                        toolbar: [
+                          [{ 'header': [1, 2, 3, false] }],
+                          ['bold', 'italic', 'underline', 'strike'],
+                          [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                          ['link', 'clean']
+                        ],
+                      }}
+                      className="h-64 mb-12 text-gray-300"
+                    />
+                  </div>
+                </div>
+              </div>
             </motion.div>
 
             {/* Section CV */}

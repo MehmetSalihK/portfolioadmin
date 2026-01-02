@@ -38,7 +38,7 @@ class BackupScheduler {
 
     try {
       await connectDB();
-      
+
       // Tâches par défaut
       const defaultTasks: Omit<ScheduledTask, 'id' | 'task'>[] = [
         {
@@ -69,6 +69,9 @@ class BackupScheduler {
 
       // Démarrer le nettoyage automatique des anciennes sauvegardes
       this.scheduleCleanup();
+
+      // Démarrer la synchronisation GitHub automatique
+      this.scheduleGitHubSync();
 
       this.isInitialized = true;
       console.log('✅ Planificateur de sauvegardes initialisé');
@@ -106,7 +109,7 @@ class BackupScheduler {
       }
 
       this.tasks.set(id, task);
-      
+
       if (config.enabled && task.task) {
         task.task.start();
         console.log(`📅 Tâche planifiée créée: ${config.name} (${config.schedule})`);
@@ -137,7 +140,7 @@ class BackupScheduler {
     task.task.start();
     task.enabled = true;
     task.nextRun = this.getNextRunDate(task.schedule);
-    
+
     console.log(`▶️ Tâche démarrée: ${task.name}`);
   }
 
@@ -156,7 +159,7 @@ class BackupScheduler {
 
     task.enabled = false;
     task.nextRun = undefined;
-    
+
     console.log(`⏹️ Tâche arrêtée: ${task.name}`);
   }
 
@@ -174,7 +177,7 @@ class BackupScheduler {
 
     try {
       console.log(`🔄 Début de la sauvegarde ${type} (${task.name})`);
-      
+
       const startTime = Date.now();
       task.lastRun = new Date();
       task.nextRun = this.getNextRunDate(task.schedule);
@@ -207,7 +210,7 @@ class BackupScheduler {
 
       // Compresser les données
       const compressedData = await gzip(JSON.stringify(data));
-      
+
       // Calculer le checksum
       const checksum = crypto.createHash('sha256')
         .update(compressedData)
@@ -235,7 +238,7 @@ class BackupScheduler {
 
     } catch (error) {
       console.error(`❌ Erreur lors de la sauvegarde ${type}:`, error);
-      
+
       // Optionnel: envoyer une notification d'erreur
       // await this.sendErrorNotification(taskId, error);
     }
@@ -380,12 +383,12 @@ class BackupScheduler {
     // Nettoyage quotidien à 4h du matin
     cron.schedule('0 4 * * *', async () => {
       console.log('🧹 Début du nettoyage automatique des sauvegardes');
-      
+
       try {
         await this.cleanupOldBackups('full');
         await this.cleanupOldBackups('incremental');
         await this.cleanupOldBackups('differential');
-        
+
         console.log('✅ Nettoyage automatique terminé');
       } catch (error) {
         console.error('❌ Erreur lors du nettoyage automatique:', error);
@@ -395,10 +398,29 @@ class BackupScheduler {
     });
   }
 
+  // Planifier la synchronisation GitHub
+  private scheduleGitHubSync() {
+    // Synchronisation quotidienne à 3h du matin
+    cron.schedule('0 3 * * *', async () => {
+      console.log('🔄 Début de la synchronisation GitHub automatique');
+      import('../services/github').then(async ({ githubService }) => {
+        try {
+          await connectDB();
+          const result = await githubService.syncRepositories(true);
+          console.log(`✅ Synchronisation GitHub terminée: ${result.stats.synced} synchronisés, ${result.stats.created} créés`);
+        } catch (error) {
+          console.error('❌ Erreur lors de la synchronisation GitHub automatique:', error);
+        }
+      });
+    }, {
+      timezone: 'Europe/Paris',
+    });
+  }
+
   // Obtenir la prochaine date d'exécution
   private getNextRunDate(schedule: string): Date | undefined {
     try {
-      const task = cron.schedule(schedule, () => {});
+      const task = cron.schedule(schedule, () => { });
       // Note: node-cron ne fournit pas directement la prochaine exécution
       // On peut utiliser une bibliothèque comme 'cron-parser' pour cela
       task.destroy();
@@ -457,14 +479,14 @@ class BackupScheduler {
   // Arrêter toutes les tâches
   async shutdown() {
     console.log('🛑 Arrêt du planificateur de sauvegardes...');
-    
+
     for (const [id] of Array.from(this.tasks)) {
       await this.stopTask(id);
     }
-    
+
     this.tasks.clear();
     this.isInitialized = false;
-    
+
     console.log('✅ Planificateur arrêté');
   }
 }
@@ -476,13 +498,13 @@ const backupScheduler = new BackupScheduler();
 if (typeof window === 'undefined') {
   // Côté serveur uniquement
   backupScheduler.initialize().catch(console.error);
-  
+
   // Gérer l'arrêt propre
   process.on('SIGINT', async () => {
     await backupScheduler.shutdown();
     process.exit(0);
   });
-  
+
   process.on('SIGTERM', async () => {
     await backupScheduler.shutdown();
     process.exit(0);

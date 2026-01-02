@@ -14,7 +14,7 @@ export default async function handler(
     // Récupérer le statut de maintenance (accessible à tous)
     try {
       let maintenance = await Maintenance.findOne();
-      
+
       if (!maintenance) {
         // Créer un document de maintenance par défaut
         maintenance = new Maintenance({
@@ -25,11 +25,20 @@ export default async function handler(
         await maintenance.save();
       }
 
+      const now = new Date();
+      let isActive = maintenance.isEnabled;
+
+      if (!isActive && maintenance.startTime && maintenance.endTime) {
+        isActive = now >= maintenance.startTime && now <= maintenance.endTime;
+      } else if (!isActive && maintenance.startTime && !maintenance.endTime) {
+        isActive = now >= maintenance.startTime;
+      }
+
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
-      
-      return res.status(200).json(maintenance);
+
+      return res.status(200).json({ ...maintenance.toObject(), isActive });
     } catch (error) {
       console.error('Error fetching maintenance status:', error);
       return res.status(500).json({ message: 'Failed to fetch maintenance status' });
@@ -51,11 +60,13 @@ export default async function handler(
         title,
         message,
         estimatedEndTime,
+        startTime,
+        endTime,
         allowedIPs
       } = req.body;
 
       let maintenance = await Maintenance.findOne();
-      
+
       if (!maintenance) {
         maintenance = new Maintenance();
       }
@@ -63,7 +74,7 @@ export default async function handler(
       // Mettre à jour les champs
       if (typeof isEnabled === 'boolean') {
         maintenance.isEnabled = isEnabled;
-        
+
         if (isEnabled) {
           maintenance.enabledBy = session.user.id;
           maintenance.enabledAt = new Date();
@@ -76,6 +87,8 @@ export default async function handler(
       if (title) maintenance.title = title;
       if (message) maintenance.message = message;
       if (estimatedEndTime) maintenance.estimatedEndTime = new Date(estimatedEndTime);
+      if (req.body.startTime) maintenance.startTime = new Date(req.body.startTime);
+      if (req.body.endTime) maintenance.endTime = new Date(req.body.endTime);
       if (allowedIPs) maintenance.allowedIPs = allowedIPs;
 
       await maintenance.save();
@@ -98,19 +111,19 @@ export default async function handler(
     // Activer/désactiver rapidement le mode maintenance
     try {
       const { action } = req.body;
-      
+
       if (!action || !['enable', 'disable'].includes(action)) {
         return res.status(400).json({ message: 'Invalid action. Use "enable" or "disable"' });
       }
 
       let maintenance = await Maintenance.findOne();
-      
+
       if (!maintenance) {
         maintenance = new Maintenance();
       }
 
       maintenance.isEnabled = action === 'enable';
-      
+
       if (action === 'enable') {
         maintenance.enabledBy = session.user.id;
         maintenance.enabledAt = new Date();

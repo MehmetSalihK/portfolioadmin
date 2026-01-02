@@ -2,7 +2,8 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '@/components/layouts/AdminLayout';
-import { FiTrendingUp, FiUsers, FiEye, FiClock, FiBarChart2, FiMonitor, FiSmartphone, FiTablet } from 'react-icons/fi';
+import Modal from '@/components/admin/Modal';
+import { FiTrendingUp, FiUsers, FiEye, FiClock, FiBarChart2, FiMonitor, FiSmartphone, FiTablet, FiSettings } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 
 interface AnalyticsStats {
@@ -33,6 +34,8 @@ interface MaintenanceStatus {
   title: string;
   message: string;
   estimatedEndTime?: string;
+  startTime?: string;
+  endTime?: string;
   enabledAt?: string;
   enabledBy?: string;
 }
@@ -45,6 +48,13 @@ export default function AnalyticsPage() {
   const [period, setPeriod] = useState<'24h' | '7d' | '30d' | '90d'>('7d');
   const [loading, setLoading] = useState(true);
   const [maintenanceLoading, setMaintenanceLoading] = useState(false);
+  const [isMaintenanceModalOpen, setIsMaintenanceModalOpen] = useState(false);
+  const [maintenanceForm, setMaintenanceForm] = useState({
+    title: '',
+    message: '',
+    startTime: '',
+    endTime: ''
+  });
 
   const fetchAnalytics = useCallback(async () => {
     try {
@@ -73,10 +83,41 @@ export default function AnalyticsPage() {
       if (!response.ok) throw new Error('Failed to fetch maintenance status');
       const data = await response.json();
       setMaintenanceStatus(data);
+      if (data) {
+        setMaintenanceForm({
+          title: data.title || 'Site en maintenance',
+          message: data.message || 'Le site est actuellement en maintenance. Veuillez revenir plus tard.',
+          startTime: data.startTime ? new Date(data.startTime).toISOString().slice(0, 16) : '',
+          endTime: data.endTime ? new Date(data.endTime).toISOString().slice(0, 16) : ''
+        });
+      }
     } catch (error) {
       console.error('Error fetching maintenance status:', error);
     }
   }, []);
+
+  const handleSaveMaintenance = async () => {
+    try {
+      setMaintenanceLoading(true);
+      const response = await fetch('/api/maintenance', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...maintenanceForm,
+          estimatedEndTime: maintenanceForm.endTime // Sync for backward compatibility
+        }),
+      });
+      if (!response.ok) throw new Error('Failed to save maintenance settings');
+      await fetchMaintenanceStatus();
+      setIsMaintenanceModalOpen(false);
+    } catch (error) {
+      console.error('Error saving maintenance settings:', error);
+    } finally {
+      setMaintenanceLoading(false);
+    }
+  };
 
   const toggleMaintenance = async () => {
     try {
@@ -151,20 +192,26 @@ export default function AnalyticsPage() {
               <FiBarChart2 className="w-8 h-8 text-blue-500" />
               <h1 className="text-2xl font-bold text-white">Analytics & Maintenance</h1>
             </div>
-            
+
             {/* Maintenance Toggle */}
             <div className="flex items-center gap-4">
               <span className="text-white">Mode Maintenance:</span>
               <button
                 onClick={toggleMaintenance}
                 disabled={maintenanceLoading}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  maintenanceStatus?.isEnabled
-                    ? 'bg-red-500 hover:bg-red-600 text-white'
-                    : 'bg-green-500 hover:bg-green-600 text-white'
-                } disabled:opacity-50`}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${maintenanceStatus?.isEnabled
+                  ? 'bg-red-500 hover:bg-red-600 text-white'
+                  : 'bg-green-500 hover:bg-green-600 text-white'
+                  } disabled:opacity-50`}
               >
                 {maintenanceLoading ? 'Chargement...' : maintenanceStatus?.isEnabled ? 'Désactiver' : 'Activer'}
+              </button>
+              <button
+                onClick={() => setIsMaintenanceModalOpen(true)}
+                className="p-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white transition-colors"
+                title="Configurer"
+              >
+                <FiSettings className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -175,11 +222,10 @@ export default function AnalyticsPage() {
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  period === p
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${period === p
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
               >
                 {p === '24h' ? '24 heures' : p === '7d' ? '7 jours' : p === '30d' ? '30 jours' : '90 jours'}
               </button>
@@ -264,8 +310,8 @@ export default function AnalyticsPage() {
                   <span className="text-blue-400 font-semibold">{page.visits} visites</span>
                 </div>
               )) || (
-                <div className="text-gray-400 text-center py-4">Aucune donnée disponible</div>
-              )}
+                  <div className="text-gray-400 text-center py-4">Aucune donnée disponible</div>
+                )}
             </div>
           </div>
 
@@ -282,8 +328,8 @@ export default function AnalyticsPage() {
                   <span className="text-blue-400 font-semibold">{device.count}</span>
                 </div>
               )) || (
-                <div className="text-gray-400 text-center py-4">Aucune donnée disponible</div>
-              )}
+                  <div className="text-gray-400 text-center py-4">Aucune donnée disponible</div>
+                )}
             </div>
           </div>
         </div>
@@ -295,14 +341,14 @@ export default function AnalyticsPage() {
             {analyticsData?.dailyVisits?.map((day, index) => {
               const maxVisits = Math.max(...(analyticsData.dailyVisits?.map(d => d.visits) || [1]));
               const percentage = (day.visits / maxVisits) * 100;
-              
+
               return (
                 <div key={index} className="flex items-center gap-4">
                   <div className="w-20 text-sm text-gray-400">
                     {new Date(day.date).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}
                   </div>
                   <div className="flex-1 bg-[#2A2A2A] rounded-full h-6 relative overflow-hidden">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-500"
                       style={{ width: `${percentage}%` }}
                     />
@@ -316,11 +362,83 @@ export default function AnalyticsPage() {
                 </div>
               );
             }) || (
-              <div className="text-gray-400 text-center py-4">Aucune donnée disponible</div>
-            )}
+                <div className="text-gray-400 text-center py-4">Aucune donnée disponible</div>
+              )}
           </div>
         </div>
       </div>
+
+      {/* Maintenance Modal */}
+      <Modal
+        isOpen={isMaintenanceModalOpen}
+        onClose={() => setIsMaintenanceModalOpen(false)}
+        title="Configurer la maintenance"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Titre
+            </label>
+            <input
+              type="text"
+              value={maintenanceForm.title}
+              onChange={(e) => setMaintenanceForm({ ...maintenanceForm, title: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Message
+            </label>
+            <textarea
+              value={maintenanceForm.message}
+              onChange={(e) => setMaintenanceForm({ ...maintenanceForm, message: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 h-24"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Début (Optionnel)
+              </label>
+              <input
+                type="datetime-local"
+                value={maintenanceForm.startTime}
+                onChange={(e) => setMaintenanceForm({ ...maintenanceForm, startTime: e.target.value })}
+                className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Fin (Optionnel)
+              </label>
+              <input
+                type="datetime-local"
+                value={maintenanceForm.endTime}
+                onChange={(e) => setMaintenanceForm({ ...maintenanceForm, endTime: e.target.value })}
+                className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              onClick={() => setIsMaintenanceModalOpen(false)}
+              className="px-4 py-2 rounded-lg font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={handleSaveMaintenance}
+              disabled={maintenanceLoading}
+              className="px-4 py-2 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
+            >
+              {maintenanceLoading ? 'Enregistrement...' : 'Enregistrer'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </AdminLayout>
   );
 }

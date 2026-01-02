@@ -144,7 +144,14 @@ interface HomePageProps {
       };
       displayOrder: number;
     }>;
+
   }>;
+  seoData?: {
+    title?: string;
+    description?: string;
+    keywords?: string[];
+    ogImage?: string;
+  };
 }
 
 const defaultHomeData = {
@@ -266,7 +273,7 @@ interface Skill {
   categoryId: Category | string | null;
 }
 
-export default function Home({ projects, experiences, skills, homeData = defaultHomeData, skillsByCategory, settings }: HomePageProps) {
+export default function Home({ projects, experiences, skills, homeData = defaultHomeData, skillsByCategory, settings, seoData }: HomePageProps) {
   const { scrollYProgress } = useScroll();
   const mainRef = useRef<HTMLDivElement>(null);
   const [showBanner, setShowBanner] = useState(true);
@@ -555,8 +562,11 @@ export default function Home({ projects, experiences, skills, homeData = default
   return (
     <Layout>
       <Head>
-        <title>Portfolio - Accueil</title>
-        <meta name="description" content="Portfolio professionnel - Développeur Full Stack" />
+        <title>{seoData?.title || homeData.title || 'Portfolio - Accueil'}</title>
+        <meta name="description" content={seoData?.description || 'Portfolio professionnel - Développeur Full Stack'} />
+        {seoData?.keywords && seoData.keywords.length > 0 && (
+          <meta name="keywords" content={seoData.keywords.join(', ')} />
+        )}
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -1621,6 +1631,10 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       linkedin: 'https://www.linkedin.com/in/mehmetsalihk'
     };
 
+    // Récupérer les données SEO
+    const SEO = (await import('@/models/SEO')).default;
+    const seoData = await SEO.findOne({ page: 'home' }).lean();
+
     // Récupérer les projets sélectionnés pour la page d'accueil
     const projects = await Project.aggregate([
       {
@@ -1704,7 +1718,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
         homeData: JSON.parse(JSON.stringify(homeData)),
         skillsByCategory: JSON.parse(JSON.stringify(skillsByCategory)),
         settings: JSON.parse(JSON.stringify(settings)),
-
+        seoData: seoData ? JSON.parse(JSON.stringify(seoData)) : null,
       },
       revalidate: 1,
     };

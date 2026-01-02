@@ -351,3 +351,69 @@ select:focus {
     display: none !important;
   }
 }
+
+/* React Quill Dark Mode Customization */
+.ql-toolbar.ql-snow {
+  background-color: #252525;
+  border-color: #2A2A2A !important;
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+}
+
+.ql-container.ql-snow {
+  background-color: #1e1e1e;
+  border-color: #2A2A2A !important;
+  border-bottom-left-radius: 0.375rem;
+  border-bottom-right-radius: 0.375rem;
+  color: #e5e7eb; /* gray-200 */
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Toolbar Icons */
+.ql-snow .ql-stroke {
+  stroke: #9ca3af !important; /* gray-400 */
+}
+
+.ql-snow .ql-fill {
+  fill: #9ca3af !important;
+}
+
+.ql-snow .ql-picker {
+  color: #9ca3af !important;
+}
+
+/* Hourly hover effects */
+.ql-snow .ql-picker:hover,
+.ql-snow .ql-picker.ql-expanded .ql-picker-label {
+  color: #60a5fa !important; /* blue-400 */
+}
+
+.ql-snow .ql-picker-options {
+  background-color: #252525 !important;
+  border-color: #3f3f46 !important;
+}
+
+.ql-snow .ql-picker-item {
+  color: #9ca3af !important;
+}
+
+.ql-snow .ql-picker-item:hover {
+  color: #60a5fa !important;
+}
+
+.ql-snow.ql-toolbar button:hover .ql-stroke,
+.ql-snow.ql-toolbar button:focus .ql-stroke,
+.ql-snow.ql-toolbar button.ql-active .ql-stroke {
+  stroke: #60a5fa !important;
+}
+
+.ql-snow.ql-toolbar button:hover .ql-fill,
+.ql-snow.ql-toolbar button:focus .ql-fill,
+.ql-snow.ql-toolbar button.ql-active .ql-fill {
+  fill: #60a5fa !important;
+}
+
+.ql-editor.ql-blank::before {
+  color: #6b7280 !important; /* gray-500 */
+  font-style: italic;
+}

@@ -17,6 +17,14 @@ const maintenanceSchema = new mongoose.Schema(
       default: 'Le site est actuellement en maintenance. Veuillez revenir plus tard.',
       required: true,
     },
+    startTime: {
+      type: Date,
+      required: false,
+    },
+    endTime: {
+      type: Date,
+      required: false,
+    },
     estimatedEndTime: {
       type: Date,
       required: false,

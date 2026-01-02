@@ -11,10 +11,10 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 
 function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const router = useRouter();
-  
+
   // Activer la sécurité globale
   useSecurity();
-  
+
   const isAdminPage = router.pathname.startsWith('/admin');
   const isMaintenancePage = router.pathname === '/maintenance';
 
@@ -28,7 +28,28 @@ function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
             <Component {...pageProps} />
           </div>
         </div>
-        <Toaster position="bottom-right" />
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            style: {
+              background: '#1e293b', // Slate 800
+              color: '#fff',
+              border: '1px solid #334155', // Slate 700
+            },
+            success: {
+              iconTheme: {
+                primary: '#4ade80', // Green 400
+                secondary: '#1e293b',
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: '#ef4444', // Red 500
+                secondary: '#1e293b',
+              },
+            },
+          }}
+        />
         <Analytics />
       </ThemeProvider>
     </SessionProvider>

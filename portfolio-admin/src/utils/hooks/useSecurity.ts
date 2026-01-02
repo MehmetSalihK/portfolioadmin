@@ -14,7 +14,7 @@ export const useSecurity = () => {
 
     // Silence total de la console
     const silenceConsole = () => {
-      const noop = () => {};
+      const noop = () => { };
       console.log = noop;
       console.warn = noop;
       console.error = noop;
@@ -23,10 +23,33 @@ export const useSecurity = () => {
       console.clear();
     };
 
+    // Maintenance Check
+    const checkMaintenance = async () => {
+      // Ignorer si on est sur la page de maintenance ou dans l'admin
+      if (window.location.pathname === '/maintenance' || window.location.pathname.startsWith('/admin')) {
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/maintenance');
+        if (res.ok) {
+          const data = await res.json();
+          // Si maintenance active (manuelle ou planifiée)
+          if (data.isActive) {
+            window.location.href = '/maintenance';
+          }
+        }
+      } catch (error) {
+        // Silently fail
+      }
+    };
+
+    checkMaintenance();
+
     // Exécuter immédiatement au montage
     clearAllStorage();
     silenceConsole();
-    
+
     // Aussi écouter les erreurs globales pour les étouffer
     window.onerror = () => true;
     window.onunhandledrejection = () => true;

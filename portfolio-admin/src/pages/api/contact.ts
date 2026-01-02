@@ -15,27 +15,52 @@ if (!process.env.RESEND_EMAIL) {
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+const RATE_LIMIT_DURATION = 60 * 1000; // 1 minute
+const rateLimitMap = new Map<string, number>();
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // ... handler start
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
+  // Rate Limiting
+  const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
+  const now = Date.now();
+
+  if (rateLimitMap.has(ip)) {
+    const lastRequest = rateLimitMap.get(ip)!;
+    if (now - lastRequest < RATE_LIMIT_DURATION) {
+      const remainingTime = Math.ceil((RATE_LIMIT_DURATION - (now - lastRequest)) / 1000);
+      return res.status(429).json({ message: `Veuillez attendre ${remainingTime} secondes avant de renvoyer un message.` });
+    }
+  }
+
+  // Cleanup old entries (simple garbage collection)
+  if (rateLimitMap.size > 1000) {
+    for (const [key, timestamp] of Array.from(rateLimitMap.entries())) {
+      if (now - timestamp > RATE_LIMIT_DURATION) {
+        rateLimitMap.delete(key);
+      }
+    }
+  }
+
+  rateLimitMap.set(ip, now);
+
   try {
     await connectDB();
-    
+
     // Sanitize first to remove HTML potentially
     const cleanedBody = sanitizeInput(req.body);
 
     // Validate with Zod
     const validation = contactSchema.safeParse(cleanedBody);
-    
+
     if (!validation.success) {
-      return res.status(400).json({ 
-        message: 'Données invalides', 
+      return res.status(400).json({
+        message: 'Données invalides',
         errors: validation.error.errors.map((e: any) => e.message)
       });
     }

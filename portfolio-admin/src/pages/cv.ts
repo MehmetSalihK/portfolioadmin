@@ -15,26 +15,24 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     const cv = await CV.findOne({ isActive: true });
 
     if (!cv) {
+      // Instead of 404, redirect to home or show error
       return {
-        notFound: true
+        notFound: true // Keep standard 404 for now, but logged
       };
     }
 
-    const isVercel = process.env.VERCEL || process.env.NODE_ENV === 'production';
+    // Always serving from DB (Base64)
     let fileBuffer: Buffer;
 
-    if (isVercel && cv.data) {
+    if (cv.data) {
       fileBuffer = Buffer.from(cv.data, 'base64');
     } else {
-      const filePath = path.join(process.cwd(), 'public', 'uploads', 'cv', cv.filename);
-
-      if (!fs.existsSync(filePath)) {
-        return {
-          notFound: true
-        };
-      }
-
-      fileBuffer = fs.readFileSync(filePath);
+      // Legacy fallback: if data is missing but file exists (migration case)
+      // For now, we return 404 if data is missing to enforce re-upload
+      console.error('CV found but no data field (legacy?). Re-upload required.');
+      return {
+        notFound: true
+      };
     }
 
     try {

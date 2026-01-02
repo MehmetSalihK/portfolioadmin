@@ -1,24 +1,56 @@
 import Head from 'next/head';
 import { motion } from 'framer-motion';
 import Layout from '@/components/layout/Layout';
-import { FaUser, FaCode, FaServer, FaDatabase } from 'react-icons/fa';
+import { FaUser, FaCode, FaPaintBrush, FaTools, FaVideo, FaMobileAlt } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import DOMPurify from 'isomorphic-dompurify';
+import parse from 'html-react-parser';
+
+// Interface pour les settings
+interface AboutSettings {
+  aboutTitle?: string;
+  aboutBio?: string;
+  aboutImage?: string;
+}
 
 export default function About() {
+  const [settings, setSettings] = useState<AboutSettings>({
+    aboutTitle: 'Mon Parcours',
+    aboutBio: '',
+    aboutImage: ''
+  });
+
+  useEffect(() => {
+    // Récupérer les données dynamiques
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch('/api/admin/settings');
+        if (res.ok) {
+          const data = await res.json();
+          setSettings(data);
+        }
+      } catch (error) {
+        console.error('Erreur chargement settings:', error);
+      }
+    };
+    fetchSettings();
+  }, []);
+
   const features = [
     {
       icon: <FaCode className="w-6 h-6" />,
-      title: "Frontend Development",
-      desc: "Création d'interfaces utilisateur modernes et réactives avec React, Next.js et Tailwind CSS."
+      title: "Développement Web",
+      desc: "Expertise complète sur la stack MERN & Next.js. De la conception de l'interface (Frontend) à l'architecture API (Backend) et la gestion de bases de données."
     },
     {
-      icon: <FaServer className="w-6 h-6" />,
-      title: "Backend Development",
-      desc: "Architecture API robuste et scalable avec Node.js, Express et NestJS."
+      icon: <FaVideo className="w-6 h-6" />, // ou FaPaintBrush
+      title: "Vidéo & Design",
+      desc: "Création de contenu multimédia impactant : Montage vidéo dynamique (Premiere Pro, After Effects) et conception graphique de flyers et publicités."
     },
     {
-      icon: <FaDatabase className="w-6 h-6" />,
-      title: "Database Design",
-      desc: "Modélisation et optimisation de bases de données SQL (PostgreSQL) et NoSQL (MongoDB)."
+      icon: <FaTools className="w-6 h-6" />,
+      title: "Hardware & Maintenance",
+      desc: "Support technique polyvalent : Diagnostic approfondi, réparation de smartphones et maintenance/montage de matériel informatique."
     }
   ];
 
@@ -36,7 +68,7 @@ export default function About() {
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
               {/* Image / Visual Side */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
@@ -44,38 +76,43 @@ export default function About() {
                 className="relative"
               >
                 <div className="aspect-square relative rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-blue-500 to-purple-600 p-1">
-                   <div className="absolute inset-0 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center overflow-hidden">
+                  <div className="absolute inset-0 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center overflow-hidden">
+                    {settings.aboutImage ? (
+                      <img
+                        src={settings.aboutImage}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
                       <div className="text-9xl text-gray-200 dark:text-gray-700">
                         <FaUser />
                       </div>
-                   </div>
+                    )}
+                  </div>
                 </div>
               </motion.div>
 
               {/* Content Side */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, x: 50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: 0.2 }}
               >
                 <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
-                  Mon Parcours
+                  {settings.aboutTitle || 'Mon Parcours'}
                 </h2>
-                <div className="space-y-4 text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                  <p>
-                    Bonjour ! Je suis un développeur Full Stack basé en France.
-                    Mon voyage dans le monde du développement web a commencé par une simple curiosité pour le fonctionnement des sites internet, 
-                    qui s'est rapidement transformée en une véritable passion pour la création d'expériences numériques.
-                  </p>
-                  <p>
-                    Aujourd'hui, je me spécialise dans la stack MERN (MongoDB, Express, React, Node.js) et Next.js, 
-                    créant des applications web qui ne sont pas seulement fonctionnelles, mais aussi rapides, accessibles et visuellement attrayantes.
-                  </p>
-                  <p>
-                    Quand je ne code pas, vous pouvez me trouver en train d'explorer les nouvelles technologies, 
-                    de contribuer à des projets open-source ou simplement de profiter d'un bon café en lisant un livre technique.
-                  </p>
+                <div className="space-y-4 text-lg text-gray-600 dark:text-gray-300 leading-relaxed max-w-none prose dark:prose-invert">
+                  {settings.aboutBio ? (
+                    parse(DOMPurify.sanitize(settings.aboutBio))
+                  ) : (
+                    <>
+                      <p>
+                        Bonjour ! Je suis un développeur Full Stack basé en France.
+                        Mon voyage dans le monde du développement web a commencé par une simple curiosité pour le fonctionnement des sites internet...
+                      </p>
+                    </>
+                  )}
                 </div>
               </motion.div>
             </div>

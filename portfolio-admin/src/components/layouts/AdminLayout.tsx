@@ -2,8 +2,8 @@ import { ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { 
-  FiHome, FiUser, FiBriefcase, FiCode, FiFolder, FiLogOut, FiMenu, FiMail, 
+import {
+  FiHome, FiUser, FiBriefcase, FiCode, FiFolder, FiLogOut, FiMenu, FiMail,
   FiSettings, FiList, FiBarChart2, FiBookOpen, FiActivity, FiSun, FiMoon,
   FiImage, FiTag, FiShield, FiGlobe, FiX
 } from 'react-icons/fi';
@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { useTheme } from '@/contexts/ThemeContext';
+import CommandPalette from '../admin/CommandPalette';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -25,64 +26,64 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const { theme, toggleTheme } = useTheme();
 
   const menuItems = [
-    { 
-      href: '/admin', 
-      label: 'Dashboard', 
+    {
+      href: '/admin',
+      label: 'Dashboard',
       icon: FiHome,
       description: 'Vue d\'ensemble et statistiques'
     },
-    { 
-      href: '/admin/projects', 
-      label: 'Projets', 
+    {
+      href: '/admin/projects',
+      label: 'Projets',
       icon: FiFolder,
       description: 'Gestion des projets portfolio'
     },
-    { 
-      href: '/admin/skills', 
-      label: 'Compétences', 
+    {
+      href: '/admin/skills',
+      label: 'Compétences',
       icon: FiCode,
       description: 'Technologies et compétences'
     },
-    { 
-      href: '/admin/experience', 
-      label: 'Expériences', 
+    {
+      href: '/admin/experience',
+      label: 'Expériences',
       icon: FiBriefcase,
       description: 'Parcours professionnel'
     },
-    { 
-      href: '/admin/education', 
-      label: 'Formation', 
+    {
+      href: '/admin/education',
+      label: 'Formation',
       icon: FiBookOpen,
       description: 'Parcours académique'
     },
-    { 
-      href: '/admin/media', 
-      label: 'Médias', 
+    {
+      href: '/admin/media',
+      label: 'Médias',
       icon: FiImage,
       description: 'Galerie et fichiers'
     },
-    { 
-      href: '/admin/analytics', 
-      label: 'Analytics', 
+    {
+      href: '/admin/analytics',
+      label: 'Analytics',
       icon: FiBarChart2,
       description: 'Statistiques et suivi'
     },
 
-    { 
-      href: '/admin/backup', 
-      label: 'Sauvegardes', 
+    {
+      href: '/admin/backup',
+      label: 'Sauvegardes',
       icon: FiShield,
       description: 'Gestion des sauvegardes'
     },
-    { 
-      href: '/admin/messages', 
-      label: 'Messages', 
+    {
+      href: '/admin/messages',
+      label: 'Messages',
       icon: FiMail,
       description: 'Messages de contact'
     },
-    { 
-      href: '/admin/settings', 
-      label: 'Paramètres', 
+    {
+      href: '/admin/settings',
+      label: 'Paramètres',
       icon: FiSettings,
       description: 'Configuration système'
     },
@@ -124,6 +125,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="min-h-screen transition-colors duration-300" style={{ backgroundColor: 'rgb(30, 30, 30)' }}>
+      <CommandPalette />
       {/* Mobile Overlay */}
       {isSidebarOpen && (
         <motion.div
@@ -202,11 +204,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   >
                     <Link
                       href={item.href}
-                      className={`group flex items-center px-4 py-3 rounded-xl transition-all duration-300 relative overflow-hidden ${
-                        isActive
-                          ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400 shadow-lg'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white'
-                      }`}
+                      className={`group flex items-center px-4 py-3 rounded-xl transition-all duration-300 relative overflow-hidden ${isActive
+                        ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400 shadow-lg'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white'
+                        }`}
                     >
                       {isActive && (
                         <motion.div
@@ -215,9 +216,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                           transition={{ type: "spring", bounce: 0.2 }}
                         />
                       )}
-                      <Icon className={`w-5 h-5 mr-4 transition-all duration-300 ${
-                        isActive ? 'scale-110' : 'group-hover:scale-105'
-                      }`} />
+                      <Icon className={`w-5 h-5 mr-4 transition-all duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-105'
+                        }`} />
                       <div className="flex-1">
                         <span className="font-medium text-sm">{item.label}</span>
                         <p className="text-xs mt-0.5 text-gray-500 dark:text-gray-400 transition-colors duration-300">
@@ -264,18 +264,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           className="min-h-screen p-6 bg-gray-50 dark:bg-gray-900 transition-colors duration-300"
         >
           {children}
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              className: 'dark:bg-gray-800 dark:text-white bg-white text-gray-900',
-              success: {
-                duration: 3000,
-              },
-              error: {
-                duration: 4000,
-              },
-            }}
-          />
         </motion.div>
       </main>
     </div>
