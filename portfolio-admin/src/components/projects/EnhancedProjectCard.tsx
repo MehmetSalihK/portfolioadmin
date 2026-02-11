@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { FaGithub, FaExternalLinkAlt, FaTimes, FaImages, FaChevronLeft, FaChevronRight, FaTag } from 'react-icons/fa';
 import { useState } from 'react';
@@ -59,317 +60,316 @@ export default function EnhancedProjectCard({ project }: ProjectCardProps) {
   const shouldShowReadMore = project.description.length > 100;
   const displayDescription = truncateText(project.description);
 
-  const getDifficultyColor = (difficulty?: string) => {
-    switch(difficulty) {
-      case 'beginner': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-      case 'intermediate': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'advanced': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
-      case 'expert': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400';
-    }
+  /* Removed getDifficultyColor function and difficulty display */
+
+  /* Portal Implementation to fix Stacking Context */
+  const ModalPortal = ({ children }: { children: React.ReactNode }) => {
+    if (typeof window === 'undefined') return null;
+    return createPortal(children, document.body);
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      viewport={{ once: true }}
-      whileHover={{ y: -5 }}
-      className="group relative bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg transform transition-all duration-300 hover:shadow-2xl flex flex-col h-full"
-    >
-      <div className="relative h-48 w-full overflow-hidden shrink-0 cursor-pointer" onClick={openModal}>
-        <Image
-          src={project.image}
-          alt={project.title}
-          fill
-          className="object-cover transform transition-transform duration-300 group-hover:scale-110"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
-        {hasGallery && (
-          <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
-            <FaImages />
-            <span>{allImages.length}</span>
-          </div>
-        )}
-        
-        {project.category && (
-          <div className="absolute top-2 left-2 bg-blue-600/90 backdrop-blur-sm text-white px-2 py-1 rounded-lg text-xs font-medium uppercase tracking-wider shadow-sm">
-            {project.category}
-          </div>
-        )}
-      </div>
-
-      <div className="p-6 flex flex-col flex-grow">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-primary-500 transition-colors duration-300 line-clamp-1">
-            {project.title}
-          </h3>
-          {project.difficulty && (
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${getDifficultyColor(project.difficulty)}`}>
-              {project.difficulty}
-            </span>
-          )}
-        </div>
-
-        <div className="text-gray-600 dark:text-gray-300 mb-4 flex-grow">
-          <p className="inline line-clamp-3">{project.description}</p>
-        </div>
-
-        <div className="mt-auto space-y-4">
-          {/* Technologies */}
-          <div className="flex flex-wrap gap-2">
-            {project.technologies.slice(0, 4).map((tech) => (
-              <span
-                key={tech}
-                className="px-2 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-md text-xs font-medium border border-primary-100 dark:border-primary-800/30"
-              >
-                {tech}
-              </span>
-            ))}
-            {project.technologies.length > 4 && (
-              <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-md text-xs font-medium">
-                +{project.technologies.length - 4}
-              </span>
-            )}
-          </div>
-
-          {/* Tags */}
-          {project.tags && project.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 items-center text-xs text-gray-500 dark:text-gray-400">
-              <FaTag className="w-3 h-3" />
-              {project.tags.slice(0, 3).map(tag => (
-                <span key={tag} className="hover:text-primary-500 transition-colors">#{tag}</span>
-              ))}
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        viewport={{ once: true }}
+        whileHover={{ y: -5 }}
+        className="group relative bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg transform transition-all duration-300 hover:shadow-2xl flex flex-col h-full"
+      >
+        <div className="relative h-48 w-full overflow-hidden shrink-0 cursor-pointer" onClick={openModal}>
+          <Image
+            src={project.image}
+            alt={project.title}
+            fill
+            className="object-cover transform transition-transform duration-300 group-hover:scale-110"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
+          {hasGallery && (
+            <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
+              <FaImages />
+              <span>{allImages.length}</span>
             </div>
           )}
+          
+          {project.category && (
+            <div className="absolute top-2 left-2 bg-blue-600/90 backdrop-blur-sm text-white px-2 py-1 rounded-lg text-xs font-medium uppercase tracking-wider shadow-sm">
+              {project.category}
+            </div>
+          )}
+        </div>
 
-          <div className="flex space-x-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-            {project.githubUrl && (
-              <motion.a
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                href={project.githubUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
-                title="Voir le code source"
-              >
-                <FaGithub className="w-5 h-5" />
-              </motion.a>
+        <div className="p-6 flex flex-col flex-grow">
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-primary-500 transition-colors duration-300 line-clamp-1">
+              {project.title}
+            </h3>
+          </div>
+
+          <div className="text-gray-600 dark:text-gray-300 mb-4 flex-grow">
+            <p className="inline line-clamp-3">{project.description}</p>
+          </div>
+
+          <div className="mt-auto space-y-4">
+            {/* Technologies */}
+            <div className="flex flex-wrap gap-2">
+              {project.technologies.slice(0, 4).map((tech) => (
+                <span
+                  key={tech}
+                  className="px-2 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-md text-xs font-medium border border-primary-100 dark:border-primary-800/30"
+                >
+                  {tech}
+                </span>
+              ))}
+              {project.technologies.length > 4 && (
+                <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-md text-xs font-medium">
+                  +{project.technologies.length - 4}
+                </span>
+              )}
+            </div>
+
+            {/* Tags */}
+            {project.tags && project.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 items-center text-xs text-gray-500 dark:text-gray-400">
+                <FaTag className="w-3 h-3" />
+                {project.tags.slice(0, 3).map(tag => (
+                  <span key={tag} className="hover:text-primary-500 transition-colors">#{tag}</span>
+                ))}
+              </div>
             )}
-            {project.demoUrl && (
-              <motion.a
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                href={project.demoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
-                title="Voir la démo live"
+
+            <div className="flex space-x-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+              {project.githubUrl && (
+                <motion.a
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  href={project.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
+                  title="Voir le code source"
+                >
+                  <FaGithub className="w-5 h-5" />
+                </motion.a>
+              )}
+              {project.demoUrl && (
+                <motion.a
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  href={project.demoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
+                  title="Voir la démo live"
+                >
+                  <FaExternalLinkAlt className="w-4 h-4" />
+                </motion.a>
+              )}
+              <button
+                onClick={openModal}
+                className="ml-auto text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
               >
-                <FaExternalLinkAlt className="w-4 h-4" />
-              </motion.a>
-            )}
-            <button
-              onClick={openModal}
-              className="ml-auto text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
-            >
-              Détails
-            </button>
+                Détails
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Modale pour afficher le projet complet */}
-      <AnimatePresence>
-        {isModalOpen && (
-          <div 
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-            onClick={closeModal}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-              onClick={handleModalContentClick}
+      {/* Premium Glassmorphism Modal via Portal */}
+      <ModalPortal>
+        <AnimatePresence>
+          {isModalOpen && (
+            <div 
+              className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6"
             >
-              {/* Header de la modale */}
-              <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
-                <div>
-                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                    {project.title}
-                    {project.category && (
-                      <span className="text-sm px-3 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 rounded-full font-medium">
-                        {project.category}
-                      </span>
-                    )}
-                  </h2>
-                </div>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/60 backdrop-blur-md transition-all"
+                onClick={closeModal}
+              />
+              
+              <motion.div
+                layoutId={`card-${project.title}`}
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-white/90 dark:bg-gray-900/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 dark:border-gray-700/50 scrollbar-hide"
+                onClick={handleModalContentClick}
+              >
+                {/* Close Button */}
                 <button
                   onClick={closeModal}
-                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="absolute top-4 right-4 z-50 p-2.5 rounded-full bg-black/5 dark:bg-white/10 text-gray-500 dark:text-gray-300 hover:bg-black/10 dark:hover:bg-white/20 transition-all duration-200 backdrop-blur-sm group"
                 >
-                  <FaTimes className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  <FaTimes className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
                 </button>
-              </div>
 
-              <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Colonne gauche : Galerie */}
-                <div className="relative space-y-4">
-                  <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-900 shadow-inner group/gallery">
-                    <Image
-                      src={allImages[currentImageIndex]}
-                      alt={`${project.title} - Image ${currentImageIndex + 1}`}
-                      fill
-                      className="object-contain"
-                    />
-                    
-                    {hasGallery && (
-                      <>
-                        <button
-                          onClick={prevImage}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover/gallery:opacity-100 transition-opacity hover:bg-black/70"
+                <div className="flex flex-col lg:flex-row h-full">
+                  {/* Left Column: Media Gallery */}
+                  <div className="lg:w-7/12 bg-gray-50/50 dark:bg-black/20 p-6 lg:p-8 flex flex-col justify-center">
+                     <div className="relative aspect-video w-full rounded-2xl overflow-hidden shadow-2xl shadow-black/10 dark:shadow-black/50 border border-gray-200 dark:border-gray-800 bg-gray-800">
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={currentImageIndex}
+                          initial={{ opacity: 0, scale: 1.05 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="relative w-full h-full"
                         >
-                          <FaChevronLeft />
-                        </button>
-                        <button
-                          onClick={nextImage}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white opacity-0 group-hover/gallery:opacity-100 transition-opacity hover:bg-black/70"
-                        >
-                          <FaChevronRight />
-                        </button>
-                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
-                          {allImages.map((_, idx) => (
-                            <button
-                              key={idx}
-                              onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(idx); }}
-                              className={`w-2 h-2 rounded-full transition-colors ${
-                                idx === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  
-                  {hasGallery && (
-                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                      {allImages.map((img, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setCurrentImageIndex(idx)}
-                          className={`relative w-20 h-12 shrink-0 rounded-md overflow-hidden border-2 transition-colors ${
-                            idx === currentImageIndex 
-                              ? 'border-primary-500 ring-1 ring-primary-500' 
-                              : 'border-transparent opacity-70 hover:opacity-100'
-                          }`}
-                        >
-                          <Image src={img} alt="" fill className="object-cover" />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                           <Image
+                            src={allImages[currentImageIndex]}
+                            alt={`${project.title} - Preview`}
+                            fill
+                            className="object-contain"
+                            sizes="(max-width: 1024px) 100vw, 60vw"
+                          />
+                        </motion.div>
+                      </AnimatePresence>
 
-                {/* Colonne droite : Infos */}
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                       À propos
-                    </h3>
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
-                      {project.description}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-4">
-                    {project.difficulty && (
-                      <div className="flex-1 min-w-[120px]">
-                        <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Difficulté</span>
-                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getDifficultyColor(project.difficulty)} capitalize`}>
-                          {project.difficulty}
-                        </span>
-                      </div>
-                    )}
-                    {project.status && (
-                      <div className="flex-1 min-w-[120px]">
-                        <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Statut</span>
-                        <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 capitalize">
-                          {project.status}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                      Technologies
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {project.technologies.map((tech) => (
-                        <span
-                          key={tech}
-                          className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {project.tags && project.tags.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                        Tags
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {project.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="flex items-center gap-1.5 px-3 py-1 text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-full"
+                      {/* Navigation Arrows */}
+                      {hasGallery && (
+                        <>
+                          <button
+                            onClick={prevImage}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-md text-white/90 hover:text-white transition-all hover:scale-110 active:scale-95 opacity-0 group-hover:opacity-100"
                           >
-                            <FaTag className="w-3 h-3" />
-                            {tag}
-                          </span>
+                            <FaChevronLeft className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={nextImage}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-md text-white/90 hover:text-white transition-all hover:scale-110 active:scale-95 opacity-0 group-hover:opacity-100"
+                          >
+                            <FaChevronRight className="w-5 h-5" />
+                          </button>
+                        </>
+                      )}
+                     </div>
+
+                     {/* Thumbnails */}
+                     {hasGallery && (
+                      <div className="mt-6 flex justify-center gap-3 overflow-x-auto py-2 scrollbar-none">
+                        {allImages.map((img, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setCurrentImageIndex(idx)}
+                            className={`relative w-20 h-14 shrink-0 rounded-lg overflow-hidden transition-all duration-300 ${
+                              idx === currentImageIndex 
+                                ? 'ring-2 ring-primary-500 scale-105 shadow-lg opacity-100' 
+                                : 'opacity-60 hover:opacity-100 hover:scale-105'
+                            }`}
+                          >
+                            <Image src={img} alt="" fill className="object-cover" />
+                          </button>
                         ))}
                       </div>
-                    </div>
-                  )}
+                     )}
+                  </div>
 
-                  <div className="pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row gap-4">
-                    {project.demoUrl && (
-                      <a
-                        href={project.demoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 inline-flex justify-center items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
-                      >
-                        <FaExternalLinkAlt className="w-4 h-4 mr-2" />
-                        Voir le site
-                      </a>
-                    )}
-                    {project.githubUrl && (
-                      <a
-                        href={project.githubUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 inline-flex justify-center items-center px-6 py-3 bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 dark:hover:bg-gray-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
-                      >
-                        <FaGithub className="w-5 h-5 mr-3" />
-                        Code source
-                      </a>
-                    )}
+                  {/* Right Column: Project Details */}
+                  <div className="lg:w-5/12 p-6 lg:p-10 flex flex-col h-full bg-white/50 dark:bg-gray-900/50">
+                     <div className="mb-6">
+                        <div className="flex items-center gap-3 mb-4 flex-wrap">
+                          {project.category && (
+                            <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-500/10 rounded-full border border-blue-200 dark:border-blue-500/20">
+                              {project.category}
+                            </span>
+                          )}
+                          {project.status && (
+                            <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full border ${
+                              project.status === 'completed' 
+                                ? 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-500/10 border-green-200 dark:border-green-500/20'
+                                : 'text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20'
+                            }`}>
+                              {project.status === 'completed' ? 'Terminé' : 'En cours'}
+                            </span>
+                          )}
+                        </div>
+                        
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 mb-4">
+                          {project.title}
+                        </h2>
+                        
+                        <div className="prose dark:prose-invert prose-sm max-w-none text-gray-600 dark:text-gray-300 leading-relaxed max-h-[200px] overflow-y-auto custom-scrollbar pr-2.5">
+                          <p>{project.description}</p>
+                        </div>
+                     </div>
+
+                     <div className="space-y-6 mt-auto">
+                        {/* Tech Stack */}
+                        <div>
+                          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                             Technologies
+                             <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700"></span>
+                          </h3>
+                          <div className="flex flex-wrap gap-2">
+                            {project.technologies.map((tech) => (
+                              <span
+                                key={tech}
+                                className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg hover:border-primary-500 dark:hover:border-primary-500 transition-colors"
+                              >
+                                {tech}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="grid grid-cols-2 gap-4 pt-4">
+                           {project.demoUrl ? (
+                            <motion.a
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              href={project.demoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all"
+                            >
+                              <FaExternalLinkAlt className="w-4 h-4" />
+                              Voir le site
+                            </motion.a>
+                          ) : (
+                            <div className="flex items-center justify-center gap-2 px-6 py-3.5 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 rounded-xl font-bold cursor-not-allowed">
+                               <FaExternalLinkAlt className="w-4 h-4" />
+                               Non disponible
+                            </div>
+                          )}
+                          
+                          {project.githubUrl ? (
+                            <motion.a
+                               whileHover={{ scale: 1.02 }}
+                               whileTap={{ scale: 0.98 }}
+                               href={project.githubUrl}
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               className="flex items-center justify-center gap-2 px-6 py-3.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-750 transition-all shadow-sm group"
+                            >
+                              <FaGithub className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                              Code source
+                            </motion.a>
+                          ) : (
+                             <div className="flex items-center justify-center gap-2 px-6 py-3.5 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 rounded-xl font-bold cursor-not-allowed">
+                                <FaGithub className="w-5 h-5" />
+                                Privé
+                            </div>
+                          )}
+                        </div>
+                     </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </ModalPortal>
+    </>
   );
 }
+
+

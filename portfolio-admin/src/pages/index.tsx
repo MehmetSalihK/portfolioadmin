@@ -7,11 +7,11 @@ import EnhancedProjectCard from '@/components/projects/EnhancedProjectCard';
 import { Analytics } from "@vercel/analytics/next"
 import CVModal from '@/components/modals/CVModal';
 import connectDB from '@/lib/db';
-import Project from '@/models/Project';
-import Experience from '@/models/Experience';
-import Skill from '@/models/Skill';
-import HomePage from '@/models/HomePage';
-import Setting from '@/models/Setting';
+import ProjectModel from '@/models/Project';
+import ExperienceModel from '@/models/Experience';
+import SkillModel from '@/models/Skill';
+import HomePageModel from '@/models/HomePage';
+import SettingModel from '@/models/Setting';
 import { useRef, useEffect, useState } from 'react';
 import useAnalytics from '@/utils/hooks/useAnalytics';
 import {
@@ -1619,13 +1619,13 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       };
     }
 
-    let homeData = await HomePage.findOne().lean();
+    let homeData = await HomePageModel.findOne().lean();
     if (!homeData) {
       homeData = defaultHomeData;
     }
 
     // Récupérer les settings
-    const settingsFromDB = await Setting.findOne().lean();
+    const settingsFromDB = await SettingModel.findOne().lean();
     const settings = settingsFromDB || {
       email: 'contact@mehmetsalihk.fr',
       linkedin: 'https://www.linkedin.com/in/mehmetsalihk'
@@ -1636,7 +1636,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     const seoData = await SEO.findOne({ page: 'home' }).lean();
 
     // Récupérer les projets sélectionnés pour la page d'accueil
-    const projects = await Project.aggregate([
+    const projects = await ProjectModel.aggregate([
       {
         $match: {
           archived: { $ne: true },
@@ -1668,7 +1668,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
 
     // Utiliser directement les 3 projets les plus populaires de la base de données
     const allProjects = projects;
-    const experiences = await Experience.find({}).sort({ startDate: -1 }).select('title company location startDate endDate description technologies').lean();
+    const experiences = await ExperienceModel.find({}).sort({ startDate: -1 }).select('title company location startDate endDate description technologies').lean();
     // Ensure technologies is an array, even if undefined
     const experiencesWithTechnologies = experiences.map(exp => ({
       ...exp,
@@ -1690,7 +1690,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     }, []);
 
     // Récupérer les compétences non masquées avec categoryId valide
-    const skills = await Skill.find({
+    const skills = await SkillModel.find({
       isHidden: false,
       categoryId: { $exists: true, $ne: null }
     })

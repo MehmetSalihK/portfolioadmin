@@ -70,56 +70,15 @@ export default function ProjectsPage() {
   
   const [isDragMode, setIsDragMode] = useState(false);
   
-  // États pour les filtres
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedStatus, setSelectedStatus] = useState('all');
-  
   // États pour la prévisualisation en temps réel
   const [showPreview, setShowPreview] = useState(false);
   const { notifyChange, isConnected, forceSync } = usePreviewSync({ enabled: true });
-  const [selectedDifficulty, setSelectedDifficulty] = useState('all');
-  const [selectedPriority, setSelectedPriority] = useState('all');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  
-  // Constantes pour les options
-  const PROJECT_CATEGORIES = [
-    { value: 'all', label: 'Toutes catégories' },
-    { value: 'web', label: 'Application Web' },
-    { value: 'mobile', label: 'Application Mobile' },
-    { value: 'desktop', label: 'Application Desktop' },
-    { value: 'api', label: 'API/Backend' },
-    { value: 'library', label: 'Bibliothèque' },
-    { value: 'tool', label: 'Outil' },
-    { value: 'game', label: 'Jeu' },
-    { value: 'other', label: 'Autre' },
-  ];
-  
-  const PROJECT_STATUSES = [
-    { value: 'all', label: 'Tous statuts' },
-    { value: 'planning', label: 'En planification' },
-    { value: 'development', label: 'En développement' },
-    { value: 'completed', label: 'Terminé' },
-    { value: 'maintenance', label: 'En maintenance' },
-    { value: 'deprecated', label: 'Déprécié' },
-  ];
-  
-  const PROJECT_DIFFICULTIES = [
-    { value: 'all', label: 'Toutes difficultés' },
-    { value: 'beginner', label: 'Débutant' },
-    { value: 'intermediate', label: 'Intermédiaire' },
-    { value: 'advanced', label: 'Avancé' },
-    { value: 'expert', label: 'Expert' },
-  ];
-  
-  const PROJECT_PRIORITIES = [
-    { value: 'all', label: 'Toutes priorités' },
-    { value: 'low', label: 'Basse' },
-    { value: 'medium', label: 'Moyenne' },
-    { value: 'high', label: 'Haute' },
-    { value: 'critical', label: 'Critique' },
-  ];
 
+  // Utiliser directement les projets (plus de filtre)
+  const filteredProjects = projects;
+
+
+  /* Restored missing functions */
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -156,15 +115,6 @@ export default function ProjectsPage() {
       toast.error('Failed to load projects');
     }
   }, []);
-
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/admin/login');
-    } else {
-      fetchProjects();
-      fetchSkills();
-    }
-  }, [status, router, fetchProjects, fetchSkills]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -279,25 +229,6 @@ export default function ProjectsPage() {
     }
   };
 
-  // Fonction de filtrage des projets
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = searchTerm === '' || 
-      project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.description.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesCategory = selectedCategory === 'all' || project.category === selectedCategory;
-    const matchesStatus = selectedStatus === 'all' || project.status === selectedStatus;
-    const matchesDifficulty = selectedDifficulty === 'all' || project.difficulty === selectedDifficulty;
-    const matchesPriority = selectedPriority === 'all' || project.priority === selectedPriority;
-    
-    const matchesTags = selectedTags.length === 0 || 
-      selectedTags.every(tag => project.tags?.includes(tag));
-    
-    return matchesSearch && matchesCategory && matchesStatus && 
-           matchesDifficulty && matchesPriority && matchesTags;
-  });
-
-
   // Composant pour les cartes de projet triables
   const SortableProjectCard = ({ project }: { project: Project }) => {
     const {
@@ -397,8 +328,7 @@ export default function ProjectsPage() {
             </div>
           )}
 
-          {/* Badges */}
-          <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
+            {/* Badges removed (Category, Status, Difficulty, Priority) */}
             {project.featured && (
               <div className="px-2.5 py-1 rounded-full bg-yellow-500/20 backdrop-blur-md text-yellow-300 text-xs font-medium flex items-center gap-1">
                 <FiStar className="w-3 h-3" />
@@ -411,50 +341,6 @@ export default function ProjectsPage() {
                 Homepage
               </div>
             )}
-            {project.category && (
-              <div className="px-2.5 py-1 rounded-full bg-blue-500/20 backdrop-blur-md text-blue-300 text-xs font-medium">
-                {project.category}
-              </div>
-            )}
-            {project.status && (
-              <div className={`px-2.5 py-1 rounded-full backdrop-blur-md text-xs font-medium ${
-                project.status === 'completed' ? 'bg-green-500/20 text-green-300' :
-                project.status === 'in-progress' ? 'bg-orange-500/20 text-orange-300' :
-                project.status === 'planned' ? 'bg-purple-500/20 text-purple-300' :
-                'bg-gray-500/20 text-gray-300'
-              }`}>
-                {project.status === 'completed' ? 'Terminé' :
-                 project.status === 'in-progress' ? 'En cours' :
-                 project.status === 'planned' ? 'Planifié' : 'Brouillon'}
-              </div>
-            )}
-          </div>
-          
-          {/* Badges de droite */}
-          <div className="absolute top-3 right-3 z-20 flex flex-col gap-2 items-end">
-            {project.difficulty && (
-              <div className={`px-2.5 py-1 rounded-full backdrop-blur-md text-xs font-medium ${
-                project.difficulty === 'beginner' ? 'bg-green-500/20 text-green-300' :
-                project.difficulty === 'intermediate' ? 'bg-yellow-500/20 text-yellow-300' :
-                project.difficulty === 'advanced' ? 'bg-red-500/20 text-red-300' :
-                'bg-purple-500/20 text-purple-300'
-              }`}>
-                {project.difficulty === 'beginner' ? 'Débutant' :
-                 project.difficulty === 'intermediate' ? 'Intermédiaire' :
-                 project.difficulty === 'advanced' ? 'Avancé' : 'Expert'}
-              </div>
-            )}
-            {project.priority && (
-              <div className={`px-2.5 py-1 rounded-full backdrop-blur-md text-xs font-medium ${
-                project.priority === 'high' ? 'bg-red-500/20 text-red-300' :
-                project.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-300' :
-                'bg-gray-500/20 text-gray-300'
-              }`}>
-                {project.priority === 'high' ? 'Haute' :
-                 project.priority === 'medium' ? 'Moyenne' : 'Basse'}
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Contenu */}
@@ -616,95 +502,7 @@ export default function ProjectsPage() {
           <GitHubSync />
         </div>
 
-        {/* Filtres */}
-        <div className="mb-8 bg-white dark:bg-gray-800 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Filtres</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-            {/* Recherche */}
-            <div className="xl:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Recherche</label>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Rechercher un projet..."
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Catégorie */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Catégorie</label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {PROJECT_CATEGORIES.map(category => (
-                  <option key={category.value} value={category.value}>{category.label}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Statut */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Statut</label>
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {PROJECT_STATUSES.map(status => (
-                  <option key={status.value} value={status.value}>{status.label}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Difficulté */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Difficulté</label>
-              <select
-                value={selectedDifficulty}
-                onChange={(e) => setSelectedDifficulty(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {PROJECT_DIFFICULTIES.map(difficulty => (
-                  <option key={difficulty.value} value={difficulty.value}>{difficulty.label}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Priorité */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priorité</label>
-              <select
-                value={selectedPriority}
-                onChange={(e) => setSelectedPriority(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {PROJECT_PRIORITIES.map(priority => (
-                  <option key={priority.value} value={priority.value}>{priority.label}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Tags Filter */}
-             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tag</label>
-              <input
-                type="text"
-                placeholder="Filtrer par tag..."
-                onChange={(e) => setSelectedTags(e.target.value ? e.target.value.split(',').map(t => t.trim()) : [])}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          {/* Compteur de résultats */}
-          <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-            {filteredProjects.length} projet(s) trouvé(s) sur {projects.length}
-          </div>
-        </div>
+        {/* Filters Removed */}
 
         {isDragMode ? (
           <DndContext

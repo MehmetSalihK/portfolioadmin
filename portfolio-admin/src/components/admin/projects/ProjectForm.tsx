@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -45,6 +46,32 @@ export default function ProjectForm({
     resolver: zodResolver(projectSchema),
     defaultValues: initialData,
   });
+
+  // Adding useEffect to reset form when initialData or isOpen changes
+  useEffect(() => {
+    if (isOpen) {
+      if (initialData) {
+        reset({
+          ...initialData,
+          // Ensure technologies is a string for the input if receiving an array
+             // @ts-ignore - handling the union type for the form input
+          technologies: Array.isArray(initialData.technologies) 
+            ? initialData.technologies.join(', ') 
+            : initialData.technologies
+        });
+      } else {
+        reset({
+          title: '',
+          description: '',
+          image: '',
+          gallery: [],
+          demoUrl: '',
+          githubUrl: '',
+          technologies: '', // Reset to empty string
+        } as any);
+      }
+    }
+  }, [isOpen, initialData, reset]);
 
   const handleFormSubmit = async (data: ProjectFormData) => {
     try {
