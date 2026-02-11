@@ -14,11 +14,16 @@ import { Toaster } from 'react-hot-toast';
 import { useTheme } from '@/contexts/ThemeContext';
 import CommandPalette from '../admin/CommandPalette';
 
+import { useDevToolsProtection } from '@/hooks/useDevToolsProtection';
+
 interface AdminLayoutProps {
   children: ReactNode;
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
+  // Activer la protection contre les outils de développement (en production)
+  useDevToolsProtection();
+
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -90,6 +95,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   ];
 
   const handleSignOut = async () => {
+    // Nettoyer le stockage local et de session
+    sessionStorage.clear();
+    // On garde le thème dans localStorage si possible, sinon on peut tout nettoyer :
+    // localStorage.clear(); 
+    
     await signOut({ redirect: false });
     router.push('/admin/login');
   };

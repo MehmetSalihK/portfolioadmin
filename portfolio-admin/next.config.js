@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  productionBrowserSourceMaps: false,
   images: {
     domains: [
       'res.cloudinary.com',
@@ -55,7 +56,7 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; img-src 'self' data: blob: https://res.cloudinary.com https://cdn.futura-sciences.com https://images.unsplash.com https://picsum.photos https://via.placeholder.com; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://vitals.vercel-insights.com;"
+            value: "default-src 'self'; img-src 'self' data: blob: https://res.cloudinary.com https://cdn.futura-sciences.com https://images.unsplash.com https://picsum.photos https://via.placeholder.com; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://vitals.vercel-insights.com;"
           }
         ]
       }
