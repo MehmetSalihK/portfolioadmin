@@ -268,4 +268,4 @@ MediaSchema.statics.getPendingProcessing = function() {
   return this.find({ 'processing.status': { $in: ['pending', 'processing'] } });
 };
 
-export default mongoose.models.Media || mongoose.model('Media', MediaSchema);
+export default mongoose.models?.Media || mongoose.model('Media', MediaSchema);

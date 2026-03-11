@@ -25,4 +25,4 @@ const HomePageSchema = new mongoose.Schema({
   footer: { type: Object, default: {} }
 }, { timestamps: true });
 
-export default mongoose.models.HomePage || mongoose.model('HomePage', HomePageSchema);
+export default mongoose.models?.HomePage || mongoose.model('HomePage', HomePageSchema);

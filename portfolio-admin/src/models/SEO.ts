@@ -23,4 +23,4 @@ const SEOSchema: Schema = new Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
-export default mongoose.models.SEO || mongoose.model<ISEO>('SEO', SEOSchema);
+export default mongoose.models?.SEO || mongoose.model<ISEO>('SEO', SEOSchema);

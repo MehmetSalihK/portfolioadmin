@@ -18,4 +18,4 @@ const SkillCategorySchema = new mongoose.Schema({
   timestamps: true,
 });
 
-export default mongoose.models.SkillCategory || mongoose.model('SkillCategory', SkillCategorySchema); 
+export default mongoose.models?.SkillCategory || mongoose.model('SkillCategory', SkillCategorySchema); 

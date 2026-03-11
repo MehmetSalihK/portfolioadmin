@@ -19,12 +19,15 @@ interface ExperienceCardProps {
 }
 
 const ExperienceCard = ({ experience }: ExperienceCardProps) => {
-  const getLocale = () => {
-    return fr;
-  };
-
   const formatDate = (date: string) => {
-    return format(new Date(date), 'MMMM yyyy', { locale: getLocale() });
+    try {
+      if (!date) return 'Date non spécifiée';
+      const d = new Date(date);
+      if (isNaN(d.getTime())) return 'Date invalide';
+      return format(d, 'MMMM yyyy', { locale: fr });
+    } catch (e) {
+      return 'Erreur date';
+    }
   };
 
   return (

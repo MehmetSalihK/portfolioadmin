@@ -90,4 +90,4 @@ const EducationSchema = new Schema({
   timestamps: true
 });
 
-export default mongoose.models.Education || mongoose.model<IEducation>('Education', EducationSchema);
+export default mongoose.models?.Education || mongoose.model<IEducation>('Education', EducationSchema);

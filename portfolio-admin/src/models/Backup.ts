@@ -344,9 +344,9 @@ EntityVersionSchema.statics.getVersionHistory = function(entityType: string, ent
 };
 
 // Créer les modèles
-const EntityVersion = mongoose.models.EntityVersion || mongoose.model('EntityVersion', EntityVersionSchema);
-const Backup = mongoose.models.Backup || mongoose.model('Backup', BackupSchema);
-const RestoreHistory = mongoose.models.RestoreHistory || mongoose.model('RestoreHistory', RestoreHistorySchema);
+const EntityVersion = mongoose.models?.EntityVersion || mongoose.model('EntityVersion', EntityVersionSchema);
+const Backup = mongoose.models?.Backup || mongoose.model('Backup', BackupSchema);
+const RestoreHistory = mongoose.models?.RestoreHistory || mongoose.model('RestoreHistory', RestoreHistorySchema);
 
 export { EntityVersion, Backup, RestoreHistory };
 export default Backup;

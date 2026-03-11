@@ -62,7 +62,7 @@ TwoFactorAuthSchema.methods.markAsVerified = function(): Promise<ITwoFactorAuth>
   return this.save();
 };
 
-const TwoFactorAuth = mongoose.models.TwoFactorAuth || mongoose.model<ITwoFactorAuth>('TwoFactorAuth', TwoFactorAuthSchema);
+const TwoFactorAuth = mongoose.models?.TwoFactorAuth || mongoose.model<ITwoFactorAuth>('TwoFactorAuth', TwoFactorAuthSchema);
 
 export default TwoFactorAuth;
 export type { ITwoFactorAuth };

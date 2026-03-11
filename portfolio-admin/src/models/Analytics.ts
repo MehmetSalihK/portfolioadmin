@@ -64,5 +64,5 @@ analyticsSchema.index({ page: 1, createdAt: -1 });
 analyticsSchema.index({ sessionId: 1 });
 analyticsSchema.index({ createdAt: -1 });
 
-export default mongoose.models.Analytics ||
+export default mongoose.models?.Analytics ||
   mongoose.model('Analytics', analyticsSchema);

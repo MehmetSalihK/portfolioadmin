@@ -56,5 +56,5 @@ const maintenanceSchema = new mongoose.Schema(
 // Il ne devrait y avoir qu'un seul document de maintenance
 maintenanceSchema.index({ _id: 1 }, { unique: true });
 
-export default mongoose.models.Maintenance ||
+export default mongoose.models?.Maintenance ||
   mongoose.model('Maintenance', maintenanceSchema);

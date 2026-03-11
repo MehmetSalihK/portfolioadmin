@@ -72,10 +72,24 @@ export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
                       <div className="flex items-center">
                         <FiCalendar className="w-4 h-4 mr-2" />
                         <span className="font-semibold text-gray-700 dark:text-gray-300">
-                          {new Date(experience.startDate).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                          {(() => {
+                            try {
+                              const d = new Date(experience.startDate);
+                              return !isNaN(d.getTime()) 
+                                ? d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+                                : 'Date invalide';
+                            } catch { return 'Erreur date'; }
+                          })()}
                           {' - '}
                           {experience.endDate 
-                            ? new Date(experience.endDate).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+                            ? (() => {
+                                try {
+                                  const d = new Date(experience.endDate);
+                                  return !isNaN(d.getTime()) 
+                                    ? d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+                                    : 'Date invalide';
+                                } catch { return 'Erreur date'; }
+                              })()
                             : <span className="text-green-600 dark:text-green-400">Aujourd'hui</span>
                           }
                         </span>

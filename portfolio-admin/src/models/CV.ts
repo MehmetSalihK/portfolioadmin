@@ -44,5 +44,5 @@ const CVSchema = new mongoose.Schema<ICV>({
   timestamps: true
 });
 
-export default mongoose.models.CV || mongoose.model<ICV>('CV', CVSchema);
+export default mongoose.models?.CV || mongoose.model<ICV>('CV', CVSchema);
 export type { ICV };

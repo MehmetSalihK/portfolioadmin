@@ -27,5 +27,5 @@ const activitySchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.models.Activity ||
+export default mongoose.models?.Activity ||
   mongoose.model('Activity', activitySchema);

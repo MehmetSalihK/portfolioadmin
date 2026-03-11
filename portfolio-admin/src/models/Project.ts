@@ -169,4 +169,4 @@ const ProjectSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-export default mongoose.models.Project || mongoose.model('Project', ProjectSchema);
+export default mongoose.models?.Project || mongoose.model('Project', ProjectSchema);
