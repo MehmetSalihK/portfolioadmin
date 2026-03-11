@@ -7,13 +7,13 @@
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 255, 255, 255;
-  --background-end-rgb: 249, 250, 251;
+  --background-end-rgb: 250, 250, 250;
 }
 
 .dark {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 18, 18, 18;
-  --background-end-rgb: 24, 24, 24;
+  --foreground-rgb: 250, 250, 250;
+  --background-start-rgb: 9, 9, 11; /* #09090B */
+  --background-end-rgb: 9, 9, 11;
 }
 
 :root {

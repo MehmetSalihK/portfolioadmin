@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Dialog } from '@headlessui/react';
-import { FiX, FiCalendar, FiBook, FiMapPin, FiFileText, FiExternalLink, FiTrash2 } from 'react-icons/fi';
+import { FiX, FiCalendar, FiBook, FiMapPin, FiFileText, FiExternalLink, FiTrash2, FiUploadCloud } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import BlurPreview from '../BlurPreview';
+import Modal from '../admin/Modal';
 
 interface EducationModalProps {
   isOpen: boolean;
@@ -129,17 +129,17 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
 
   const uploadFile = async (file: File, blurZones?: any[]) => {
     try {
-      const formData = new FormData();
-      formData.append('image', file);
+      const uploadFormData = new FormData();
+      uploadFormData.append('image', file);
       
       // Ajouter les zones de floutage si c'est une image
       if (blurZones && file.type.startsWith('image/')) {
-        formData.append('blurZones', JSON.stringify(blurZones));
+        uploadFormData.append('blurZones', JSON.stringify(blurZones));
       }
 
       const response = await fetch('/api/upload', {
         method: 'POST',
-        body: formData,
+        body: uploadFormData,
       });
 
       if (!response.ok) {
@@ -176,61 +176,47 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
 
   return (
     <>
-    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-black/70" aria-hidden="true" />
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-[#1E1E1E] p-6 shadow-xl transition-all">
-          <div className="flex justify-between items-center mb-6">
-            <Dialog.Title className="text-xl font-semibold text-white">
-              {education ? 'Modifier la formation' : 'Nouvelle formation'}
-            </Dialog.Title>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              <FiX className="w-6 h-6" />
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+      <Modal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        title={education ? 'Modifier la formation' : 'Nouvelle formation'}
+      >
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                <FiBook className="inline-block mr-2" />
-                École / Établissement
-              </label>
-              <input
-                type="text"
-                value={formData.school}
-                onChange={(e) => setFormData({ ...formData, school: e.target.value })}
-                className="w-full px-4 py-2 bg-[#2A2A2A] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                placeholder="Ex: Université Paris-Saclay"
-                required
-              />
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">École / Établissement</label>
+              <div className="relative group">
+                <FiBook className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-indigo-500 transition-colors" />
+                <input
+                  type="text"
+                  value={formData.school}
+                  onChange={(e) => setFormData({ ...formData, school: e.target.value })}
+                  className="w-full bg-white/5 text-white pl-12 pr-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300"
+                  placeholder="Ex: Université Paris-Saclay"
+                  required
+                />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Diplôme
-                </label>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">Diplôme</label>
                 <input
                   type="text"
                   value={formData.degree}
                   onChange={(e) => setFormData({ ...formData, degree: e.target.value })}
-                  className="w-full px-4 py-2 bg-[#2A2A2A] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300"
                   placeholder="Ex: Master"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Domaine d'études
-                </label>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">Domaine d'études</label>
                 <input
                   type="text"
                   value={formData.field}
                   onChange={(e) => setFormData({ ...formData, field: e.target.value })}
-                  className="w-full px-4 py-2 bg-[#2A2A2A] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300"
                   placeholder="Ex: Informatique"
                   required
                 />
@@ -238,48 +224,46 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                <FiMapPin className="inline-block mr-2" />
-                Localisation
-              </label>
-              <input
-                type="text"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="w-full px-4 py-2 bg-[#2A2A2A] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                placeholder="Ex: Paris, France"
-                required
-              />
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">Localisation</label>
+              <div className="relative group">
+                <FiMapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-indigo-500 transition-colors" />
+                <input
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  className="w-full bg-white/5 text-white pl-12 pr-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300"
+                  placeholder="Ex: Paris, France"
+                  required
+                />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <FiCalendar className="inline-block mr-2" />
-                  Date de début
-                </label>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">Date de début</label>
                 <input
                   type="month"
                   value={formData.startDate}
                   onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                  className="w-full px-4 py-2 bg-[#2A2A2A] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none border border-white/10 transition-all duration-300 [color-scheme:dark]"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <FiCalendar className="inline-block mr-2" />
-                  Date de fin
-                </label>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">Date de fin</label>
                 <input
                   type="month"
                   value={formData.endDate}
                   onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                  className="w-full px-4 py-2 bg-[#2A2A2A] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className={`w-full px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none border transition-all duration-300 [color-scheme:dark]
+                    ${formData.isCurrentlyStudying 
+                      ? 'bg-zinc-900/50 text-zinc-600 border-white/5 cursor-not-allowed' 
+                      : 'bg-white/5 text-white border-white/10'
+                    }`}
                   disabled={formData.isCurrentlyStudying}
                 />
-                <div className="mt-2 space-y-2">
-                  <label className="inline-flex items-center">
+                <div className="mt-4 flex flex-wrap gap-4">
+                  <label className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/10 cursor-pointer group hover:border-indigo-500/30 transition-all">
                     <input
                       type="checkbox"
                       checked={formData.isCurrentlyStudying}
@@ -294,12 +278,12 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                           isDiplomaNotObtained: e.target.checked ? false : formData.isDiplomaNotObtained
                         });
                       }}
-                      className="form-checkbox rounded bg-[#2A2A2A] text-blue-500 border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-4 h-4 text-indigo-500 bg-zinc-800 rounded border-white/10 focus:ring-indigo-500"
                     />
-                    <span className={`ml-2 text-sm ${(formData.isDiplomaPassed || formData.isDiplomaNotObtained || formData.isPaused) ? 'text-gray-500' : 'text-gray-300'}`}>En cours</span>
+                    <span className={`text-xs font-bold uppercase tracking-wider ${(formData.isDiplomaPassed || formData.isDiplomaNotObtained || formData.isPaused) ? 'text-zinc-600' : 'text-zinc-400 group-hover:text-white'}`}>En cours</span>
                   </label>
                   
-                  <label className="inline-flex items-center">
+                  <label className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/10 cursor-pointer group hover:border-indigo-500/30 transition-all">
                     <input
                       type="checkbox"
                       checked={formData.isPaused}
@@ -314,46 +298,43 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                           isDiplomaNotObtained: e.target.checked ? false : formData.isDiplomaNotObtained
                         });
                       }}
-                      className="form-checkbox rounded bg-[#2A2A2A] text-blue-500 border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-4 h-4 text-indigo-500 bg-zinc-800 rounded border-white/10 focus:ring-indigo-500"
                     />
-                    <span className={`ml-2 text-sm ${(formData.isDiplomaPassed || formData.isDiplomaNotObtained || formData.isCurrentlyStudying) ? 'text-gray-500' : 'text-gray-300'}`}>En pause</span>
+                    <span className={`text-xs font-bold uppercase tracking-wider ${(formData.isDiplomaPassed || formData.isDiplomaNotObtained || formData.isCurrentlyStudying) ? 'text-zinc-600' : 'text-zinc-400 group-hover:text-white'}`}>En pause</span>
                   </label>
                 </div>
               </div>
             </div>
 
-            {/* Option de visibilité */}
-            <div className="bg-[#1A1A1A] p-4 rounded-lg border border-gray-700">
-              <label className="inline-flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.isVisible}
-                  onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
-                  className="form-checkbox rounded bg-[#2A2A2A] text-blue-500 border-gray-700"
-                />
-                <span className="ml-2 text-sm text-gray-300">Afficher sur la page publique</span>
-              </label>
-              <p className="text-xs text-gray-500 mt-1 ml-6">
-                Décochez pour masquer cette formation de la page publique
-              </p>
-            </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Description
-              </label>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">Description</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-4 py-2 bg-[#2A2A2A] text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 min-h-[100px]"
-                placeholder="Décrivez votre formation..."
+                className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300 min-h-[120px]"
+                placeholder="Décrivez votre formation et vos réalisations..."
                 required
               />
             </div>
 
-            <div className="mt-4">
-              <div className="flex items-center gap-4 flex-wrap">
-                <label className="inline-flex items-center">
+            <div className="bg-indigo-500/5 p-4 rounded-xl border border-indigo-500/10 group hover:border-indigo-500/30 transition-all duration-300">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.isVisible}
+                  onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
+                  className="w-5 h-5 text-indigo-500 bg-zinc-800 rounded-lg border-white/10 focus:ring-indigo-500"
+                />
+                <div>
+                  <span className="text-sm font-bold text-zinc-300 group-hover:text-white transition-colors">Afficher sur la page publique</span>
+                  <p className="text-[10px] text-zinc-500 font-medium mt-0.5">Visibilité immédiate pour les visiteurs.</p>
+                </div>
+              </label>
+            </div>
+
+            <div className="pt-6 border-t border-border-subtle">
+              <div className="flex flex-wrap gap-4 mb-6">
+                <label className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/10 cursor-pointer group hover:border-emerald-500/30 transition-all">
                   <input
                     type="checkbox"
                     checked={formData.isDiplomaPassed}
@@ -365,12 +346,12 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                       isPaused: e.target.checked ? false : formData.isPaused,
                       isDiplomaNotObtained: e.target.checked ? false : formData.isDiplomaNotObtained
                     })}
-                    className="form-checkbox rounded bg-[#2A2A2A] text-blue-500 border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-4 h-4 text-emerald-500 bg-zinc-800 rounded border-white/10 focus:ring-emerald-500"
                   />
-                  <span className={`ml-2 text-sm ${(formData.isCurrentlyStudying || formData.isDiplomaNotObtained || formData.isPaused) ? 'text-gray-500' : 'text-gray-300'}`}>Diplôme obtenu</span>
+                  <span className={`text-xs font-bold uppercase tracking-wider ${(formData.isCurrentlyStudying || formData.isDiplomaNotObtained || formData.isPaused) ? 'text-zinc-600' : 'text-zinc-400 group-hover:text-white'}`}>Diplôme obtenu</span>
                 </label>
                 
-                <label className="inline-flex items-center">
+                <label className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/10 cursor-pointer group hover:border-rose-500/30 transition-all">
                    <input
                      type="checkbox"
                      checked={formData.isDiplomaNotObtained}
@@ -382,148 +363,143 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                        isPaused: e.target.checked ? false : formData.isPaused,
                        isDiplomaPassed: e.target.checked ? false : formData.isDiplomaPassed
                      })}
-                     className="form-checkbox rounded bg-[#2A2A2A] text-blue-500 border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                     className="w-4 h-4 text-rose-500 bg-zinc-800 rounded border-white/10 focus:ring-rose-500"
                    />
-                   <span className={`ml-2 text-sm ${(formData.isCurrentlyStudying || formData.isDiplomaPassed || formData.isPaused) ? 'text-gray-500' : 'text-gray-300'}`}>Diplôme non obtenu</span>
+                   <span className={`text-xs font-bold uppercase tracking-wider ${(formData.isCurrentlyStudying || formData.isDiplomaPassed || formData.isPaused) ? 'text-zinc-600' : 'text-zinc-400 group-hover:text-white'}`}>Non obtenu</span>
                  </label>
               </div>
 
               {formData.isDiplomaPassed && (
-                <div className="mt-4 space-y-3">
-                  <label className="block text-sm font-medium text-gray-300">
-                    Certificat de diplôme
-                  </label>
+                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">Certificat de diplôme</label>
                   
                   {/* Zone de téléchargement */}
-                  <div className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center hover:border-gray-500 transition-colors bg-[#1A1A1A]">
+                  <div className="relative border-2 border-dashed border-white/10 rounded-2xl p-8 text-center hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all duration-300 group">
                     <input
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png"
                       onChange={handleFileUpload}
-                      className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                     />
-                    <p className="text-xs text-gray-500 mt-2">
-                      PDF, JPEG, PNG acceptés (max 50MB)
-                    </p>
+                    <div className="flex flex-col items-center">
+                      <div className="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <FiUploadCloud className="w-6 h-6 text-indigo-400" />
+                      </div>
+                      <p className="text-sm font-bold text-white mb-1">Cliquer ou glisser le fichier</p>
+                      <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">PDF, JPEG, PNG (MAX. 50MB)</p>
+                    </div>
                   </div>
 
                   {/* Affichage du fichier en attente */}
                   {pendingFile && (
-                    <div className="bg-yellow-900/20 border border-yellow-700 rounded-lg p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <FiFileText className="text-yellow-400" />
-                          <span className="text-sm font-medium text-yellow-300">
-                            {pendingFile.name} (en attente)
-                          </span>
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex items-center justify-between group">
+                      <div className="flex items-center gap-3">
+                        <FiFileText className="text-amber-400 w-5 h-5" />
+                        <div>
+                          <p className="text-xs font-bold text-white truncate max-w-[200px]">{pendingFile.name}</p>
+                          <p className="text-[10px] text-amber-500 uppercase font-black tracking-widest mt-0.5">En attente de traitement</p>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <button
-                            type="button"
-                            onClick={() => setShowBlurPreview(true)}
-                            className="text-orange-400 hover:text-orange-300 text-sm flex items-center space-x-1"
-                          >
-                            <span>Flouter</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => uploadFile(pendingFile)}
-                            className="text-green-400 hover:text-green-300 text-sm flex items-center space-x-1"
-                          >
-                            <span>Télécharger sans floutage</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setPendingFile(null)}
-                            className="text-red-400 hover:text-red-300 text-sm flex items-center space-x-1"
-                          >
-                            <FiTrash2 size={14} />
-                            <span>Annuler</span>
-                          </button>
-                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowBlurPreview(true)}
+                          className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
+                        >
+                          Flouter
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => uploadFile(pendingFile)}
+                          className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
+                        >
+                          Envoyer
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPendingFile(null)}
+                          className="p-1.5 text-zinc-500 hover:text-rose-500 transition-colors"
+                        >
+                          <FiTrash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                   )}
 
                   {/* Affichage du fichier actuel */}
                   {formData.diplomaFileName && formData.diplomaFilePath && (
-                    <div className="bg-green-900/20 border border-green-700 rounded-lg p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <FiFileText className="text-green-400" />
-                          <span className="text-sm font-medium text-green-300">
-                            {formData.diplomaFileName}
-                          </span>
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <FiFileText className="text-emerald-400 w-5 h-5" />
+                        <div>
+                          <p className="text-xs font-bold text-white truncate max-w-[200px]">{formData.diplomaFileName}</p>
+                          <p className="text-[10px] text-emerald-500 uppercase font-black tracking-widest mt-0.5">Certificat validé</p>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <button
-                            type="button"
-                            onClick={() => setShowBlurPreview(true)}
-                            className="text-orange-400 hover:text-orange-300 text-sm flex items-center space-x-1"
-                          >
-                            <span>Flouter</span>
-                          </button>
-                          <a
-                            href={formData.diplomaFilePath}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-400 hover:text-blue-300 text-sm flex items-center space-x-1"
-                          >
-                            <FiExternalLink size={14} />
-                            <span>Voir</span>
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setFormData(prev => ({
-                                ...prev,
-                                diplomaFile: '',
-                                diplomaFileName: '',
-                                diplomaFilePath: ''
-                              }));
-                            }}
-                            className="text-red-400 hover:text-red-300 text-sm flex items-center space-x-1"
-                          >
-                            <FiTrash2 size={14} />
-                            <span>Supprimer</span>
-                          </button>
-                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                         <button
+                          type="button"
+                          onClick={() => setShowBlurPreview(true)}
+                          className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-zinc-400 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
+                        >
+                          Flouter
+                        </button>
+                        <a
+                          href={formData.diplomaFilePath}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 text-zinc-500 hover:text-indigo-400 transition-colors"
+                        >
+                          <FiExternalLink className="w-4 h-4" />
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormData(prev => ({
+                              ...prev,
+                              diplomaFile: '',
+                              diplomaFileName: '',
+                              diplomaFilePath: ''
+                            }));
+                          }}
+                          className="p-1.5 text-zinc-500 hover:text-rose-500 transition-colors"
+                        >
+                          <FiTrash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                   )}
                 </div>
               )}
             </div>
+          </div>
 
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-gray-300 hover:text-white bg-[#2A2A2A] rounded-lg transition-colors"
-              >
-                Annuler
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                {education ? 'Modifier' : 'Ajouter'}
-              </button>
-            </div>
-          </form>
-        </Dialog.Panel>
-      </div>
+          <div className="flex justify-end gap-4 mt-10 pt-8 border-t border-border-subtle">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-2.5 text-zinc-500 hover:text-white font-bold text-xs uppercase tracking-wider transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2.5 rounded-xl transition-all duration-300 shadow-lg shadow-indigo-500/20 font-bold text-xs uppercase tracking-wider active:scale-95 border border-indigo-500"
+            >
+              {education ? 'Enregistrer' : 'Ajouter'}
+            </button>
+          </div>
+        </form>
+      </Modal>
       
-    </Dialog>
-    
-    {showBlurPreview && (pendingFile || formData.diplomaFilePath) && (
-       <BlurPreview
-         file={pendingFile || (formData.diplomaFilePath ? new File([], formData.diplomaFileName || 'file') : null)}
-         fileUrl={pendingFile ? undefined : formData.diplomaFilePath}
-         onConfirm={handleBlurConfirm}
-         onCancel={handleBlurCancel}
-       />
-     )}
+      {showBlurPreview && (pendingFile || formData.diplomaFilePath) && (
+        <BlurPreview
+          file={pendingFile || (formData.diplomaFilePath ? new File([], formData.diplomaFileName || 'file') : null)}
+          fileUrl={pendingFile ? undefined : formData.diplomaFilePath}
+          onConfirm={handleBlurConfirm}
+          onCancel={handleBlurCancel}
+        />
+      )}
     </>
   );
 }

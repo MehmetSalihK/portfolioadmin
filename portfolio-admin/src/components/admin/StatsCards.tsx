@@ -19,54 +19,60 @@ interface StatsCardsProps {
 export default function StatsCards({ stats }: StatsCardsProps) {
   const statsList: Stat[] = [
     {
-      name: 'Unread Messages',
+      name: 'Messages non lus',
       value: stats.unreadMessages,
-      icon: <FiMail className="h-6 w-6 text-primary-600" />,
-      description: 'New messages from visitors',
+      icon: <FiMail className="h-5 w-5 text-indigo-400" />,
+      description: 'Nouveaux messages',
     },
     {
-      name: 'Total Projects',
+      name: 'Total Projets',
       value: stats.totalProjects,
-      icon: <FiFolder className="h-6 w-6 text-primary-600" />,
-      description: 'Projects in your portfolio',
+      icon: <FiFolder className="h-5 w-5 text-indigo-400" />,
+      description: 'Projets dans votre portfolio',
     },
     {
-      name: 'Total Skills',
+      name: 'Total Compétences',
       value: stats.totalSkills,
-      icon: <FiAward className="h-6 w-6 text-primary-600" />,
-      description: 'Skills and technologies',
+      icon: <FiAward className="h-5 w-5 text-indigo-400" />,
+      description: 'Technologies et expertises',
     },
     {
-      name: 'Total Experiences',
+      name: 'Total Expériences',
       value: stats.totalExperiences,
-      icon: <FiBriefcase className="h-6 w-6 text-primary-600" />,
-      description: 'Work and education experiences',
+      icon: <FiBriefcase className="h-5 w-5 text-indigo-400" />,
+      description: 'Parcours pro et académique',
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-      {statsList.map((stat) => (
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {statsList.map((stat, index) => (
         <div
           key={stat.name}
-          className="relative overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 py-5 shadow sm:px-6 sm:py-6"
+          className="relative overflow-hidden group bg-background-card border border-border-subtle p-6 rounded-xl hover:border-border-strong transition-all duration-300"
         >
-          <dt>
-            <div className="absolute rounded-md bg-primary-50 dark:bg-primary-900/10 p-3">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-2.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 group-hover:scale-110 transition-transform duration-300">
               {stat.icon}
             </div>
-            <p className="ml-16 truncate text-sm font-medium text-gray-500 dark:text-gray-400">
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-gray-500 tracking-tight">
               {stat.name}
             </p>
-          </dt>
-          <dd className="ml-16 flex items-baseline">
-            <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-              {stat.value}
-            </p>
-            <p className="ml-2 flex items-baseline text-sm text-gray-500 dark:text-gray-400">
-              {stat.description}
-            </p>
-          </dd>
+            <div className="flex items-baseline gap-2">
+              <h3 className="text-2xl font-bold text-white tabular-nums">
+                {stat.value}
+              </h3>
+              <span className="text-xs text-gray-500 font-medium">
+                total
+              </span>
+            </div>
+          </div>
+          <p className="mt-4 text-xs text-gray-500 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500/50" />
+            {stat.description}
+          </p>
         </div>
       ))}
     </div>

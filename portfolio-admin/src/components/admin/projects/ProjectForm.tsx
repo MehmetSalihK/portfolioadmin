@@ -85,31 +85,32 @@ export default function ProjectForm({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-6">
                 <div>
                 <label
                     htmlFor="title"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-200"
+                    className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2"
                 >
-                    Title
+                    Titre du projet
                 </label>
                 <input
                     type="text"
                     id="title"
                     {...register('title')}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600"
+                    className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300"
+                    placeholder="Mon super projet..."
                 />
                 {errors.title && (
-                    <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
+                    <p className="mt-1.5 text-[10px] font-bold text-rose-500 uppercase tracking-wider">{errors.title.message}</p>
                 )}
                 </div>
 
                 <div>
                 <label
                     htmlFor="description"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-200"
+                    className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2"
                 >
                     Description
                 </label>
@@ -117,10 +118,11 @@ export default function ProjectForm({
                     id="description"
                     rows={4}
                     {...register('description')}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600"
+                    className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300"
+                    placeholder="Décrivez votre projet en quelques lignes..."
                 />
                 {errors.description && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="mt-1.5 text-[10px] font-bold text-rose-500 uppercase tracking-wider">
                     {errors.description.message}
                     </p>
                 )}
@@ -129,27 +131,19 @@ export default function ProjectForm({
                 <div>
                 <label
                     htmlFor="technologies"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-200"
+                    className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2"
                 >
-                    Technologies (comma-separated)
+                    Technologies (séparées par des virgules)
                 </label>
                 <input
                     type="text"
                     id="technologies"
-                    placeholder="React, Next.js, TextView"
-                    {...register('technologies')} // Note: This expects a string in input, but Zod schema expects array. We might need transformation.
-                    // Actually, let's keep it simple for now or fix the schema/usage if needed.
-                    // The original code used input type="text" and register('technologies'). 
-                    // This implies the original Zod schema might have been loose or there was a transformer?
-                    // Original schema: technologies: z.array(z.string())
-                    // React Hook form with text input returns string. This will fail validation.
-                    // Let's assume the user handles comma separation manually or I should fix it here.
-                    // I'll leave it as is for now to avoid breaking existing logic if there was a transformer I missed, 
-                    // BUT I see the previous code just did {...register}. I will assume I need to fix it if it breaks.
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600"
+                    placeholder="React, Next.js, Tailwind..."
+                    {...register('technologies')}
+                    className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300"
                 />
                  {errors.technologies && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="mt-1.5 text-[10px] font-bold text-rose-500 uppercase tracking-wider">
                     {errors.technologies.message}
                     </p>
                 )}
@@ -159,33 +153,35 @@ export default function ProjectForm({
                      <div>
                     <label
                         htmlFor="demoUrl"
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-200"
+                        className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2"
                     >
-                        Demo URL
+                        URL Démo
                     </label>
                     <input
                         type="text"
                         id="demoUrl"
+                        placeholder="https://..."
                         {...register('demoUrl')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600"
+                        className="w-full bg-white/5 text-white px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300"
                     />
                     </div>
 
                     <div>
                     <label
                         htmlFor="githubUrl"
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-200"
+                        className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2"
                     >
-                        GitHub URL
+                        URL GitHub
                     </label>
                     <input
                         type="text"
                         id="githubUrl"
+                        placeholder="https://github.com/..."
                         {...register('githubUrl')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600"
+                        className="w-full bg-white/5 text-white px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300"
                     />
                      {errors.githubUrl && (
-                        <p className="mt-1 text-sm text-red-600">
+                        <p className="mt-1.5 text-[10px] font-bold text-rose-500 uppercase tracking-wider">
                         {errors.githubUrl.message}
                         </p>
                     )}
@@ -195,23 +191,23 @@ export default function ProjectForm({
 
             <div className="space-y-6">
                  {/* Main Image Manager */}
-                 <div>
+                 <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
                     <MediaManager
-                        label="Main Image (Thumbnail)"
+                        label="Image Principale (Miniature)"
                         initialImages={watch('image') ? [watch('image')] : []}
                         onImagesChange={(imgs) => setValue('image', imgs[0] || '')}
                         maxFiles={1}
                         allowCrop={true}
                     />
                     {errors.image && (
-                        <p className="mt-1 text-sm text-red-600">{errors.image.message}</p>
+                        <p className="mt-1.5 text-[10px] font-bold text-rose-500 uppercase tracking-wider">{errors.image.message}</p>
                     )}
                  </div>
 
                  {/* Gallery Manager */}
-                 <div>
+                 <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
                      <MediaManager
-                        label="Project Gallery"
+                        label="Galerie du projet"
                         initialImages={watch('gallery') || []}
                         onImagesChange={(imgs) => setValue('gallery', imgs)}
                         maxFiles={5}
@@ -221,19 +217,19 @@ export default function ProjectForm({
             </div>
         </div>
 
-        <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+        <div className="mt-10 pt-8 border-t border-border-subtle flex flex-row-reverse gap-4">
           <button
             type="submit"
-            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm"
+            className="flex-1 md:flex-none md:min-w-[150px] bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl transition-all duration-300 shadow-lg shadow-indigo-500/20 font-bold text-xs uppercase tracking-wider active:scale-95 border border-indigo-500 text-center"
           >
-            Save Project
+            Enregistrer le projet
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:w-auto sm:text-sm"
+            className="flex-1 md:flex-none md:min-w-[120px] px-8 py-3 rounded-xl bg-white/5 border border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white transition-all duration-300 font-bold text-xs uppercase tracking-wider text-center"
           >
-            Cancel
+            Annuler
           </button>
         </div>
       </form>

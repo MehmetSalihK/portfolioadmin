@@ -23,6 +23,8 @@ interface DashboardStats {
   };
 }
 
+import StatsCards from '@/components/admin/StatsCards';
+
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -52,117 +54,104 @@ export default function AdminDashboard() {
     }
   };
 
-  const cards = [
-    {
-      title: 'Messages non lus',
-      value: loading ? '...' : data?.counts.unreadMessages || 0,
-      icon: FiMail,
-      description: 'Nouveaux messages',
-      color: 'from-blue-400 to-blue-600',
-      link: '/admin/messages'
-    },
-    {
-      title: 'Projets',
-      value: loading ? '...' : data?.counts.projects || 0,
-      icon: FiFolder,
-      description: 'Projets portfolio',
-      color: 'from-purple-400 to-purple-600',
-      link: '/admin/projects'
-    },
-    {
-      title: 'Compétences',
-      value: loading ? '...' : data?.counts.skills || 0,
-      icon: FiCode,
-      description: 'Technologies',
-      color: 'from-green-400 to-green-600',
-      link: '/admin/skills'
-    },
-    {
-      title: 'Expériences',
-      value: loading ? '...' : data?.counts.experiences || 0,
-      icon: FiBriefcase,
-      description: 'Parcours pro',
-      color: 'from-orange-400 to-orange-600',
-      link: '/admin/experience'
-    }
-  ];
-
   return (
     <AdminLayout>
-      <div className="p-6 space-y-8">
+      <div className="space-y-10">
+        {/* Header Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex flex-col md:flex-row md:items-end justify-between gap-4"
         >
-          <div className="flex items-center gap-3 mb-8">
-            <FiActivity className="w-8 h-8 text-blue-500" />
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Tableau de bord</h1>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {cards.map((card, index) => {
-              const Icon = card.icon;
-              return (
-                <motion.div
-                  key={card.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="group cursor-pointer"
-                  onClick={() => router.push(card.link)}
-                >
-                  <div className="relative overflow-hidden bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                    <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-5 group-hover:opacity-10 transition-opacity`} />
-                    
-                    <div className="relative p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{card.title}</p>
-                          <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
-                            {card.value}
-                          </h3>
-                        </div>
-                        <div className={`p-3 rounded-xl bg-gradient-to-br ${card.color} shadow-lg shadow-blue-500/20`}>
-                          <Icon className="w-6 h-6 text-white" />
-                        </div>
-                      </div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{card.description}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Charts Section - Takes up 2/3 */}
-            <div className="lg:col-span-2 space-y-8">
-              {!loading && data && (
-                <>
-                  <StatsChart 
-                    title="Répartition des Projets par Catégorie" 
-                    data={data.charts.projectsByCategory} 
-                    type="bar" 
-                  />
-                  <StatsChart 
-                    title="Compétences par Catégorie" 
-                    data={data.charts.skillsByCategory} 
-                    type="pie" 
-                  />
-                </>
-              )}
+          <div>
+            <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-[0.2em] mb-2">
+              <span className="w-8 h-[1px] bg-primary"></span>
+              Overview
             </div>
-
-            {/* Recent Activity - Takes up 1/3 */}
-            <div className="lg:col-span-1">
-              {!loading && data && (
-                <RecentActivity activities={data.recentActivity} />
-              )}
-            </div>
+            <h1 className="text-4xl font-black text-white tracking-tight">
+              Tableau de bord
+            </h1>
+            <p className="text-zinc-500 mt-2 font-medium">
+              Bienvenue, <span className="text-zinc-300">{session?.user?.name || session?.user?.email}</span>. Voici l'état actuel de votre portfolio.
+            </p>
+          </div>
+          
+          <div className="flex gap-3">
+            <button 
+              onClick={fetchStats}
+              disabled={loading}
+              className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-wider text-zinc-400 hover:bg-white/10 hover:text-white transition-all disabled:opacity-50"
+            >
+              Raffraîchir
+            </button>
           </div>
         </motion.div>
+
+        {/* Stats Section */}
+        <section>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-32 rounded-xl bg-white/5 animate-pulse border border-white/5" />
+              ))}
+            </div>
+          ) : (
+            <StatsCards stats={{
+              unreadMessages: data?.counts.unreadMessages || 0,
+              totalProjects: data?.counts.projects || 0,
+              totalSkills: data?.counts.skills || 0,
+              totalExperiences: data?.counts.experiences || 0,
+            }} />
+          )}
+        </section>
+
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Content Area - 2/3 */}
+          <div className="lg:col-span-2 space-y-8">
+            {!loading && data && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="space-y-8"
+              >
+                <StatsChart 
+                  title="Répartition des Projets" 
+                  data={data.charts.projectsByCategory} 
+                  type="bar" 
+                />
+                <StatsChart 
+                  title="Compétences par Catégorie" 
+                  data={data.charts.skillsByCategory} 
+                  type="pie" 
+                />
+              </motion.div>
+            )}
+            
+            {loading && (
+              <div className="space-y-8">
+                <div className="h-[400px] rounded-xl bg-white/5 animate-pulse border border-white/5" />
+                <div className="h-[400px] rounded-xl bg-white/5 animate-pulse border border-white/5" />
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar Area - 1/3 */}
+          <aside className="lg:col-span-1">
+            {!loading && data ? (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <RecentActivity activities={data.recentActivity} />
+              </motion.div>
+            ) : (
+              <div className="h-[600px] rounded-xl bg-white/5 animate-pulse border border-white/5" />
+            )}
+          </aside>
+        </div>
       </div>
     </AdminLayout>
   );

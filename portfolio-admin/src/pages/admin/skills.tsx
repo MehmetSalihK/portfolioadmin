@@ -18,17 +18,15 @@ interface AdminSkillsPageProps {
 export default function AdminSkillsPage({ initialSkills }: AdminSkillsPageProps) {
   return (
     <AdminLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-              <FiAward className="w-8 h-8" />
-              Gestion des compétences
-          </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Gérez les compétences affichées sur votre portfolio ({initialSkills.length})
-            </p>
+      <div className="space-y-10">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+              <FiAward className="w-5 h-5 text-indigo-500" />
+            </div>
+            <h1 className="text-3xl font-black text-white tracking-tight">Compétences</h1>
           </div>
+          <p className="text-zinc-500 font-medium">Gérez les compétences techniques et soft skills affichées sur votre portfolio ({initialSkills.length}).</p>
         </div>
         <SkillsManagement initialSkills={initialSkills} />
       </div>

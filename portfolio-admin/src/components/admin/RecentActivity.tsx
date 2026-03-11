@@ -27,44 +27,58 @@ export default function RecentActivity({ activities }: RecentActivityProps) {
 
   const getActionColor = (action: string) => {
     switch (action) {
-      case 'created': return 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400';
-      case 'updated': return 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'deleted': return 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400';
-      default: return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+      case 'created': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+      case 'updated': return 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20';
+      case 'deleted': return 'text-rose-400 bg-rose-500/10 border-rose-500/20';
+      default: return 'text-zinc-400 bg-zinc-500/10 border-zinc-500/20';
     }
   };
 
   if (!activities || activities.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-center text-gray-500 dark:text-gray-400">
-        Aucune activité récente
+      <div className="bg-background-card border border-border-subtle rounded-xl p-12 text-center">
+        <div className="mx-auto w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
+          <FiClock className="w-6 h-6 text-zinc-500" />
+        </div>
+        <p className="text-zinc-400 font-medium">Aucune activité récente</p>
+        <p className="text-zinc-500 text-xs mt-1 italic">Les modifications s'afficheront ici</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Activité Récente</h3>
+    <div className="bg-background-card border border-border-subtle rounded-xl overflow-hidden hover:border-border-strong transition-all duration-300">
+      <div className="p-6 border-b border-border-subtle flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          Activité Récente
+        </h3>
+        <span className="text-[10px] uppercase tracking-wider font-bold text-zinc-500 px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
+          Live
+        </span>
       </div>
-      <div className="divide-y divide-gray-200 dark:divide-gray-700">
+      <div className="divide-y divide-border-subtle">
         {activities.map((activity, index) => (
-          <div key={`${activity.id}-${index}`} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+          <div key={`${activity.id}-${index}`} className="p-4 hover:bg-white/[0.02] transition-colors group">
             <div className="flex items-center gap-4">
-              <div className={`p-2 rounded-lg ${getActionColor(activity.action)}`}>
+              <div className={`p-2 rounded-lg border transition-transform duration-300 group-hover:scale-110 ${getActionColor(activity.action)}`}>
                 {getIcon(activity.type)}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                <p className="text-sm font-medium text-white truncate group-hover:text-indigo-400 transition-colors">
                   {activity.title}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {activity.type === 'project' ? 'Projet' : activity.type === 'skill' ? 'Compétence' : 'Expérience'} 
-                  {' • '}
-                  {activity.action === 'created' ? 'Ajouté' : activity.action === 'updated' ? 'Modifié' : 'Supprimé'}
-                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 group-hover:text-zinc-400">
+                    {activity.type === 'project' ? 'Projet' : activity.type === 'skill' ? 'Compétence' : 'Expérience'}
+                  </span>
+                  <span className="w-1 h-1 rounded-full bg-zinc-800" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 group-hover:text-zinc-400">
+                    {activity.action === 'created' ? 'Ajouté' : activity.action === 'updated' ? 'Modifié' : 'Supprimé'}
+                  </span>
+                </div>
               </div>
-              <div className="text-xs text-gray-400 whitespace-nowrap">
+              <div className="text-[11px] text-zinc-500 font-medium tabular-nums group-hover:text-zinc-400 transition-colors bg-white/5 px-2 py-1 rounded-md">
                 {formatDistanceToNow(new Date(activity.date), { addSuffix: true, locale: fr })}
               </div>
             </div>

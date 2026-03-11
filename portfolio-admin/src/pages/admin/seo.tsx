@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import Modal from '@/components/admin/Modal';
 import { FiSearch, FiSave, FiEdit2, FiGlobe } from 'react-icons/fi';
+import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 
 interface SEOData {
@@ -99,104 +100,120 @@ export default function SEOPage() {
 
     return (
         <AdminLayout>
-            <div className="container mx-auto px-4 py-8">
-                <div className="flex justify-between items-center mb-8">
+            <div className="space-y-10">
+                {/* Header Section */}
+                <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="flex flex-col md:flex-row md:items-end justify-between gap-4"
+                >
                     <div>
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                            SEO Management
+                        <div className="flex items-center gap-2 text-primary font-bold text-[10px] uppercase tracking-[0.2em] mb-2">
+                            <span className="w-8 h-[1px] bg-primary"></span>
+                            Performance
+                        </div>
+                        <h1 className="text-4xl font-black text-white tracking-tight flex items-center gap-4">
+                            SEO
+                            <span className="text-zinc-700 text-lg font-medium tabular-nums bg-white/5 px-3 py-1 rounded-full border border-white/10">
+                                {seoList.length}
+                            </span>
                         </h1>
-                        <p className="text-gray-500 dark:text-gray-400 mt-2">
-                            Gérez les méta-tags pour optimiser le référencement de vos pages
+                        <p className="text-zinc-500 mt-2 font-medium">
+                            Optimisez la visibilité de vos pages sur les moteurs de recherche.
                         </p>
                     </div>
-                </div>
+                </motion.div>
 
+                {/* SEO Cards Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {seoList.map((seo) => (
-                        <div
+                    {seoList.map((seo, index) => (
+                        <motion.div
                             key={seo.page}
-                            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="group relative bg-background-card border border-border-subtle rounded-3xl p-6 hover:border-indigo-500/30 transition-all duration-500"
                         >
-                            <div className="p-6">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-lg text-primary-600 dark:text-primary-400">
-                                            <FiGlobe className="w-6 h-6" />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-lg font-semibold capitalize text-gray-900 dark:text-white">
-                                                {seo.page}
-                                            </h3>
-                                            <span className={`text-xs px-2 py-1 rounded-full ${seo.title ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                                                }`}>
-                                                {seo.title ? 'Configuré' : 'Non configuré'}
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 group-hover:scale-110 transition-transform duration-500">
+                                        <FiGlobe className="w-6 h-6 text-indigo-400" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-black text-white capitalize tracking-tight group-hover:text-indigo-400 transition-colors">
+                                            {seo.page}
+                                        </h3>
+                                        <div className="flex items-center gap-1.5 mt-1">
+                                            <span className={`w-1.5 h-1.5 rounded-full ${seo.title ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-600'}`} />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                                                {seo.title ? 'Configuré' : 'Incomplet'}
                                             </span>
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={() => handleEdit(seo)}
-                                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-500 hover:text-primary-500"
-                                    >
-                                        <FiEdit2 className="w-5 h-5" />
-                                    </button>
                                 </div>
+                                <button
+                                    onClick={() => handleEdit(seo)}
+                                    className="p-3 bg-white/5 border border-white/10 rounded-xl text-zinc-400 hover:text-white hover:bg-indigo-600 hover:border-indigo-500 transition-all duration-300"
+                                >
+                                    <FiEdit2 className="w-4 h-4" />
+                                </button>
+                            </div>
 
-                                <div className="space-y-3">
-                                    <div>
-                                        <p className="text-xs font-medium text-gray-500 uppercase">Titre</p>
-                                        <p className="text-sm text-gray-900 dark:text-gray-300 truncate">
-                                            {seo.title || '-'}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-medium text-gray-500 uppercase">Description</p>
-                                        <p className="text-sm text-gray-900 dark:text-gray-300 line-clamp-2">
-                                            {seo.description || '-'}
-                                        </p>
-                                    </div>
+                            <div className="space-y-4">
+                                <div className="p-4 rounded-2xl bg-black/20 border border-white/5">
+                                    <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1.5">Méta Titre</p>
+                                    <p className="text-sm text-zinc-300 font-medium truncate">
+                                        {seo.title || 'Non défini'}
+                                    </p>
+                                </div>
+                                <div className="p-4 rounded-2xl bg-black/20 border border-white/5">
+                                    <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1.5">Méta Description</p>
+                                    <p className="text-sm text-zinc-400 font-medium line-clamp-2 leading-relaxed italic">
+                                        {seo.description || 'Aucune description configurée...'}
+                                    </p>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
 
                 <Modal
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
-                    title={`Modifier SEO : ${editingSeo.page}`}
+                    title={`SEO Configuration : ${editingSeo.page}`}
                 >
-                    <form onSubmit={handleSave} className="space-y-4">
+                    <form onSubmit={handleSave} className="space-y-6 py-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Titre de la page
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">
+                                Titre de la page (SEO Title)
                             </label>
                             <input
                                 type="text"
                                 value={editingSeo.title}
                                 onChange={(e) => setEditingSeo({ ...editingSeo, title: e.target.value })}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none"
-                                placeholder="Ex: Accueil - Mon Portfolio"
+                                className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none border border-white/10 placeholder-zinc-600 transition-all"
+                                placeholder="Ex: Accueil - Développeur Fullstack"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Description Meta
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">
+                                Méta Description
                             </label>
                             <textarea
                                 value={editingSeo.description}
                                 onChange={(e) => setEditingSeo({ ...editingSeo, description: e.target.value })}
                                 rows={4}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none"
-                                placeholder="Description courte pour les moteurs de recherche..."
+                                className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none border border-white/10 placeholder-zinc-600 transition-all resize-none"
+                                placeholder="Description courte pour Google..."
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Mots-clés (séparés par des virgules)
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">
+                                Mots-clés (Keywords)
                             </label>
                             <input
                                 type="text"
@@ -205,25 +222,26 @@ export default function SEOPage() {
                                     ...editingSeo,
                                     keywords: e.target.value.split(',').map(k => k.trim()).filter(k => k)
                                 })}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none"
-                                placeholder="portfolio, développeur, react..."
+                                className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none border border-white/10 placeholder-zinc-600 transition-all"
+                                placeholder="react, nextjs, portfolio..."
                             />
+                            <p className="text-[10px] text-zinc-500 mt-2 italic">* Séparez les mots-clés par des virgules.</p>
                         </div>
 
-                        <div className="flex justify-end gap-3 pt-4">
+                        <div className="flex justify-end gap-4 pt-6 mt-6 border-t border-white/5">
                             <button
                                 type="button"
                                 onClick={() => setIsModalOpen(false)}
-                                className="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-colors"
                             >
                                 Annuler
                             </button>
                             <button
                                 type="submit"
-                                className="px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium flex items-center gap-2 transition-colors"
+                                className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-600/20 flex items-center gap-2 transition-all active:scale-95 border border-indigo-500"
                             >
                                 <FiSave className="w-4 h-4" />
-                                Enregistrer
+                                Mettre à jour
                             </button>
                         </div>
                     </form>

@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/layouts/AdminLayout';
+import Modal from '@/components/admin/Modal';
 import EducationModal from '@/components/modals/EducationModal';
-import { FiPlus, FiBook, FiEdit2, FiTrash2, FiExternalLink, FiEye } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiPlus, FiBook, FiEdit2, FiTrash2, FiExternalLink, FiEye, FiCalendar } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 export default function EducationPage() {
@@ -151,102 +153,157 @@ export default function EducationPage() {
 
   return (
     <AdminLayout>
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <FiBook className="w-8 h-8" />
-            Gestion des Formations
-          </h1>
+      <div className="space-y-10">
+        {/* Header Section */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex flex-col md:flex-row md:items-end justify-between gap-4"
+        >
+          <div>
+            <div className="flex items-center gap-2 text-primary font-bold text-[10px] uppercase tracking-[0.2em] mb-2">
+              <span className="w-8 h-[1px] bg-primary"></span>
+              Management
+            </div>
+            <h1 className="text-4xl font-black text-white tracking-tight flex items-center gap-4">
+              Formations
+              <span className="text-zinc-700 text-lg font-medium tabular-nums bg-white/5 px-3 py-1 rounded-full border border-white/10">
+                {educations.length}
+              </span>
+            </h1>
+            <p className="text-zinc-500 mt-2 font-medium">
+              Gérez votre parcours académique et vos certifications.
+            </p>
+          </div>
+          
           <button
             onClick={() => {
               setSelectedEducation(null);
               setIsModalOpen(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200"
+            className="flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all duration-300 shadow-lg shadow-indigo-500/20 font-bold text-xs uppercase tracking-wider active:scale-95 border border-indigo-500"
           >
-            <FiPlus className="w-5 h-5" /> Ajouter une formation
+            <FiPlus className="w-4 h-4" /> Ajouter une formation
           </button>
-        </div>
+        </motion.div>
 
         {/* Liste des formations */}
-        <div className="grid gap-4">
-          {educations.map((education: any) => (
-            <div key={education._id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{education.school}</h3>
-                  <p className="text-gray-700 dark:text-gray-300">{education.degree} - {education.field}</p>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">{education.location}</p>
-                  <div className="text-gray-600 dark:text-gray-400 text-sm mt-1">
-                    {education.startDate && (
-                      <span>
-                        {new Date(education.startDate).toLocaleDateString('fr-FR', { month: '2-digit', year: 'numeric' })}
-                        {education.endDate && !education.isCurrentlyStudying && (
-                          <span> - {new Date(education.endDate).toLocaleDateString('fr-FR', { month: '2-digit', year: 'numeric' })}</span>
-                        )}
-                        {education.isCurrentlyStudying && <span> - En cours</span>}
-                        {education.isPaused && <span> - En pause</span>}
-                      </span>
+        <div className="grid gap-6">
+          {educations.map((education: any, index: number) => (
+            <motion.div 
+              key={education._id} 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="bg-background-card border border-border-subtle p-6 rounded-2xl group hover:border-border-strong transition-all duration-300 shadow-xl shadow-black/20"
+            >
+              <div className="flex justify-between items-start gap-4">
+                <div className="flex-1">
+                   <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 flex items-center justify-center bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+                      <FiBook className="w-5 h-5 text-indigo-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-white tracking-tight group-hover:text-indigo-400 transition-colors duration-300">{education.school}</h3>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-zinc-400 font-bold text-xs">{education.degree}</span>
+                        <span className="w-1 h-1 bg-zinc-700 rounded-full" />
+                        <span className="text-zinc-500 font-medium text-xs">{education.field}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-4 mt-4">
+                    <div className="flex items-center text-zinc-500 font-medium text-xs">
+                      <FiCalendar className="w-3.5 h-3.5 mr-1.5 text-indigo-500" />
+                      {education.startDate && (
+                        <span>
+                          {new Date(education.startDate).toLocaleDateString('fr-FR', { month: '2-digit', year: 'numeric' })}
+                          {education.endDate && !education.isCurrentlyStudying && (
+                            <span> - {new Date(education.endDate).toLocaleDateString('fr-FR', { month: '2-digit', year: 'numeric' })}</span>
+                          )}
+                          {education.isCurrentlyStudying && <span> - En cours</span>}
+                        </span>
+                      )}
+                    </div>
+                    {education.location && (
+                      <div className="flex items-center text-zinc-500 font-medium text-xs">
+                         <span className="w-1 h-1 bg-zinc-700 rounded-full mr-4" />
+                         {education.location}
+                      </div>
                     )}
                   </div>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">{education.description}</p>
-                  <div className="mb-2">
+
+                  <p className="text-zinc-500 text-sm mt-5 leading-relaxed font-medium line-clamp-2 max-w-2xl">{education.description}</p>
+                  
+                  <div className="flex flex-wrap items-center gap-3 mt-6">
                     {education.isCurrentlyStudying ? (
-                      <span className="text-blue-400 text-sm animate-pulse bg-yellow-400/20 px-2 py-1 rounded-md shadow-lg shadow-yellow-400/30">📚 En cours</span>
+                      <div className="px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 animate-pulse">
+                        <span className="w- relative flex h-2 w-2">
+                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                           <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                        </span>
+                        En cours
+                      </div>
                     ) : education.isPaused ? (
-                      <span className="text-orange-400 text-sm animate-pulse bg-orange-400/20 px-2 py-1 rounded-md shadow-lg shadow-orange-400/30">⏸️ En pause</span>
+                      <div className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[10px] font-bold uppercase tracking-wider">
+                        En pause
+                      </div>
                     ) : education.isDiplomaPassed ? (
-                      <>
-                        <span className="text-green-400 text-sm animate-pulse bg-yellow-400/20 px-2 py-1 rounded-md shadow-lg shadow-yellow-400/30">✓ Diplôme obtenu</span>
+                      <div className="flex items-center gap-3">
+                        <div className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                          ✓ Diplôme obtenu
+                        </div>
                         {(education.diplomaFilePath || education.diplomaFile || education.diplomaData) && (
                           <a 
                             href={`/api/certificate/${education._id}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 text-sm underline ml-2 flex items-center gap-1"
+                            className="inline-flex items-center text-indigo-400 hover:text-indigo-300 font-bold text-[10px] uppercase tracking-wider transition-colors"
                           >
-                            <FiExternalLink size={12} />
-                            {education.diplomaFileName ? `Voir ${education.diplomaFileName}` : 'Voir le certificat'}
+                            <FiExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                            {education.diplomaFileName ? education.diplomaFileName : 'Certificat'}
                           </a>
                         )}
-                      </>
+                      </div>
                     ) : education.isDiplomaNotObtained ? (
-                      <span className="text-red-400 text-sm animate-pulse bg-yellow-400/20 px-2 py-1 rounded-md shadow-lg shadow-yellow-400/30">✗ Diplôme non obtenu</span>
-                    ) : (
-                      <span className="text-gray-600 dark:text-gray-400 text-sm">Statut non défini</span>
-                    )}
+                      <div className="px-3 py-1 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-400 text-[10px] font-bold uppercase tracking-wider">
+                        ✗ Non obtenu
+                      </div>
+                    ) : null}
                   </div>
                 </div>
+
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleToggleVisibility(education._id, education.isVisible)}
-                    className={`p-2 rounded-lg transition-all ${
+                    className={`p-2.5 rounded-xl border transition-all duration-300 ${
                       education.isVisible 
-                        ? 'text-green-400 hover:text-green-500 hover:bg-green-500/10' 
-                        : 'text-red-400 hover:text-red-500 hover:bg-red-500/10'
+                        ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20' 
+                        : 'bg-zinc-500/10 border-zinc-500/20 text-zinc-500 hover:bg-zinc-500/20'
                     }`}
-                    title={education.isVisible ? 'Masquer de la page publique' : 'Afficher sur la page publique'}
+                    title={education.isVisible ? 'Masquer' : 'Afficher'}
                   >
-                    <FiEye className="w-5 h-5" />
+                    <FiEye className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => {
                       setSelectedEducation(education);
                       setIsModalOpen(true);
                     }}
-                    className="p-2 text-blue-400 hover:text-blue-500 hover:bg-blue-500/10 rounded-lg transition-all"
+                    className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all duration-300"
                   >
-                    <FiEdit2 className="w-5 h-5" />
+                    <FiEdit2 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDeleteEducation(education._id)}
-                    className="p-2 text-red-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                    className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/20 transition-all duration-300"
                   >
-                    <FiTrash2 className="w-5 h-5" />
+                    <FiTrash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 

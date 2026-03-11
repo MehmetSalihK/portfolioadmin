@@ -3,8 +3,8 @@ import { useRouter } from 'next/router';
 import { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import Modal from '@/components/admin/Modal';
-import { FiTrendingUp, FiUsers, FiEye, FiClock, FiBarChart2, FiMonitor, FiSmartphone, FiTablet, FiSettings } from 'react-icons/fi';
-import { motion } from 'framer-motion';
+import { FiTrendingUp, FiUsers, FiEye, FiClock, FiBarChart2, FiMonitor, FiSmartphone, FiTablet, FiSettings, FiActivity, FiShield, FiAlertCircle } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface AnalyticsStats {
   totalVisits: number;
@@ -173,11 +173,12 @@ export default function AnalyticsPage() {
     }
   };
 
-  if (loading) {
+  if (loading && !analyticsData) {
     return (
       <AdminLayout>
-        <div className="p-6 flex items-center justify-center min-h-[400px]">
-          <div className="text-white">Chargement des analytics...</div>
+          <div className="flex flex-col items-center justify-center min-h-[400px]">
+          <div className="w-16 h-16 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
+          <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest">Chargement des analytics...</p>
         </div>
       </AdminLayout>
     );
@@ -185,184 +186,265 @@ export default function AnalyticsPage() {
 
   return (
     <AdminLayout>
-      <div className="p-6">
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <FiBarChart2 className="w-8 h-8 text-blue-500" />
-              <h1 className="text-2xl font-bold text-white">Analytics & Maintenance</h1>
+      <div className="space-y-10">
+        <div className="mb-10">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+            <div className="space-y-1">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+                  <FiBarChart2 className="w-5 h-5 text-indigo-500" />
+                </div>
+                <h1 className="text-3xl font-black text-white tracking-tight">Analytics</h1>
+              </div>
+              <p className="text-zinc-500 font-medium">Suivez l'activité et le trafic de votre portfolio.</p>
             </div>
 
-            {/* Maintenance Toggle */}
-            <div className="flex items-center gap-4">
-              <span className="text-white">Mode Maintenance:</span>
+            <div className="flex items-center gap-3 bg-zinc-900/50 p-2 rounded-2xl border border-white/5">
+              <div className="flex items-center gap-3 px-3">
+                <div className={`w-2 h-2 rounded-full ${maintenanceStatus?.isEnabled ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`}></div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Maintenance</span>
+              </div>
               <button
                 onClick={toggleMaintenance}
                 disabled={maintenanceLoading}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${maintenanceStatus?.isEnabled
-                  ? 'bg-red-500 hover:bg-red-600 text-white'
-                  : 'bg-green-500 hover:bg-green-600 text-white'
+                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${maintenanceStatus?.isEnabled
+                  ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20'
+                  : 'bg-zinc-800 text-zinc-400 hover:text-white border border-white/5'
                   } disabled:opacity-50`}
               >
-                {maintenanceLoading ? 'Chargement...' : maintenanceStatus?.isEnabled ? 'Désactiver' : 'Activer'}
+                {maintenanceLoading ? '...' : maintenanceStatus?.isEnabled ? 'Actif' : 'Désactivé'}
               </button>
               <button
                 onClick={() => setIsMaintenanceModalOpen(true)}
-                className="p-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white transition-colors"
-                title="Configurer"
+                className="p-2 rounded-xl bg-zinc-800 text-zinc-400 hover:text-white transition-all border border-white/5"
               >
-                <FiSettings className="w-5 h-5" />
+                <FiSettings className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* Period Selector */}
-          <div className="flex gap-2 mb-6">
+          <div className="flex gap-2 p-1 bg-zinc-900/50 rounded-xl border border-white/5 w-fit">
             {(['24h', '7d', '30d', '90d'] as const).map((p) => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${period === p
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${period === p
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                  : 'text-zinc-500 hover:text-white'
                   }`}
               >
-                {p === '24h' ? '24 heures' : p === '7d' ? '7 jours' : p === '30d' ? '30 jours' : '90 jours'}
+                {p === '24h' ? '24H' : p === '7d' ? '7 Jours' : p === '30d' ? '30 Jours' : '90 Jours'}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white"
+            className="group bg-zinc-900/50 p-6 rounded-3xl border border-white/5 hover:border-indigo-500/30 transition-all duration-500 relative overflow-hidden"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-blue-100 text-sm">Visites totales</p>
-                <p className="text-2xl font-bold">{analyticsData?.totalVisits || 0}</p>
-              </div>
-              <FiEye className="w-8 h-8 text-blue-200" />
-            </div>
+             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-indigo-500/10 transition-colors"></div>
+             <div className="relative">
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500">
+                  <FiEye className="w-5 h-5 text-indigo-500" />
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">Visites totales</p>
+                <h3 className="text-3xl font-black text-white tracking-tight">{analyticsData?.totalVisits.toLocaleString() || 0}</h3>
+             </div>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white"
+            className="group bg-zinc-900/50 p-6 rounded-3xl border border-white/5 hover:border-emerald-500/30 transition-all duration-500 relative overflow-hidden"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-green-100 text-sm">Visiteurs uniques</p>
-                <p className="text-2xl font-bold">{analyticsData?.uniqueVisitors || 0}</p>
-              </div>
-              <FiUsers className="w-8 h-8 text-green-200" />
-            </div>
+             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-emerald-500/10 transition-colors"></div>
+             <div className="relative">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500">
+                  <FiUsers className="w-5 h-5 text-emerald-500" />
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">Visiteurs uniques</p>
+                <h3 className="text-3xl font-black text-white tracking-tight">{analyticsData?.uniqueVisitors.toLocaleString() || 0}</h3>
+             </div>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white"
+            className="group bg-zinc-900/50 p-6 rounded-3xl border border-white/5 hover:border-purple-500/30 transition-all duration-500 relative overflow-hidden"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-purple-100 text-sm">Temps moyen</p>
-                <p className="text-2xl font-bold">{formatTime(analyticsData?.avgTimeSpent || 0)}</p>
-              </div>
-              <FiClock className="w-8 h-8 text-purple-200" />
-            </div>
+             <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-purple-500/10 transition-colors"></div>
+             <div className="relative">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500">
+                  <FiClock className="w-5 h-5 text-purple-500" />
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">Temps moyen</p>
+                <h3 className="text-3xl font-black text-white tracking-tight">{formatTime(analyticsData?.avgTimeSpent || 0)}</h3>
+             </div>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white"
+            className="group bg-zinc-900/50 p-6 rounded-3xl border border-white/5 hover:border-orange-500/30 transition-all duration-500 relative overflow-hidden"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-orange-100 text-sm">Tendance</p>
-                <p className="text-2xl font-bold">+{Math.round(((analyticsData?.totalVisits || 0) / 30) * 100) / 100}%</p>
-              </div>
-              <FiTrendingUp className="w-8 h-8 text-orange-200" />
-            </div>
+             <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-orange-500/10 transition-colors"></div>
+             <div className="relative">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500">
+                  <FiTrendingUp className="w-5 h-5 text-orange-500" />
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">Tendance</p>
+                <h3 className="text-3xl font-black text-white tracking-tight">+{Math.round(((analyticsData?.totalVisits || 0) / (period === '24h' ? 1 : period === '7d' ? 7 : 30)) * 100) / 100}%</h3>
+             </div>
           </motion.div>
         </div>
 
-        {/* Charts and Tables */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
           {/* Top Pages */}
-          <div className="bg-[#1E1E1E] rounded-xl p-6">
-            <h3 className="text-xl font-semibold text-white mb-4">Pages les plus visitées</h3>
+          <div className="lg:col-span-2 bg-zinc-900/50 rounded-[2.5rem] border border-white/5 p-8 relative overflow-hidden">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                  <FiActivity className="w-4 h-4 text-indigo-500" />
+                </div>
+                <h3 className="text-lg font-black text-white tracking-tight">Pages populaires</h3>
+              </div>
+            </div>
+            
             <div className="space-y-3">
               {analyticsData?.topPages?.map((page, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-[#2A2A2A] rounded-lg">
-                  <div>
-                    <p className="text-white font-medium">{page.page}</p>
-                    <p className="text-gray-400 text-sm">{formatTime(page.avgTimeSpent)} temps moyen</p>
+                <motion.div 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  key={index} 
+                  className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-indigo-500/20 transition-all duration-300 group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-[10px] font-black text-zinc-500 group-hover:text-indigo-400 transition-colors">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-white group-hover:text-indigo-400 transition-colors">{page.page}</p>
+                      <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">{formatTime(page.avgTimeSpent)} temps moyen</p>
+                    </div>
                   </div>
-                  <span className="text-blue-400 font-semibold">{page.visits} visites</span>
-                </div>
+                  <div className="text-right">
+                    <span className="text-xs font-black text-white">{page.visits}</span>
+                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Vues</p>
+                  </div>
+                </motion.div>
               )) || (
-                  <div className="text-gray-400 text-center py-4">Aucune donnée disponible</div>
+                  <div className="text-zinc-600 font-bold text-xs uppercase tracking-widest text-center py-10 italic">Aucune donnée disponible</div>
                 )}
             </div>
           </div>
 
           {/* Device Stats */}
-          <div className="bg-[#1E1E1E] rounded-xl p-6">
-            <h3 className="text-xl font-semibold text-white mb-4">Statistiques par appareil</h3>
-            <div className="space-y-3">
-              {analyticsData?.deviceStats?.map((device, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-[#2A2A2A] rounded-lg">
-                  <div className="flex items-center gap-3">
-                    {getDeviceIcon(device.device)}
-                    <span className="text-white capitalize">{device.device}</span>
-                  </div>
-                  <span className="text-blue-400 font-semibold">{device.count}</span>
+          <div className="bg-zinc-900/50 rounded-[2.5rem] border border-white/5 p-8 relative overflow-hidden">
+             <div className="flex items-center gap-3 mb-8">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                  <FiMonitor className="w-4 h-4 text-emerald-500" />
                 </div>
-              )) || (
-                  <div className="text-gray-400 text-center py-4">Aucune donnée disponible</div>
+                <h3 className="text-lg font-black text-white tracking-tight">Appareils</h3>
+              </div>
+            
+            <div className="space-y-4">
+              {analyticsData?.deviceStats?.map((device, index) => {
+                const total = analyticsData.deviceStats.reduce((acc, curr) => acc + curr.count, 0);
+                const percent = (device.count / total) * 100;
+                
+                return (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.1 }}
+                    key={index} 
+                    className="space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-400">
+                          {getDeviceIcon(device.device)}
+                        </div>
+                        <span className="text-xs font-black text-white uppercase tracking-widest">{device.device}</span>
+                      </div>
+                      <span className="text-xs font-black text-emerald-500">{Math.round(percent)}%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${percent}%` }}
+                        transition={{ duration: 1, delay: 0.5 }}
+                        className="h-full bg-emerald-500 rounded-full"
+                      />
+                    </div>
+                  </motion.div>
+                );
+              }) || (
+                  <div className="text-zinc-600 font-bold text-xs uppercase tracking-widest text-center py-10 italic">Aucune donnée disponible</div>
                 )}
             </div>
           </div>
         </div>
 
         {/* Daily Visits Chart */}
-        <div className="mt-8 bg-[#1E1E1E] rounded-xl p-6">
-          <h3 className="text-xl font-semibold text-white mb-4">Visites quotidiennes</h3>
-          <div className="space-y-2">
+        <div className="bg-zinc-900/50 rounded-[2.5rem] border border-white/5 p-8 relative overflow-hidden">
+          <div className="flex items-center justify-between mb-10">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                <FiActivity className="w-4 h-4 text-indigo-500" />
+              </div>
+              <h3 className="text-lg font-black text-white tracking-tight">Activité temporelle</h3>
+            </div>
+            <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                <span className="text-zinc-400">Visites</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-zinc-700"></div>
+                <span className="text-zinc-400">Uniques</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
             {analyticsData?.dailyVisits?.map((day, index) => {
               const maxVisits = Math.max(...(analyticsData.dailyVisits?.map(d => d.visits) || [1]));
               const percentage = (day.visits / maxVisits) * 100;
 
               return (
-                <div key={index} className="flex items-center gap-4">
-                  <div className="w-20 text-sm text-gray-400">
-                    {new Date(day.date).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}
+                <div key={index} className="flex items-center gap-6 group">
+                  <div className="w-24 text-[10px] font-black text-zinc-500 uppercase tracking-widest group-hover:text-white transition-colors">
+                    {new Date(day.date).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric', weekday: 'short' })}
                   </div>
-                  <div className="flex-1 bg-[#2A2A2A] rounded-full h-6 relative overflow-hidden">
-                    <div
-                      className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-500"
-                      style={{ width: `${percentage}%` }}
-                    />
-                    <div className="absolute inset-0 flex items-center px-3">
-                      <span className="text-white text-sm font-medium">{day.visits} visites</span>
+                  <div className="flex-1 bg-white/5 rounded-full h-8 relative overflow-hidden border border-white/5 group-hover:border-indigo-500/20 transition-all duration-300">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${percentage}%` }}
+                      transition={{ duration: 1, delay: index * 0.05 }}
+                      className="bg-gradient-to-r from-indigo-600 to-indigo-400 h-full rounded-full relative"
+                    >
+                      <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </motion.div>
+                    <div className="absolute inset-y-0 left-0 flex items-center px-4">
+                      <span className="text-[10px] font-black text-white uppercase tracking-widest drop-shadow-md">{day.visits} vues</span>
                     </div>
-                  </div>
-                  <div className="w-16 text-sm text-gray-400 text-right">
-                    {day.uniqueVisitors} uniques
+                    <div className="absolute inset-y-0 right-0 flex items-center px-4">
+                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{day.uniqueVisitors} uniques</span>
+                    </div>
                   </div>
                 </div>
               );
             }) || (
-                <div className="text-gray-400 text-center py-4">Aucune donnée disponible</div>
+                <div className="text-zinc-600 font-bold text-xs uppercase tracking-widest text-center py-10 italic">Aucune donnée disponible</div>
               )}
           </div>
         </div>
@@ -372,67 +454,75 @@ export default function AnalyticsPage() {
       <Modal
         isOpen={isMaintenanceModalOpen}
         onClose={() => setIsMaintenanceModalOpen(false)}
-        title="Configurer la maintenance"
+        title="Configuration Maintenance"
       >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Titre
-            </label>
-            <input
-              type="text"
-              value={maintenanceForm.title}
-              onChange={(e) => setMaintenanceForm({ ...maintenanceForm, title: e.target.value })}
-              className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Message
-            </label>
-            <textarea
-              value={maintenanceForm.message}
-              onChange={(e) => setMaintenanceForm({ ...maintenanceForm, message: e.target.value })}
-              className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 h-24"
-            />
+        <div className="space-y-8 py-4">
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex items-start gap-4">
+             <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
+                <FiAlertCircle className="w-5 h-5 text-amber-500" />
+             </div>
+             <div>
+                <h4 className="text-xs font-black text-amber-400 uppercase tracking-widest mb-1">Attention</h4>
+                <p className="text-[10px] text-zinc-500 font-medium leading-relaxed">
+                  L'activation du mode maintenance rendra le portfolio inaccessible aux visiteurs publics. L'administration reste accessible.
+                </p>
+             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Début (Optionnel)
-              </label>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Titre de l'écran</label>
               <input
-                type="datetime-local"
-                value={maintenanceForm.startTime}
-                onChange={(e) => setMaintenanceForm({ ...maintenanceForm, startTime: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                type="text"
+                value={maintenanceForm.title}
+                onChange={(e) => setMaintenanceForm({ ...maintenanceForm, title: e.target.value })}
+                className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300"
+                placeholder="Ex: Site en maintenance"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Fin (Optionnel)
-              </label>
-              <input
-                type="datetime-local"
-                value={maintenanceForm.endTime}
-                onChange={(e) => setMaintenanceForm({ ...maintenanceForm, endTime: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+              <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Message d'accompagnement</label>
+              <textarea
+                value={maintenanceForm.message}
+                onChange={(e) => setMaintenanceForm({ ...maintenanceForm, message: e.target.value })}
+                className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300 min-h-[100px]"
+                placeholder="Expliquez la raison de la maintenance..."
               />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Début prévu</label>
+                <input
+                  type="datetime-local"
+                  value={maintenanceForm.startTime}
+                  onChange={(e) => setMaintenanceForm({ ...maintenanceForm, startTime: e.target.value })}
+                  className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none border border-white/10 transition-all duration-300 [color-scheme:dark]"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Fin estimée</label>
+                <input
+                  type="datetime-local"
+                  value={maintenanceForm.endTime}
+                  onChange={(e) => setMaintenanceForm({ ...maintenanceForm, endTime: e.target.value })}
+                  className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none border border-white/10 transition-all duration-300 [color-scheme:dark]"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 mt-6">
+          <div className="flex justify-end gap-3 pt-6 border-t border-white/5">
             <button
               onClick={() => setIsMaintenanceModalOpen(false)}
-              className="px-4 py-2 rounded-lg font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="px-6 py-2.5 text-zinc-500 hover:text-white font-black text-[10px] uppercase tracking-widest transition-colors"
             >
               Annuler
             </button>
             <button
               onClick={handleSaveMaintenance}
               disabled={maintenanceLoading}
-              className="px-4 py-2 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2.5 rounded-xl transition-all duration-300 shadow-lg shadow-indigo-500/20 font-black text-[10px] uppercase tracking-widest disabled:opacity-50"
             >
               {maintenanceLoading ? 'Enregistrement...' : 'Enregistrer'}
             </button>

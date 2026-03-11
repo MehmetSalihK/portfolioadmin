@@ -1,11 +1,9 @@
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, AnimatePresence } from 'framer-motion';
 import Head from 'next/head';
 import { GetStaticProps } from 'next';
 import Layout from '@/components/layout/Layout';
-import Button from '@/components/ui/Button';
-import EnhancedProjectCard from '@/components/projects/EnhancedProjectCard';
-import { Analytics } from "@vercel/analytics/next"
 import CVModal from '@/components/modals/CVModal';
+import { Analytics } from "@vercel/analytics/next";
 import connectDB from '@/lib/db';
 import ProjectModel from '@/models/Project';
 import ExperienceModel from '@/models/Experience';
@@ -15,52 +13,22 @@ import SettingModel from '@/models/Setting';
 import { useRef, useEffect, useState } from 'react';
 import useAnalytics from '@/utils/hooks/useAnalytics';
 import {
-  FaGithub,
-  FaLinkedin,
-  FaTwitter,
-  FaWhatsapp,
-  FaTelegram,
-  FaReact,
-  FaNodeJs,
-  FaGit,
-  FaDocker,
-  FaAws,
-  FaPython,
-  FaJava,
-  FaPhp,
-  FaNpm,
-  FaWordpress,
-  FaGitlab,
-  FaCode
+  FaGithub, FaLinkedin, FaTwitter, FaWhatsapp, FaTelegram,
 } from 'react-icons/fa';
 import { HiArrowDown } from 'react-icons/hi';
-import { FiExternalLink, FiGithub, FiSettings, FiCode, FiStar, FiAlertTriangle, FiX, FiDownload, FiFileText } from 'react-icons/fi';
+import {
+  FiExternalLink, FiGithub, FiX, FiDownload,
+  FiCode, FiSettings, FiStar
+} from 'react-icons/fi';
 import parse from 'html-react-parser';
 import DOMPurify from 'isomorphic-dompurify';
-import { sanitizeInput } from '@/utils/sanitize';
-import {
-  SiTypescript,
-  SiJavascript,
-  SiMongodb,
-  SiPostgresql,
-  SiTailwindcss,
-  SiNextdotjs,
-  SiAdobephotoshop,
-  SiMicrosoftword,
-  SiMicrosoftexcel,
-  SiMicrosoftpowerpoint,
-  SiAdobepremierepro,
-  SiFlutter,
-  SiComposer,
-  SiYarn
-} from 'react-icons/si';
-import { TbApi, TbBrandPython } from 'react-icons/tb';
 import SkillCategory from '@/models/SkillCategory';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import Link from 'next/link';
 import SkillsSection from '@/components/home/SkillsSection';
 
+// ─── Interfaces ────────────────────────────────────────────────────────────────
 interface Project {
   _id: string;
   title: string;
@@ -91,473 +59,104 @@ interface Experience {
 interface HomePageProps {
   projects: Project[];
   experiences: Experience[];
-  skills: Array<{
-    _id: string;
-    name: string;
-    level: number;
-    category: string;
-  }>;
+  skills: Array<{ _id: string; name: string; level: number; category: string }>;
   homeData: {
     title: string;
     subtitle: string;
     aboutTitle: string;
     aboutText: string;
-    navigation: {
-      about: string;
-      projects: string;
-      experience: string;
-      contact: string;
-    };
-    contactInfo: {
-      email: string;
-      phone: string;
-      location: string;
-    };
-    footer: {
-      copyright: string;
-      description: string;
-    };
-    socialLinks: {
-      github: string;
-      linkedin: string;
-      twitter: string;
-      whatsapp: string;
-      telegram: string;
-    };
+    navigation: { about: string; projects: string; experience: string; contact: string };
+    contactInfo: { email: string; phone: string; location: string };
+    footer: { copyright: string; description: string };
+    socialLinks: { github: string; linkedin: string; twitter: string; whatsapp: string; telegram: string };
   };
-  settings: {
-    email: string;
-    linkedin: string;
-    phone: string;
-    position?: string;
-  };
+  settings: { email: string; linkedin: string; phone: string; position?: string };
   skillsByCategory: Array<{
-    _id: string;
-    name: string;
-    displayOrder: number;
-    skills: Array<{
-      _id: string;
-      name: string;
-      categoryId: {
-        name: string;
-        _id: string;
-      };
-      displayOrder: number;
-    }>;
-
+    _id: string; name: string; displayOrder: number;
+    skills: Array<{ _id: string; name: string; categoryId: { name: string; _id: string }; displayOrder: number }>;
   }>;
-  seoData?: {
-    title?: string;
-    description?: string;
-    keywords?: string[];
-    ogImage?: string;
-  };
+  seoData?: { title?: string; description?: string; keywords?: string[]; ogImage?: string };
 }
+
+interface Category { _id: string; name: string; displayOrder: number }
 
 const defaultHomeData = {
-  _id: 'default',
-  __v: 0,
+  _id: 'default', __v: 0,
   title: 'Portfolio Professionnel',
-  subtitle: 'Développeur Full Stack passionné par la création d\'applications web modernes et performantes. Spécialisé dans React, Next.js, Node.js et les technologies cloud.',
+  subtitle: "Développeur Full Stack passionné par la création d'applications web modernes et performantes. Spécialisé dans React, Next.js, Node.js et les technologies cloud.",
   aboutTitle: 'À propos',
-  aboutText: 'Je suis un développeur Full Stack passionné par la création d\'applications web innovantes. Avec une solide expérience dans le développement front-end et back-end, je m\'efforce de créer des solutions élégantes et performantes qui répondent aux besoins des utilisateurs.',
-  navigation: {
-    about: 'À propos',
-    projects: 'Projets',
-    experience: 'Expérience',
-    contact: 'Contact'
-  },
-  contactInfo: {
-    email: 'contact@portfolio.com',
-    phone: '+33 X XX XX XX XX',
-    location: 'France'
-  },
-  footer: {
-    copyright: '© 2024 Portfolio. Fait avec ❤️ et Next.js',
-    description: 'Développeur Full Stack passionné par la création d\'applications web modernes et performantes.'
-  },
-  socialLinks: {
-    github: '',
-    linkedin: '',
-    twitter: '',
-    whatsapp: '',
-    telegram: ''
-  }
+  aboutText: "Je suis un développeur Full Stack passionné par la création d'applications web innovantes.",
+  navigation: { about: 'À propos', projects: 'Projets', experience: 'Expérience', contact: 'Contact' },
+  contactInfo: { email: 'contact@portfolio.com', phone: '+33 X XX XX XX XX', location: 'France' },
+  footer: { copyright: '© 2024 Portfolio. Fait avec ❤️ et Next.js', description: "Développeur Full Stack." },
+  socialLinks: { github: '', linkedin: '', twitter: '', whatsapp: '', telegram: '' }
 };
 
-const getIcon = (skillName: string) => {
-  const icons: { [key: string]: JSX.Element } = {
-    'React': <FaReact className="w-12 h-12" />,
-    'Node.js': <FaNodeJs className="w-12 h-12" />,
-    'TypeScript': <SiTypescript className="w-12 h-12" />,
-    'JavaScript': <SiJavascript className="w-12 h-12" />,
-    'MongoDB': <SiMongodb className="w-12 h-12" />,
-    'PostgreSQL': <SiPostgresql className="w-12 h-12" />,
-    'Git': <FaGit className="w-12 h-12" />,
-    'Docker': <FaDocker className="w-12 h-12" />,
-    'AWS': <FaAws className="w-12 h-12" />,
-    'Python': <TbBrandPython className="w-12 h-12" />,
-    'Java': <FaJava className="w-12 h-12" />,
-    'PHP': <FaPhp className="w-12 h-12" />,
-    'Tailwind': <SiTailwindcss className="w-12 h-12" />,
-    'Next.js': <SiNextdotjs className="w-12 h-12" />,
-    'Adobe Photoshop': <SiAdobephotoshop className="w-12 h-12" />,
-    'Wordpress': <FaWordpress className="w-12 h-12" />,
-    'API': <TbApi className="w-12 h-12" />,
-    'GitLab': <FaGitlab className="w-12 h-12" />,
-    'GitHub': <FaGithub className="w-12 h-12" />,
-    'NPM': <FaNpm className="w-12 h-12" />,
-    'Composer': <SiComposer className="w-12 h-12" />,
-    'Flutter': <SiFlutter className="w-12 h-12" />,
-    'Microsoft Word': <SiMicrosoftword className="w-12 h-12" />,
-    'Microsoft Excel': <SiMicrosoftexcel className="w-12 h-12" />,
-    'Microsoft PowerPoint': <SiMicrosoftpowerpoint className="w-12 h-12" />,
-    'Adobe Premiere Pro': <SiAdobepremierepro className="w-12 h-12" />,
-    'Yarn': <SiYarn className="w-12 h-12" />,
-    'PIP': <FaCode className="w-12 h-12" />
-  };
-
-  const normalizedName = skillName.toLowerCase().trim();
-
-  const icon = Object.entries(icons).find(([key]) =>
-    key.toLowerCase() === normalizedName
-  )?.[1];
-
-  return icon || <FaCode className="w-12 h-12" />;
-};
-
-interface SkillCardProps {
-  skill: {
-    _id: string;
-    name: string;
-    level: number;
-    category: string;
-  };
-  index: number;
-  getIcon: (name: string) => JSX.Element;
-}
-
-const SkillCard = ({ skill, index, getIcon }: SkillCardProps) => (
-  <motion.div
-    key={skill._id}
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5, delay: index * 0.1 }}
-    viewport={{ once: true }}
-    className="group relative"
-  >
-    <div className="bg-white dark:bg-gray-700 rounded-xl p-4 transform transition-all duration-300 hover:scale-105 hover:shadow-2xl dark:shadow-primary-500/20 flex flex-col items-center justify-center gap-3 hover:bg-gradient-to-br from-gray-700 to-gray-800">
-      <div className="text-primary-500 transition-transform duration-300 group-hover:scale-110 group-hover:text-primary-400">
-        {getIcon(skill.name)}
-      </div>
-      <div className="text-center">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-primary-400">
-          {skill.name}
-        </h3>
-        <div className="mt-2 h-0.5 w-8 bg-primary-500 mx-auto rounded-full transform origin-left transition-all duration-300 group-hover:w-full"></div>
-      </div>
-    </div>
-  </motion.div>
-);
-
-interface Category {
-  _id: string;
-  name: string;
-  displayOrder: number;
-}
-
-interface Skill {
-  _id: string;
-  name: string;
-  displayOrder: number;
-  categoryId: Category | string | null;
-}
-
-export default function Home({ projects, experiences, skills, homeData = defaultHomeData, skillsByCategory, settings, seoData }: HomePageProps) {
+// ─── Component ─────────────────────────────────────────────────────────────────
+export default function Home({
+  projects, experiences, homeData = defaultHomeData, skillsByCategory, settings, seoData
+}: HomePageProps) {
   const { scrollYProgress } = useScroll();
   const mainRef = useRef<HTMLDivElement>(null);
   const [showBanner, setShowBanner] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Analytics tracking
+  // Analytics
   useAnalytics({ enabled: true, updateInterval: 30000 });
 
-  // État pour la modale
+  // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [isCVModalOpen, setIsCVModalOpen] = useState(false);
 
-  // Limiter à 3 projets les plus visités (on peut utiliser featured ou un autre critère)
+  // Top 3 featured projects
   const formattedProjects = projects
     .sort((a, b) => {
-      // Prioriser les projets featured, puis par ordre de création
       if (a.featured && !b.featured) return -1;
       if (!a.featured && b.featured) return 1;
       return 0;
     })
-    .slice(0, 3)
-    .map(project => ({
-      ...project,
-      image: project.imageUrl
-    }));
+    .slice(0, 3);
 
-  const scrollToContent = () => {
-    mainRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const scrollToContent = () => mainRef.current?.scrollIntoView({ behavior: 'smooth' });
 
-  // Fonctions pour gérer la modale
   const openModal = (project: any) => {
     setSelectedProject(project);
     setIsModalOpen(true);
     document.body.style.overflow = 'hidden';
   };
-
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedProject(null);
     document.body.style.overflow = 'unset';
   };
+  const handleModalContentClick = (e: React.MouseEvent) => e.stopPropagation();
 
-  const handleModalContentClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  };
-
+  // Analytics tracking
   const trackClick = async (projectId: string, type: 'demo' | 'github' | 'view') => {
     try {
-      const response = await fetch('/api/projects/stats', {
+      await fetch('/api/projects/stats', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ projectId, type }),
       });
-
-      if (!response.ok) {
-        return;
-      }
-
-      await response.json();
-    } catch (error) {
-      // Silently handle error
-    }
+    } catch {}
   };
+  const handleDemoClick = async (projectId: string, url: string) => { await trackClick(projectId, 'demo'); window.open(url, '_blank'); };
+  const handleGithubClick = async (projectId: string, url: string) => { await trackClick(projectId, 'github'); window.open(url, '_blank'); };
 
-  const handleDemoClick = async (projectId: string, url: string) => {
-    await trackClick(projectId, 'demo');
-    window.open(url, '_blank');
-  };
-
-  const handleGithubClick = async (projectId: string, url: string) => {
-    await trackClick(projectId, 'github');
-    window.open(url, '_blank');
-  };
-
+  // Intersection observer for project views
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(async (entry) => {
         if (entry.isIntersecting) {
-          const projectId = entry.target.getAttribute('data-project-id');
-          if (projectId) {
-            await trackClick(projectId, 'view');
-            observer.unobserve(entry.target);
-          }
+          const id = entry.target.getAttribute('data-project-id');
+          if (id) { await trackClick(id, 'view'); observer.unobserve(entry.target); }
         }
       });
     });
-
-    const projectElements = document.querySelectorAll('[data-project-id]');
-    projectElements.forEach((element) => {
-      observer.observe(element);
-    });
-
-    return () => {
-      observer.disconnect();
-    };
+    document.querySelectorAll('[data-project-id]').forEach(el => observer.observe(el));
+    return () => observer.disconnect();
   }, []);
-
-  const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-
-    setIsSubmitting(true);
-
-    // Afficher une notification de chargement
-    const loadingToastId = toast.loading(
-      <div className="flex items-center space-x-2">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-        <span>Envoi en cours...</span>
-      </div>
-    );
-
-    try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          firstName: formData.get('firstName'),
-          lastName: formData.get('lastName'),
-          company: formData.get('company'),
-          phone: formData.get('phone'),
-          email: formData.get('email'),
-          subject: formData.get('subject'),
-          message: formData.get('message'),
-        }),
-      });
-
-      if (response.ok) {
-        // Succès : Remplacer la notification de chargement par une notification de succès
-        toast.dismiss(loadingToastId);
-        toast.custom((t) => (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className={`${t.visible ? 'animate-enter' : 'animate-leave'
-              } max-w-md w-full bg-gradient-to-r from-green-500 to-green-600 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
-          >
-            <div className="flex-1 w-0 p-4">
-              <div className="flex items-start">
-                <div className="flex-shrink-0 pt-0.5">
-                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
-                    <motion.svg
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.2 }}
-                      className="h-6 w-6 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <motion.path
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </motion.svg>
-                  </div>
-                </div>
-                <div className="ml-3 flex-1">
-                  <p className="text-sm font-medium text-white">
-                    Message envoyé avec succès !
-                  </p>
-                  <p className="mt-1 text-sm text-white/80">
-                    Nous vous répondrons dans les plus brefs délais.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="flex border-l border-green-400">
-              <button
-                onClick={() => toast.dismiss(t.id)}
-                className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-white hover:text-white/80 focus:outline-none"
-              >
-                <motion.svg
-                  whileHover={{ rotate: 90 }}
-                  className="w-5 h-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </motion.svg>
-              </button>
-            </div>
-          </motion.div>
-        ), {
-          duration: 5000,
-        });
-
-        // Réinitialiser le formulaire
-        form.reset();
-        setIsSubmitting(false);
-      } else {
-        // Erreur : Afficher une notification d'erreur
-        toast.dismiss(loadingToastId);
-        setIsSubmitting(false);
-        toast.custom((t) => (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className={`${t.visible ? 'animate-enter' : 'animate-leave'
-              } max-w-md w-full bg-gradient-to-r from-red-500 to-red-600 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
-          >
-            <div className="flex-1 w-0 p-4">
-              <div className="flex items-start">
-                <div className="flex-shrink-0 pt-0.5">
-                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
-                    <motion.svg
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="h-6 w-6 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </motion.svg>
-                  </div>
-                </div>
-                <div className="ml-3 flex-1">
-                  <p className="text-sm font-medium text-white">
-                    Erreur lors de l'envoi
-                  </p>
-                  <p className="mt-1 text-sm text-white/80">
-                    Veuillez réessayer ultérieurement.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="flex border-l border-red-400">
-              <button
-                onClick={() => toast.dismiss(t.id)}
-                className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-white hover:text-white/80 focus:outline-none"
-              >
-                <motion.svg
-                  whileHover={{ rotate: 90 }}
-                  className="w-5 h-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </motion.svg>
-              </button>
-            </div>
-          </motion.div>
-        ), {
-          duration: 5000,
-        });
-      }
-    } catch (error) {
-      // Gérer l'erreur comme ci-dessus
-      toast.dismiss(loadingToastId);
-      toast.error('Erreur lors de l\'envoi du message');
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <Layout>
@@ -570,7 +169,8 @@ export default function Home({ projects, experiences, skills, homeData = default
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <AnimatePresence>
+      {/* Beta banner - hidden for production, uncomment if needed for testing */}
+      {/* <AnimatePresence>
         {showBanner && (
           <motion.div
             initial={{ opacity: 0, y: -50 }}
@@ -580,1069 +180,723 @@ export default function Home({ projects, experiences, skills, homeData = default
           >
             <div className="flex items-center gap-3 bg-amber-500/90 text-amber-900 px-4 py-3 rounded-lg shadow-lg backdrop-blur-sm max-w-2xl">
               <FiAlertTriangle className="w-5 h-5 flex-shrink-0" />
-              <p className="text-sm">
-                Ce site est actuellement en cours de développement (version bêta).
-                Certaines fonctionnalités peuvent ne pas fonctionner correctement.
-              </p>
-              <button
-                onClick={() => setShowBanner(false)}
-                className="flex-shrink-0 text-amber-900 hover:text-amber-950 transition-colors"
-              >
+              <p className="text-sm">Ce site est actuellement en cours de développement (version bêta). Certaines fonctionnalités peuvent ne pas fonctionner correctement.</p>
+              <button onClick={() => setShowBanner(false)} className="flex-shrink-0 text-amber-900 hover:text-amber-950 transition-colors">
                 <FiX className="w-5 h-5" />
               </button>
             </div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence> */}
 
-      {/* Progress bar */}
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-primary-500 origin-left z-50"
-        style={{ scaleX: scrollYProgress }}
-      />
+      {/* Scroll progress bar */}
+      <motion.div className="fixed top-0 left-0 right-0 h-0.5 bg-indigo-500 origin-left z-50" style={{ scaleX: scrollYProgress }} />
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-900">
-
-        {/* Simple decorative gradient - subtle */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-blue-100/50 dark:bg-blue-900/20 rounded-full blur-3xl opacity-30"></div>
-          <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-purple-100/50 dark:bg-purple-900/20 rounded-full blur-3xl opacity-30"></div>
+      {/* ═══════════════════════════════════════
+          HERO SECTION
+      ═══════════════════════════════════════ */}
+      <section className="relative min-h-screen flex items-center overflow-hidden dark:bg-[#09090f] bg-white pt-24 pb-16">
+        {/* Ambient blobs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] dark:bg-indigo-600/10 bg-indigo-100/60 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] dark:bg-violet-600/8 bg-violet-100/40 rounded-full blur-3xl" />
+          <div className="absolute inset-0 dark:bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.04)_0%,transparent_70%)]" />
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
-          className="text-center z-10 px-4 max-w-5xl mx-auto"
-        >
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-            className="mb-6"
-          >
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent mb-6 leading-tight">
-              {homeData.title}
-            </h1>
-          </motion.div>
+        <div className="max-w-7xl mx-auto px-6 w-full relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="text-lg sm:text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
-          >
-            {homeData.subtitle}
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center mt-8"
-          >
-            <motion.div
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
-              <Link
-                href="/projects"
-                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform"
+            {/* ── Left: Identity ── */}
+            <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: 'easeOut' }}>
+              {/* Available badge */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+                className="inline-flex items-center gap-2.5 px-4 py-2 dark:bg-indigo-500/10 bg-indigo-50 dark:border-indigo-500/20 border-indigo-200 border rounded-full mb-8"
               >
-                <span>Voir mes {homeData.navigation?.projects?.toLowerCase() || 'projets'}</span>
-                <motion.svg
-                  className="ml-2 w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  initial={{ x: 0 }}
-                  whileHover={{ x: 5 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500" />
+                </span>
+                <span className="text-[10px] font-black dark:text-indigo-400 text-indigo-600 uppercase tracking-widest">
+                  Disponible pour de nouvelles opportunités
+                </span>
+              </motion.div>
+
+              {/* Name & Title */}
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.7 }}
+                className="text-5xl sm:text-6xl lg:text-7xl font-black dark:text-white text-zinc-900 leading-tight tracking-tight mb-6"
+              >
+                {homeData.title}
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.7 }}
+                className="text-lg dark:text-zinc-400 text-zinc-600 mb-10 max-w-lg leading-relaxed font-medium"
+              >
+                {homeData.subtitle}
+              </motion.p>
+
+              {/* CTA Buttons */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="flex flex-wrap gap-3 mb-10"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </motion.svg>
-              </Link>
+                  <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }}>
+                    <Link
+                      href="#projects"
+                      className="inline-flex items-center gap-2 px-7 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/20 transition-all"
+                    >
+                      <FiCode className="w-4 h-4" />
+                      Voir mes projets
+                    </Link>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }}>
+                    <button
+                      onClick={() => setIsCVModalOpen(true)}
+                      className="inline-flex items-center gap-2 px-7 py-3.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:text-white text-zinc-900 dark:border-white/10 border-zinc-300 border rounded-xl text-sm font-bold transition-all"
+                    >
+                      <FiDownload className="w-4 h-4" />
+                      Télécharger CV
+                    </button>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }}>
+                    <Link
+                      href="/contact"
+                      className="inline-flex items-center gap-2 px-7 py-3.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:text-white text-zinc-900 dark:border-white/10 border-zinc-300 border rounded-xl text-sm font-bold transition-all"
+                    >
+                      Me contacter
+                    </Link>
+                  </motion.div>
+                </motion.div>
+
+              {/* Social Links */}
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="flex gap-3">
+                {homeData.socialLinks.github && (
+                  <motion.a href={homeData.socialLinks.github} target="_blank" rel="noopener noreferrer"
+                    whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }} title="GitHub"
+                    className="p-2.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:border-white/10 border-zinc-200 border rounded-xl dark:text-zinc-400 text-zinc-600 dark:hover:text-white hover:text-zinc-900 transition-all"
+                  ><FaGithub className="w-5 h-5" /></motion.a>
+                )}
+                {homeData.socialLinks.linkedin && (
+                  <motion.a href={homeData.socialLinks.linkedin} target="_blank" rel="noopener noreferrer"
+                    whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }} title="LinkedIn"
+                    className="p-2.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:border-white/10 border-zinc-200 border rounded-xl dark:text-zinc-400 text-zinc-600 dark:hover:text-white hover:text-zinc-900 transition-all"
+                  ><FaLinkedin className="w-5 h-5" /></motion.a>
+                )}
+                {homeData.socialLinks.twitter && (
+                  <motion.a href={homeData.socialLinks.twitter} target="_blank" rel="noopener noreferrer"
+                    whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }} title="Twitter / X"
+                    className="p-2.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:border-white/10 border-zinc-200 border rounded-xl dark:text-zinc-400 text-zinc-600 dark:hover:text-white hover:text-zinc-900 transition-all"
+                  ><FaTwitter className="w-5 h-5" /></motion.a>
+                )}
+                {homeData.socialLinks.whatsapp && (
+                  <motion.a href={homeData.socialLinks.whatsapp} target="_blank" rel="noopener noreferrer"
+                    whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }} title="WhatsApp"
+                    className="p-2.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:border-white/10 border-zinc-200 border rounded-xl dark:text-zinc-400 text-zinc-600 dark:hover:text-white hover:text-zinc-900 transition-all"
+                  ><FaWhatsapp className="w-5 h-5" /></motion.a>
+                )}
+                {homeData.socialLinks.telegram && (
+                  <motion.a href={homeData.socialLinks.telegram} target="_blank" rel="noopener noreferrer"
+                    whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }} title="Telegram"
+                    className="p-2.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:border-white/10 border-zinc-200 border rounded-xl dark:text-zinc-400 text-zinc-600 dark:hover:text-white hover:text-zinc-900 transition-all"
+                  ><FaTelegram className="w-5 h-5" /></motion.a>
+                )}
+              </motion.div>
             </motion.div>
 
+            {/* ── Right: Abstract Visual ── */}
             <motion.div
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
+              className="hidden lg:block"
             >
-              <Link
-                href="#contact"
-                className="inline-flex items-center px-8 py-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform"
-              >
-                {homeData.navigation?.contact || 'Me contacter'}
-              </Link>
+              <div className="relative">
+                <div className="w-full aspect-square max-w-[420px] mx-auto">
+                  <div className="absolute inset-0 dark:bg-[radial-gradient(circle_at_30%_30%,rgba(99,102,241,0.15),transparent_50%)]" />
+                  <div className="absolute inset-0 dark:bg-[radial-gradient(circle_at_70%_70%,rgba(167,139,250,0.1),transparent_50%)]" />
+                  
+                  {/* Central glow */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 dark:bg-indigo-500/20 bg-indigo-100 rounded-full blur-3xl" />
+                  
+                  {/* Floating tech rings */}
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 30, ease: 'linear' }}
+                    className="absolute inset-8"
+                  >
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-16 dark:bg-zinc-900/80 bg-white rounded-2xl border dark:border-white/10 border-zinc-200 shadow-xl flex items-center justify-center">
+                      <span className="text-xl font-black dark:text-indigo-400 text-indigo-600">N</span>
+                    </div>
+                  </motion.div>
+                  
+                  <motion.div
+                    animate={{ rotate: -360 }}
+                    transition={{ repeat: Infinity, duration: 25, ease: 'linear' }}
+                    className="absolute inset-12"
+                  >
+                    <div className="absolute top-0 right-8 w-14 h-14 dark:bg-zinc-900/80 bg-white rounded-2xl border dark:border-white/10 border-zinc-200 shadow-xl flex items-center justify-center">
+                      <span className="text-lg font-black dark:text-emerald-400 text-emerald-600">R</span>
+                    </div>
+                  </motion.div>
+                  
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 20, ease: 'linear' }}
+                    className="absolute inset-16"
+                  >
+                    <div className="absolute bottom-8 left-4 w-14 h-14 dark:bg-zinc-900/80 bg-white rounded-2xl border dark:border-white/10 border-zinc-200 shadow-xl flex items-center justify-center">
+                      <span className="text-lg font-black dark:text-violet-400 text-violet-600">T</span>
+                    </div>
+                  </motion.div>
+                  
+                  <motion.div
+                    animate={{ rotate: -360 }}
+                    transition={{ repeat: Infinity, duration: 35, ease: 'linear' }}
+                    className="absolute inset-20"
+                  >
+                    <div className="absolute bottom-0 right-1/2 translate-x-1/2 w-12 h-12 dark:bg-zinc-900/80 bg-white rounded-2xl border dark:border-white/10 border-zinc-200 shadow-xl flex items-center justify-center">
+                      <span className="text-sm font-black dark:text-amber-400 text-amber-600">M</span>
+                    </div>
+                  </motion.div>
+                  
+                  {/* Center dot */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <div className="w-20 h-20 dark:bg-zinc-900/90 bg-white rounded-2xl border dark:border-white/10 border-zinc-200 shadow-2xl flex items-center justify-center">
+                      <div className="w-3 h-3 bg-indigo-500 rounded-full">
+                        <div className="w-3 h-3 bg-indigo-500 rounded-full animate-ping absolute" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </motion.div>
+          </div>
+        </div>
 
-            <motion.div
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
-              <button
-                onClick={() => setIsCVModalOpen(true)}
-                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform"
-              >
-                <FiFileText className="mr-2 w-5 h-5" />
-                <span>Voir mon CV</span>
-              </button>
-            </motion.div>
-          </motion.div>
-
-          {/* Social Links */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1 }}
-            className="flex gap-6 justify-center mt-12"
-          >
-            {homeData.socialLinks.github && (
-              <motion.a
-                href={homeData.socialLinks.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                whileHover={{ scale: 1.2, y: -3 }}
-                whileTap={{ scale: 0.9 }}
-                className="p-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
-              >
-                <FaGithub className="w-6 h-6" />
-              </motion.a>
-            )}
-            {homeData.socialLinks.linkedin && (
-              <motion.a
-                href={homeData.socialLinks.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                whileHover={{ scale: 1.2, y: -3 }}
-                whileTap={{ scale: 0.9 }}
-                className="p-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
-              >
-                <FaLinkedin className="w-6 h-6" />
-              </motion.a>
-            )}
-            {homeData.socialLinks.twitter && (
-              <motion.a
-                href={homeData.socialLinks.twitter}
-                target="_blank"
-                rel="noopener noreferrer"
-                whileHover={{ scale: 1.2, y: -3 }}
-                whileTap={{ scale: 0.9 }}
-                className="p-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
-              >
-                <FaTwitter className="w-6 h-6" />
-              </motion.a>
-            )}
-            {homeData.socialLinks.whatsapp && (
-              <motion.a
-                href={homeData.socialLinks.whatsapp}
-                target="_blank"
-                rel="noopener noreferrer"
-                whileHover={{ scale: 1.2, y: -3 }}
-                whileTap={{ scale: 0.9 }}
-                className="p-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400"
-              >
-                <FaWhatsapp className="w-6 h-6" />
-              </motion.a>
-            )}
-            {homeData.socialLinks.telegram && (
-              <motion.a
-                href={homeData.socialLinks.telegram}
-                target="_blank"
-                rel="noopener noreferrer"
-                whileHover={{ scale: 1.2, y: -3 }}
-                whileTap={{ scale: 0.9 }}
-                className="p-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-300"
-              >
-                <FaTelegram className="w-6 h-6" />
-              </motion.a>
-            )}
-          </motion.div>
-        </motion.div>
-
+        {/* Scroll cue */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 1.2 }}
-          className="absolute bottom-8"
+          transition={{ delay: 1.4 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2"
         >
           <motion.button
             onClick={scrollToContent}
-            whileHover={{ scale: 1.1, y: -2 }}
-            animate={{ y: [0, 8, 0] }}
-            transition={{
-              y: { repeat: Infinity, duration: 2, ease: "easeInOut" },
-              scale: { type: "spring", stiffness: 400, damping: 17 }
-            }}
-            className="p-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
+            animate={{ y: [0, 6, 0] }}
+            transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+            className="p-2.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:border-white/10 border-zinc-200 border rounded-xl dark:text-zinc-500 text-zinc-400 dark:hover:text-white hover:text-zinc-900 transition-all"
           >
-            <HiArrowDown className="w-6 h-6" />
+            <HiArrowDown className="w-5 h-5" />
           </motion.button>
         </motion.div>
       </section>
 
-      <main ref={mainRef}>
-        {/* About Section */}
-        <section id="about" className="w-full py-20 px-4 bg-white dark:bg-gray-800 relative overflow-hidden">
-
-          <div className="max-w-6xl mx-auto relative z-10">
+      {/* ═══════════════════════════════════════
+          ABOUT BRIEF SECTION
+      ═══════════════════════════════════════ */}
+      <section className="py-20 dark:bg-[#09090f] bg-white relative overflow-hidden">
+        <div className="absolute inset-0 dark:bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.03)_0%,transparent_70%)]" />
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            {/* Left: About text */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="text-center mb-12 lg:mb-16"
+              transition={{ duration: 0.7 }}
             >
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 to-blue-800 dark:from-white dark:to-blue-200 bg-clip-text text-transparent mb-4">
-                {homeData.aboutTitle}
+              <div className="flex items-center gap-2 text-indigo-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-4">
+                <span className="w-8 h-[1px] bg-indigo-500" />
+                À propos
+              </div>
+              <h2 className="text-3xl lg:text-4xl font-black dark:text-white text-zinc-900 tracking-tight mb-6">
+                Développeur passionné par la création d&apos;expériences numériques
               </h2>
-              <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
+              <div className="space-y-4 dark:text-zinc-400 text-zinc-600 leading-relaxed">
+                <p>
+                  Fort de plus de 3 ans d&apos;expérience en développement web, je me spécialise dans la création 
+                  d&apos;applications modernes et performantes avec les technologies les plus récentes.
+                </p>
+                <p>
+                  Mon approche combine expertise technique et sens de l&apos;utilisateur pourDeliver 
+                  des solutions qui répondent aux besoins réels des entreprises.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3 mt-8">
+                <Link
+                  href="/about"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:text-white text-zinc-900 dark:border-white/10 border-zinc-300 border rounded-xl text-xs font-bold transition-all"
+                >
+                  En savoir plus
+                </Link>
+                <Link
+                  href="/experience"
+                  className="inline-flex items-center gap-2 text-indigo-500 hover:text-indigo-400 font-bold text-sm transition-colors"
+                >
+                  Voir mon parcours →
+                </Link>
+              </div>
             </motion.div>
 
+            {/* Right: Quick stats cards */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center"
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="grid grid-cols-2 gap-4"
             >
-              <div className="space-y-6">
-                <div className="text-lg sm:text-xl text-gray-900 dark:text-gray-300 leading-relaxed max-w-none">
-                  {parse(homeData.aboutText)}
-                </div>
-
+              {[
+                { number: '50+', label: 'Projets livrés', desc: 'Applications web & mobiles' },
+                { number: '3+', label: "Années d'expérience", desc: 'En développement full-stack' },
+                { number: '15+', label: 'Technologies', desc: 'Stack moderne' },
+                { number: '100%', label: 'Engagement', desc: 'Satisfaction client' },
+              ].map((stat, i) => (
                 <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  className="flex flex-wrap gap-3 pt-4"
+                  transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
+                  className="dark:bg-zinc-900/60 bg-white backdrop-blur-sm rounded-2xl p-5 dark:border-white/5 border-zinc-200 border"
                 >
-                  {['Développement Web', 'UI/UX Design', 'Applications Mobiles', 'Consulting'].map((skill, index) => (
-                    <motion.span
-                      key={skill}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.4, delay: 0.5 + index * 0.1 }}
-                      viewport={{ once: true }}
-                      whileHover={{ scale: 1.05 }}
-                      className="px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium border border-blue-200 dark:border-blue-700 hover:shadow-md transition-all duration-300"
-                    >
-                      {skill}
-                    </motion.span>
-                  ))}
-                </motion.div>
-              </div>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-                viewport={{ once: true }}
-                className="relative"
-              >
-                <div className="relative bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-8 shadow-2xl">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-700/20 rounded-2xl backdrop-blur-sm"></div>
-                  <div className="relative z-10 text-white">
-                    <div className="grid grid-cols-2 gap-6">
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        className="text-center p-4 bg-white/10 rounded-xl backdrop-blur-sm"
-                      >
-                        <div className="text-3xl font-bold mb-2">50+</div>
-                        <div className="text-sm opacity-90">Projets Réalisés</div>
-                      </motion.div>
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        className="text-center p-4 bg-white/10 rounded-xl backdrop-blur-sm"
-                      >
-                        <div className="text-3xl font-bold mb-2">3+</div>
-                        <div className="text-sm opacity-90">Années d'Expérience</div>
-                      </motion.div>
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        className="text-center p-4 bg-white/10 rounded-xl backdrop-blur-sm"
-                      >
-                        <div className="text-3xl font-bold mb-2">100%</div>
-                        <div className="text-sm opacity-90">Satisfaction Client</div>
-                      </motion.div>
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        className="text-center p-4 bg-white/10 rounded-xl backdrop-blur-sm"
-                      >
-                        <div className="text-3xl font-bold mb-2">24/7</div>
-                        <div className="text-sm opacity-90">Support Disponible</div>
-                      </motion.div>
-                    </div>
+                  <div className={`text-3xl font-black mb-1 ${i === 0 ? 'text-indigo-500' : i === 1 ? 'text-violet-500' : i === 2 ? 'text-emerald-500' : 'text-amber-500'}`}>
+                    {stat.number}
                   </div>
-                </div>
-
-                {/* Floating elements */}
-                <motion.div
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                  className="absolute -top-4 -right-4 w-8 h-8 bg-yellow-400 rounded-full opacity-80"
-                ></motion.div>
-                <motion.div
-                  animate={{ y: [0, 10, 0] }}
-                  transition={{ repeat: Infinity, duration: 4, ease: "easeInOut", delay: 1 }}
-                  className="absolute -bottom-4 -left-4 w-6 h-6 bg-pink-400 rounded-full opacity-80"
-                ></motion.div>
-              </motion.div>
+                  <div className="text-sm font-bold dark:text-white text-zinc-900 mb-1">{stat.label}</div>
+                  <div className="text-xs dark:text-zinc-500 text-zinc-500">{stat.desc}</div>
+                </motion.div>
+              ))}
             </motion.div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Skills Section */}
-        <SkillsSection />
+      {/* ═══════════════════════════════════════
+          STATS BAR
+      ═══════════════════════════════════════ */}
+      <section className="dark:bg-zinc-900/40 bg-zinc-50 dark:border-white/5 border-zinc-200 border-y py-14">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:divide-x dark:divide-white/5 divide-zinc-200">
+            {[
+              { number: '50+', label: 'Projets réalisés', accent: 'text-indigo-500' },
+              { number: '3+', label: "Années d'expérience", accent: 'text-violet-500' },
+              { number: '15+', label: 'Technologies maîtrisées', accent: 'text-emerald-500' },
+            ].map((stat, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="text-center sm:px-8"
+              >
+                <div className={`text-5xl font-black mb-2 ${stat.accent}`}>{stat.number}</div>
+                <div className="text-xs dark:text-zinc-500 text-zinc-500 font-bold uppercase tracking-widest">{stat.label}</div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-        {/* Projects Section */}
-        <section id="projects" className="py-16 sm:py-20 lg:py-24 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 relative overflow-hidden">
-          {/* Background decoration */}
-          <div className="absolute inset-0 bg-grid-black/[0.02] dark:bg-grid-white/[0.02]"></div>
-          <div className="absolute top-1/2 left-0 w-96 h-96 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl transform -translate-y-1/2"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-cyan-400/10 rounded-full blur-3xl"></div>
+      <main ref={mainRef}>
+        {/* ═══════════════════════════════════════
+            FEATURED PROJECTS
+        ═══════════════════════════════════════ */}
+        <section id="projects" className="py-24 dark:bg-[#09090f] bg-white relative overflow-hidden">
+          <div className="absolute inset-0 dark:bg-[radial-gradient(ellipse_at_top_right,rgba(99,102,241,0.06)_0%,transparent_60%)] pointer-events-none" />
 
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-7xl mx-auto px-6 relative z-10">
+            {/* Header */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
               viewport={{ once: true }}
-              className="text-center mb-12 lg:mb-16"
+              transition={{ duration: 0.6 }}
+              className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-14 gap-4"
             >
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 to-purple-800 dark:from-white dark:to-purple-200 bg-clip-text text-transparent mb-4">
-                Mes {homeData.navigation?.projects || 'Projets'}
-              </h2>
-              <div className="w-24 h-1 bg-gradient-to-r from-purple-500 to-pink-500 mx-auto rounded-full mb-6"></div>
-              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                Découvrez une sélection de mes réalisations récentes, alliant créativité et expertise technique.
-              </p>
+              <div>
+                <div className="flex items-center gap-2 text-indigo-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-3">
+                  <span className="w-8 h-[1px] bg-indigo-500" />
+                  Réalisations
+                </div>
+                <h2 className="text-4xl lg:text-5xl font-black dark:text-white text-zinc-900 tracking-tight">
+                  Projets en vedette
+                </h2>
+              </div>
+              <Link
+                href="/projects"
+                className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest dark:text-zinc-500 text-zinc-500 dark:hover:text-white hover:text-zinc-900 transition-colors group"
+              >
+                Voir tous les projets
+                <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
+              </Link>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            {/* Projects grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {formattedProjects.map((project, index) => (
                 <motion.div
                   key={project._id}
                   data-project-id={project._id}
-                  initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  whileHover={{ y: -8, scale: 1.02 }}
-                  className="group relative bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 dark:border-gray-700"
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ y: -6 }}
+                  className="group dark:bg-zinc-900/60 bg-white backdrop-blur-sm rounded-3xl overflow-hidden dark:border-white/5 border-zinc-200 border dark:hover:border-indigo-500/20 hover:border-indigo-300 transition-all duration-300 shadow-sm hover:shadow-lg flex flex-col"
                 >
-                  <div className="relative aspect-video overflow-hidden">
+                  {/* Project image */}
+                  <div className="relative aspect-video overflow-hidden dark:bg-zinc-800 bg-zinc-100">
                     <Image
                       src={project.imageUrl}
                       alt={project.title}
-                      width={500}
-                      height={300}
-                      className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-                    {project.featured && (
-                      <motion.div
-                        initial={{ scale: 0, rotate: -180 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                        className="absolute top-4 right-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold flex items-center gap-2 shadow-lg"
-                      >
-                        <FiStar className="w-4 h-4" />
-                        <span>Featured</span>
-                      </motion.div>
-                    )}
-
-                    {/* Overlay buttons */}
-                    <div className="absolute inset-0 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-indigo-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
                       {project.demoUrl && (
                         <motion.button
                           onClick={() => project.demoUrl && handleDemoClick(project._id, project.demoUrl)}
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          className="p-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-blue-600 hover:text-blue-700"
-                        >
-                          <FiExternalLink className="w-5 h-5" />
-                        </motion.button>
+                          whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                          className="p-3 bg-white rounded-xl text-zinc-900 shadow-lg"
+                          title="Voir la démo"
+                        ><FiExternalLink className="w-5 h-5" /></motion.button>
                       )}
                       {project.githubUrl && (
                         <motion.button
                           onClick={() => project.githubUrl && handleGithubClick(project._id, project.githubUrl)}
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          className="p-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                        >
-                          <FiGithub className="w-5 h-5" />
-                        </motion.button>
+                          whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                          className="p-3 bg-white rounded-xl text-zinc-900 shadow-lg"
+                          title="Voir le code"
+                        ><FiGithub className="w-5 h-5" /></motion.button>
                       )}
                     </div>
+                    {/* Featured badge */}
+                    {project.featured && (
+                      <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 bg-indigo-600/90 text-white text-[10px] font-black uppercase tracking-widest rounded-full backdrop-blur-sm">
+                        <FiStar className="w-3 h-3" />Featured
+                      </div>
+                    )}
                   </div>
 
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                  {/* Card body */}
+                  <div className="p-6 flex flex-col flex-1">
+                    <h3 className="text-lg font-black dark:text-white text-zinc-900 tracking-tight mb-2 dark:group-hover:text-indigo-400 group-hover:text-indigo-600 transition-colors">
                       {project.title}
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
-                      {project.description.length > 100
-                        ? `${project.description.substring(0, 100)}...`
-                        : project.description}
-                      {project.description.length > 100 && (
-                        <button
-                          onClick={() => openModal(project)}
-                          className="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium underline transition-colors duration-200"
-                        >
-                          lire plus
-                        </button>
-                      )}
+                    <p className="text-sm dark:text-zinc-500 text-zinc-500 leading-relaxed mb-4 flex-1">
+                      {project.description.length > 100 ? (
+                        <>
+                          {project.description.substring(0, 100)}…{' '}
+                          <button onClick={() => openModal(project)} className="text-indigo-500 hover:text-indigo-400 font-bold underline transition-colors">
+                            lire plus
+                          </button>
+                        </>
+                      ) : project.description}
                     </p>
 
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {project.technologies.map((tech, techIndex) => (
-                        <motion.span
-                          key={techIndex}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.3, delay: techIndex * 0.05 }}
-                          whileHover={{ scale: 1.05 }}
-                          className="px-3 py-1.5 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium border border-blue-200 dark:border-blue-700 hover:shadow-md transition-all duration-300"
-                        >
+                    {/* Tech stack */}
+                    <div className="flex flex-wrap gap-1.5 mb-5">
+                      {project.technologies.slice(0, 4).map((tech, ti) => (
+                        <span key={ti} className="px-2.5 py-1 dark:bg-indigo-500/10 bg-indigo-50 dark:text-indigo-400 text-indigo-600 dark:border-indigo-500/20 border-indigo-200 border rounded-lg text-[10px] font-black uppercase tracking-wider">
                           {tech}
-                        </motion.span>
+                        </span>
                       ))}
+                      {project.technologies.length > 4 && (
+                        <span className="px-2.5 py-1 dark:bg-white/5 bg-zinc-100 dark:text-zinc-500 text-zinc-400 rounded-lg text-[10px] font-bold">
+                          +{project.technologies.length - 4}
+                        </span>
+                      )}
                     </div>
 
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
-                      <div className="flex items-center gap-3">
-                        {project.demoUrl && (
-                          <motion.button
-                            onClick={() => project.demoUrl && handleDemoClick(project._id, project.demoUrl)}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors duration-200"
-                          >
-                            <FiExternalLink className="w-4 h-4" />
-                            <span className="text-sm">Demo</span>
-                          </motion.button>
-                        )}
-                        {project.githubUrl && (
-                          <motion.button
-                            onClick={() => project.githubUrl && handleGithubClick(project._id, project.githubUrl)}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium transition-colors duration-200"
-                          >
-                            <FiGithub className="w-4 h-4" />
-                            <span className="text-sm">Code</span>
-                          </motion.button>
-                        )}
-                      </div>
-
-                      <motion.div
-                        whileHover={{ rotate: 360 }}
-                        transition={{ duration: 0.5 }}
-                        className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
-                      ></motion.div>
+                    {/* Action row */}
+                    <div className="flex items-center gap-4 pt-4 dark:border-white/5 border-zinc-100 border-t">
+                      {project.demoUrl && (
+                        <button
+                          onClick={() => project.demoUrl && handleDemoClick(project._id, project.demoUrl)}
+                          className="flex items-center gap-1.5 text-indigo-500 hover:text-indigo-400 font-black text-[10px] uppercase tracking-widest transition-colors"
+                        >
+                          <FiExternalLink className="w-3.5 h-3.5" />Demo
+                        </button>
+                      )}
+                      {project.githubUrl && (
+                        <button
+                          onClick={() => project.githubUrl && handleGithubClick(project._id, project.githubUrl)}
+                          className="flex items-center gap-1.5 dark:text-zinc-500 text-zinc-400 dark:hover:text-white hover:text-zinc-900 font-black text-[10px] uppercase tracking-widest transition-colors"
+                        >
+                          <FiGithub className="w-3.5 h-3.5" />Code
+                        </button>
+                      )}
                     </div>
                   </div>
                 </motion.div>
               ))}
             </div>
 
+            {/* Empty state */}
             {formattedProjects.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
-                className="text-center py-16"
-              >
-                <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <FiCode className="w-12 h-12 text-white" />
+              <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center py-20">
+                <div className="w-20 h-20 rounded-3xl dark:bg-indigo-500/10 bg-indigo-50 flex items-center justify-center mx-auto mb-6">
+                  <FiCode className="w-10 h-10 text-indigo-500" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Projets en cours de développement</h3>
-                <p className="text-gray-600 dark:text-gray-300 max-w-md mx-auto">
-                  De nouveaux projets passionnants arrivent bientôt. Restez connecté !
-                </p>
+                <h3 className="text-xl font-black dark:text-white text-zinc-900 mb-3">Projets en cours de développement</h3>
+                <p className="dark:text-zinc-500 text-zinc-500 max-w-sm mx-auto font-medium">De nouveaux projets passionnants arrivent bientôt.</p>
               </motion.div>
             )}
+          </div>
 
-            {/* Modal pour afficher les détails du projet */}
-            {isModalOpen && selectedProject && (
-              <div
-                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-                onClick={closeModal}
+          {/* ── Project Detail Modal ── */}
+          {isModalOpen && selectedProject && (
+            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={closeModal}>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="dark:bg-[#0d0d14] bg-white dark:border-white/10 border-zinc-200 border rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+                onClick={handleModalContentClick}
               >
-                <div
-                  className="bg-white dark:bg-gray-800 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
-                  onClick={handleModalContentClick}
-                >
-                  {/* Header avec bouton de fermeture */}
-                  <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {selectedProject.title}
-                    </h2>
-                    <button
-                      onClick={closeModal}
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors duration-200"
-                    >
-                      <FiX className="w-6 h-6 text-gray-500 dark:text-gray-400" />
-                    </button>
+                <div className="flex justify-between items-center p-6 dark:border-white/5 border-zinc-200 border-b">
+                  <h2 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">{selectedProject.title}</h2>
+                  <button onClick={closeModal} className="p-2 dark:hover:bg-white/10 hover:bg-zinc-100 rounded-xl transition-colors">
+                    <FiX className="w-5 h-5 dark:text-zinc-400 text-zinc-600" />
+                  </button>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div className="rounded-2xl overflow-hidden aspect-video relative dark:bg-zinc-800 bg-zinc-100">
+                    <Image src={selectedProject.imageUrl} alt={selectedProject.title} fill className="object-cover" sizes="800px" />
                   </div>
-
-                  {/* Contenu de la modale */}
-                  <div className="p-6">
-                    {/* Image du projet */}
-                    <div className="mb-6">
-                      <Image
-                        src={selectedProject.imageUrl}
-                        alt={selectedProject.title}
-                        width={800}
-                        height={400}
-                        className="w-full h-64 object-cover rounded-lg"
-                      />
+                  <div>
+                    <h3 className="text-xs font-black dark:text-zinc-400 text-zinc-500 uppercase tracking-widest mb-3">Description</h3>
+                    <div className="dark:text-zinc-300 text-zinc-700 leading-relaxed text-sm">
+                      {parse(DOMPurify.sanitize(selectedProject.description))}
                     </div>
-
-                    {/* Description complète */}
-                    <div className="mb-6">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                        Description
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                        {parse(DOMPurify.sanitize(selectedProject.description))}
-                      </p>
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-black dark:text-zinc-400 text-zinc-500 uppercase tracking-widest mb-3">Technologies</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedProject.technologies.map((tech: string, i: number) => (
+                        <span key={i} className="px-3 py-1.5 dark:bg-indigo-500/10 bg-indigo-50 dark:text-indigo-400 text-indigo-600 dark:border-indigo-500/20 border-indigo-200 border rounded-xl text-sm font-bold">
+                          {tech}
+                        </span>
+                      ))}
                     </div>
-
-                    {/* Technologies */}
-                    <div className="mb-6">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                        Technologies utilisées
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedProject.technologies.map((tech: string, index: number) => (
-                          <span
-                            key={index}
-                            className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium"
-                          >
-                            {tech}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Liens */}
-                    <div className="flex gap-4">
-                      {selectedProject.demoUrl && (
-                        <a
-                          href={selectedProject.demoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => handleDemoClick(selectedProject._id, selectedProject.demoUrl)}
-                          className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200"
-                        >
-                          <FiExternalLink className="w-5 h-5" />
-                          Voir la démo
-                        </a>
-                      )}
-                      {selectedProject.githubUrl && (
-                        <a
-                          href={selectedProject.githubUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => handleGithubClick(selectedProject._id, selectedProject.githubUrl)}
-                          className="flex items-center gap-2 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors duration-200"
-                        >
-                          <FiGithub className="w-5 h-5" />
-                          Voir le code
-                        </a>
-                      )}
-                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    {selectedProject.demoUrl && (
+                      <a href={selectedProject.demoUrl} target="_blank" rel="noopener noreferrer"
+                        onClick={() => handleDemoClick(selectedProject._id, selectedProject.demoUrl)}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20"
+                      >
+                        <FiExternalLink className="w-4 h-4" />Voir la démo
+                      </a>
+                    )}
+                    {selectedProject.githubUrl && (
+                      <a href={selectedProject.githubUrl} target="_blank" rel="noopener noreferrer"
+                        onClick={() => handleGithubClick(selectedProject._id, selectedProject.githubUrl)}
+                        className="flex items-center gap-2 px-5 py-2.5 dark:bg-white/10 bg-zinc-100 dark:hover:bg-white/20 hover:bg-zinc-200 dark:text-white text-zinc-900 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                      >
+                        <FiGithub className="w-4 h-4" />Voir le code
+                      </a>
+                    )}
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              </motion.div>
+            </div>
+          )}
         </section>
 
-        {/* Experience Section */}
-        <section id="experience" className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-gray-900 relative overflow-hidden">
-          {/* Background decoration */}
-          <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-teal-50/50 dark:from-green-900/10 dark:to-teal-900/10"></div>
-          <div className="absolute top-1/4 right-0 w-96 h-96 bg-gradient-to-r from-green-400/10 to-teal-400/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 left-0 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-green-400/10 rounded-full blur-3xl"></div>
+        {/* ═══════════════════════════════════════
+            SKILLS SECTION
+        ═══════════════════════════════════════ */}
+        <SkillsSection />
 
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="text-center mb-12 lg:mb-16"
-            >
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 to-green-800 dark:from-white dark:to-green-200 bg-clip-text text-transparent mb-4">
-                Mes {homeData.navigation?.experience || 'Expérience'}s
+        {/* ═══════════════════════════════════════
+            EXPERIENCE TIMELINE
+        ═══════════════════════════════════════ */}
+        <section id="experience" className="py-24 dark:bg-[#09090f] bg-white relative overflow-hidden">
+          <div className="absolute inset-0 dark:bg-[radial-gradient(ellipse_at_bottom_left,rgba(99,102,241,0.05)_0%,transparent_60%)] pointer-events-none" />
+
+          <div className="max-w-5xl mx-auto px-6 relative z-10">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-14">
+              <div className="flex items-center gap-2 text-indigo-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-3">
+                <span className="w-8 h-[1px] bg-indigo-500" />
+                Parcours
+              </div>
+              <h2 className="text-4xl lg:text-5xl font-black dark:text-white text-zinc-900 tracking-tight">
+                Expériences professionnelles
               </h2>
-              <div className="w-24 h-1 bg-gradient-to-r from-green-500 to-teal-500 mx-auto rounded-full mb-6"></div>
-              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                Mon parcours professionnel et les compétences acquises au fil des années.
-              </p>
             </motion.div>
 
-            <div className="max-w-4xl mx-auto">
-              {experiences.length > 0 ? (
-                <div className="relative">
-                  {/* Timeline line */}
-                  <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-green-500 to-teal-500 hidden md:block"></div>
-
-                  {experiences.map((experience, index) => (
+            {experiences.length > 0 ? (
+              <div className="relative">
+                {/* Timeline line */}
+                <div className="absolute left-5 top-2 bottom-2 w-px dark:bg-indigo-500/20 bg-indigo-200 hidden md:block" />
+                <div className="space-y-8">
+                  {experiences.map((exp, index) => (
                     <motion.div
-                      key={experience._id}
-                      initial={{ opacity: 0, y: 30, x: index % 2 === 0 ? -30 : 30 }}
-                      whileInView={{ opacity: 1, y: 0, x: 0 }}
-                      transition={{ duration: 0.6, delay: index * 0.1 }}
+                      key={exp._id}
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
-                      className="relative mb-12 md:mb-16"
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                      className="md:pl-16 relative"
                     >
                       {/* Timeline dot */}
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        whileInView={{ scale: 1 }}
-                        transition={{ duration: 0.4, delay: index * 0.1 + 0.3 }}
-                        viewport={{ once: true }}
-                        className="absolute left-6 w-4 h-4 bg-gradient-to-r from-green-500 to-teal-500 rounded-full border-4 border-white dark:border-gray-900 shadow-lg hidden md:block z-10"
-                      ></motion.div>
+                      <div className="absolute left-3.5 top-7 w-3.5 h-3.5 rounded-full bg-indigo-500 border-4 dark:border-[#09090f] border-white shadow-md shadow-indigo-500/40 hidden md:block z-10" />
 
-                      <motion.div
-                        whileHover={{ scale: 1.02, y: -4 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                        className={`md:ml-16 bg-white dark:bg-gray-800 rounded-2xl p-6 lg:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 dark:border-gray-700 ${index % 2 === 0 ? 'md:mr-8' : 'md:ml-24'}`}
-                      >
-                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
-                          <div className="mb-2 lg:mb-0">
-                            <h3 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                              {experience.title}
-                            </h3>
-                            <div className="flex items-center text-gray-600 dark:text-gray-300 mb-2">
-                              <span className="font-semibold">{experience.company}</span>
-                              <span className="mx-2">•</span>
-                              <span>{experience.location}</span>
+                      <div className="dark:bg-zinc-900/60 bg-white backdrop-blur-sm rounded-3xl p-6 lg:p-8 dark:border-white/5 border-zinc-200 border dark:hover:border-indigo-500/20 hover:border-indigo-300 transition-all shadow-sm">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+                          <div>
+                            <h3 className="text-xl font-black dark:text-white text-zinc-900 tracking-tight mb-1">{exp.title}</h3>
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="font-bold dark:text-white text-zinc-800">{exp.company}</span>
+                              <span className="dark:text-zinc-700 text-zinc-400">·</span>
+                              <span className="dark:text-zinc-500 text-zinc-500">{exp.location}</span>
                             </div>
                           </div>
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.4, delay: index * 0.1 + 0.2 }}
-                            viewport={{ once: true }}
-                            className="flex-shrink-0"
-                          >
-                            <span className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-100 to-teal-100 dark:from-green-900/30 dark:to-teal-900/30 text-green-800 dark:text-green-200 rounded-full text-sm font-semibold border border-green-200 dark:border-green-700">
-                              {new Date(experience.startDate).toLocaleDateString('fr-FR', { month: '2-digit', year: 'numeric' }).replace('/', '-')} - {experience.endDate ? new Date(experience.endDate).toLocaleDateString('fr-FR', { month: '2-digit', year: 'numeric' }).replace('/', '-') : 'Présent'}
-                            </span>
-                          </motion.div>
+                          <span className="flex-shrink-0 px-3 py-1.5 dark:bg-indigo-500/10 bg-indigo-50 dark:text-indigo-400 text-indigo-600 dark:border-indigo-500/20 border-indigo-200 border rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
+                            {new Date(exp.startDate).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })}
+                            {' — '}
+                            {exp.endDate
+                              ? new Date(exp.endDate).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
+                              : 'Présent'}
+                          </span>
                         </div>
-
-                        <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed text-lg">
-                          {experience.description}
-                        </p>
-
-                        <div className="flex flex-wrap gap-2">
-                          {experience.technologies.map((tech, techIndex) => (
-                            <motion.span
-                              key={tech}
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              whileInView={{ opacity: 1, scale: 1 }}
-                              transition={{ duration: 0.3, delay: index * 0.1 + techIndex * 0.05 + 0.4 }}
-                              viewport={{ once: true }}
-                              whileHover={{ scale: 1.05, y: -2 }}
-                              className="px-3 py-1.5 bg-gradient-to-r from-blue-100 to-green-100 dark:from-blue-900/30 dark:to-green-900/30 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium border border-blue-200 dark:border-blue-700 hover:shadow-md transition-all duration-300"
-                            >
-                              {tech}
-                            </motion.span>
-                          ))}
-                        </div>
-
-                        {/* Decorative corner */}
-                        <div className="absolute top-4 right-4 w-3 h-3 bg-gradient-to-r from-green-500 to-teal-500 rounded-full opacity-60"></div>
-                      </motion.div>
+                        <p className="dark:text-zinc-500 text-zinc-600 leading-relaxed text-sm mb-5">{exp.description}</p>
+                        {exp.technologies.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {exp.technologies.map((tech, ti) => (
+                              <span key={ti} className="px-2.5 py-1 dark:bg-white/5 bg-zinc-100 dark:text-zinc-400 text-zinc-600 dark:border-white/10 border-zinc-200 border rounded-lg text-[10px] font-bold">
+                                {tech}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </motion.div>
                   ))}
                 </div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6 }}
-                  viewport={{ once: true }}
-                  className="text-center py-16"
-                >
-                  <div className="w-24 h-24 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2V6" />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Expériences en cours d'ajout</h3>
-                  <p className="text-gray-600 dark:text-gray-300 max-w-md mx-auto">
-                    Mon parcours professionnel sera bientôt détaillé ici.
-                  </p>
-                </motion.div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <div className="w-16 h-16 rounded-2xl dark:bg-indigo-500/10 bg-indigo-50 flex items-center justify-center mx-auto mb-4">
+                  <FiSettings className="w-8 h-8 text-indigo-500" />
+                </div>
+                <h3 className="text-lg font-black dark:text-white text-zinc-900 mb-2">Expériences en cours d&apos;ajout</h3>
+                <p className="dark:text-zinc-500 text-zinc-500 text-sm font-medium">Mon parcours professionnel sera bientôt détaillé ici.</p>
+              </div>
+            )}
           </div>
         </section>
 
-        {/* Contact Section */}
-        <section id="contact" className="py-16 sm:py-20 lg:py-24 bg-gray-50 dark:bg-gray-800 relative overflow-hidden">
-          {/* Background decoration */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10"></div>
-          <div className="absolute top-1/4 left-0 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+        {/* ═══════════════════════════════════════
+            FINAL CTA
+        ═══════════════════════════════════════ */}
+        <section className="py-28 dark:bg-zinc-900/30 bg-indigo-50/60 dark:border-white/5 border-indigo-100 border-y relative overflow-hidden">
+          <div className="absolute inset-0 dark:bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.08)_0%,transparent_70%)] bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.04)_0%,transparent_70%)] pointer-events-none" />
 
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="text-center mb-12 lg:mb-16"
-            >
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 to-blue-800 dark:from-white dark:to-blue-200 bg-clip-text text-transparent mb-4">
-                {homeData.navigation?.contact || 'Contact'}ez-moi
+          <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+            <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
+              <div className="flex items-center gap-2 text-indigo-500 font-bold text-[10px] uppercase tracking-[0.2em] justify-center mb-6">
+                <span className="w-8 h-[1px] bg-indigo-500" />
+                Prêt à collaborer ?
+                <span className="w-8 h-[1px] bg-indigo-500" />
+              </div>
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black dark:text-white text-zinc-900 tracking-tight mb-6">
+                Discutons de votre projet
               </h2>
-              <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full mb-6"></div>
-              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                Vous avez un projet en tête ? N'hésitez pas à me contacter pour en discuter.
+              <p className="dark:text-zinc-400 text-zinc-600 text-lg font-medium mb-10 max-w-xl mx-auto">
+                Vous cherchez un développeur pour votre prochain projet ? Je suis disponible pour des missions freelance, CDD ou CDI.
               </p>
-            </motion.div>
-
-            <div className="max-w-4xl mx-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
-                {/* Contact Info */}
-                <motion.div
-                  initial={{ opacity: 0, x: -30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6 }}
-                  viewport={{ once: true }}
-                  className="space-y-8"
-                >
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                      Restons en contact
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed mb-8">
-                      Je suis toujours ouvert aux nouvelles opportunités et collaborations.
-                      Que ce soit pour un projet, une question ou simplement pour échanger,
-                      n'hésitez pas à me contacter.
-                    </p>
-                  </div>
-
-                  <div className="space-y-6">
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.1 }}
-                      viewport={{ once: true }}
-                      className="flex items-center space-x-4 p-4 bg-white dark:bg-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300"
-                    >
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white">Email</h4>
-                        <p className="text-gray-600 dark:text-gray-300">{settings?.email || 'contact@portfolio.com'}</p>
-                      </div>
-                    </motion.div>
-
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.2 }}
-                      viewport={{ once: true }}
-                      className="flex items-center space-x-4 p-4 bg-white dark:bg-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300"
-                    >
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center">
-                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white">LinkedIn</h4>
-                        <a
-                          href={settings?.linkedin || '#'}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 dark:text-blue-400 hover:underline"
-                        >
-                          {settings?.linkedin ? settings.linkedin.replace('https://www.linkedin.com/in/', '') : 'Non configuré'}
-                        </a>
-                      </div>
-                    </motion.div>
-
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.3 }}
-                      viewport={{ once: true }}
-                      className="flex items-center space-x-4 p-4 bg-white dark:bg-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300"
-                    >
-                      <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white">Localisation</h4>
-                        <p className="text-gray-600 dark:text-gray-300">{settings?.position || 'France'}</p>
-                      </div>
-                    </motion.div>
-                  </div>
-                </motion.div>
-
-                {/* Contact Form */}
-                <motion.div
-                  initial={{ opacity: 0, x: 30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6 }}
-                  viewport={{ once: true }}
-                  className="bg-white dark:bg-gray-700 rounded-2xl p-6 lg:p-8 shadow-xl border border-gray-100 dark:border-gray-600"
-                >
-                  <motion.form
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    viewport={{ once: true }}
-                    onSubmit={handleContactSubmit}
-                    className="space-y-6"
+              <div className="flex flex-wrap gap-4 justify-center mb-10">
+                <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }}>
+                  <Link
+                    href="/contact"
+                    className="inline-flex items-center gap-2 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/20 transition-all"
                   >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.1 }}
-                        viewport={{ once: true }}
-                      >
-                        <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                          Prénom *
-                        </label>
-                        <input
-                          type="text"
-                          id="firstName"
-                          name="firstName"
-                          required
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-500 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-600 text-gray-900 dark:text-white transition-all duration-300 hover:border-blue-400 dark:hover:border-blue-400"
-                          placeholder="Votre prénom"
-                        />
-                      </motion.div>
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.15 }}
-                        viewport={{ once: true }}
-                      >
-                        <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                          Nom *
-                        </label>
-                        <input
-                          type="text"
-                          id="lastName"
-                          name="lastName"
-                          required
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-500 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-600 text-gray-900 dark:text-white transition-all duration-300 hover:border-blue-400 dark:hover:border-blue-400"
-                          placeholder="Votre nom"
-                        />
-                      </motion.div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.2 }}
-                        viewport={{ once: true }}
-                      >
-                        <label htmlFor="company" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                          Entreprise
-                        </label>
-                        <input
-                          type="text"
-                          id="company"
-                          name="company"
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-500 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-600 text-gray-900 dark:text-white transition-all duration-300 hover:border-blue-400 dark:hover:border-blue-400"
-                          placeholder="Votre entreprise"
-                        />
-                      </motion.div>
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.25 }}
-                        viewport={{ once: true }}
-                      >
-                        <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                          Téléphone
-                        </label>
-                        <input
-                          type="tel"
-                          id="phone"
-                          name="phone"
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-500 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-600 text-gray-900 dark:text-white transition-all duration-300 hover:border-blue-400 dark:hover:border-blue-400"
-                          placeholder="Votre téléphone"
-                        />
-                      </motion.div>
-                    </div>
-
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.3 }}
-                      viewport={{ once: true }}
-                    >
-                      <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                        Email *
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-500 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-600 text-gray-900 dark:text-white transition-all duration-300 hover:border-blue-400 dark:hover:border-blue-400"
-                        placeholder="votre.email@exemple.com"
-                      />
-                    </motion.div>
-
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.35 }}
-                      viewport={{ once: true }}
-                    >
-                      <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                        Sujet *
-                      </label>
-                      <input
-                        type="text"
-                        id="subject"
-                        name="subject"
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-500 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-600 text-gray-900 dark:text-white transition-all duration-300 hover:border-blue-400 dark:hover:border-blue-400"
-                        placeholder="Sujet de votre message"
-                      />
-                    </motion.div>
-
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.4 }}
-                      viewport={{ once: true }}
-                    >
-                      <label htmlFor="message" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                        Message *
-                      </label>
-                      <textarea
-                        id="message"
-                        name="message"
-                        rows={6}
-                        required
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-500 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-600 text-gray-900 dark:text-white transition-all duration-300 resize-none hover:border-blue-400 dark:hover:border-blue-400"
-                        placeholder="Décrivez votre projet ou votre demande..."
-                      ></textarea>
-                    </motion.div>
-
-                    <motion.button
-                      type="submit"
-                      disabled={isSubmitting}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.45 }}
-                      viewport={{ once: true }}
-                      whileHover={{ scale: 1.02, y: -2 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          <span>Envoi en cours...</span>
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                          </svg>
-                          <span>Envoyer le message</span>
-                        </>
-                      )}
-                    </motion.button>
-                  </motion.form>
+                    Me contacter
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }}>
+                  <button
+                    onClick={() => setIsCVModalOpen(true)}
+                    className="inline-flex items-center gap-2 px-8 py-4 dark:bg-white/5 bg-white dark:hover:bg-white/10 hover:bg-zinc-50 dark:text-white text-zinc-900 dark:border-white/10 border-zinc-300 border rounded-xl text-sm font-bold transition-all shadow-sm"
+                  >
+                    <FiDownload className="w-4 h-4" />
+                    Télécharger CV
+                  </button>
                 </motion.div>
               </div>
-            </div>
+              
+              {/* Contact options */}
+              <div className="flex flex-wrap gap-6 justify-center dark:text-zinc-400 text-zinc-500">
+                {homeData.socialLinks.github && (
+                  <a href={homeData.socialLinks.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-indigo-500 transition-colors">
+                    <FaGithub className="w-5 h-5" />
+                    <span className="text-sm font-medium">GitHub</span>
+                  </a>
+                )}
+                {homeData.socialLinks.linkedin && (
+                  <a href={homeData.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-indigo-500 transition-colors">
+                    <FaLinkedin className="w-5 h-5" />
+                    <span className="text-sm font-medium">LinkedIn</span>
+                  </a>
+                )}
+                {homeData.contactInfo?.email && (
+                  <a href={`mailto:${homeData.contactInfo.email}`} className="flex items-center gap-2 hover:text-indigo-500 transition-colors">
+                    <span className="text-sm font-medium">{homeData.contactInfo.email}</span>
+                  </a>
+                )}
+              </div>
+            </motion.div>
           </div>
         </section>
       </main>
 
-
-
-      {/* CV Modal */}
-      <CVModal
-        isOpen={isCVModalOpen}
-        onClose={() => setIsCVModalOpen(false)}
-      />
+      <Analytics />
+      <CVModal isOpen={isCVModalOpen} onClose={() => setIsCVModalOpen(false)} />
     </Layout>
   );
 }
 
+// ─── getStaticProps ──────────────────────────────────────────────────────────────
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
   const currentLocale = locale || 'fr';
 
   try {
     await connectDB();
 
-    // Verify maintenance mode (Dual check with middleware for safety)
     const Maintenance = (await import('@/models/Maintenance')).default;
     const maintenanceStatus = await Maintenance.findOne().lean();
 
     if (maintenanceStatus && (maintenanceStatus as any).isEnabled) {
-      return {
-        redirect: {
-          destination: '/maintenance',
-          permanent: false,
-        },
-      };
+      return { redirect: { destination: '/maintenance', permanent: false } };
     }
 
     let homeData = await HomePageModel.findOne().lean();
-    if (!homeData) {
-      homeData = defaultHomeData;
-    }
+    if (!homeData) homeData = defaultHomeData;
 
-    // Récupérer les settings
     const settingsFromDB = await SettingModel.findOne().lean();
-    const settings = settingsFromDB || {
-      email: 'contact@mehmetsalihk.fr',
-      linkedin: 'https://www.linkedin.com/in/mehmetsalihk'
-    };
+    const settings = settingsFromDB || { email: 'contact@mehmetsalihk.fr', linkedin: 'https://www.linkedin.com/in/mehmetsalihk' };
 
-    // Récupérer les données SEO
     const SEO = (await import('@/models/SEO')).default;
     const seoData = await SEO.findOne({ page: 'home' }).lean();
 
-    // Récupérer les projets sélectionnés pour la page d'accueil
     const projects = await ProjectModel.aggregate([
-      {
-        $match: {
-          archived: { $ne: true },
-          showOnHomepage: true
-        }
-      },
+      { $match: { archived: { $ne: true }, showOnHomepage: true } },
       {
         $addFields: {
           totalClicks: {
@@ -1654,65 +908,47 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
           }
         }
       },
-      {
-        $sort: {
-          featured: -1,  // Projets featured en premier
-          totalClicks: -1,  // Puis par popularité
-          order: 1  // Puis par ordre défini
-        }
-      },
-      {
-        $limit: 6  // Augmenter la limite à 6 projets
-      }
+      { $sort: { featured: -1, totalClicks: -1, order: 1 } },
+      { $limit: 6 }
     ]);
 
-    // Utiliser directement les 3 projets les plus populaires de la base de données
-    const allProjects = projects;
-    const experiences = await ExperienceModel.find({}).sort({ startDate: -1 }).select('title company location startDate endDate description technologies').lean();
-    // Ensure technologies is an array, even if undefined
+    const experiences = await ExperienceModel.find({})
+      .sort({ startDate: -1 })
+      .select('title company location startDate endDate description technologies')
+      .lean();
+
     const experiencesWithTechnologies = experiences.map(exp => ({
       ...exp,
       technologies: exp.technologies || []
     }));
 
-    // Récupérer les catégories visibles sans doublons
-    const allCategories = await SkillCategory.find({ isVisible: true })
-      .sort('displayOrder')
-      .lean();
+    const allCategories = await SkillCategory.find({ isVisible: true }).sort('displayOrder').lean();
 
-    // Filtrer les catégories pour n'avoir que des noms uniques
     const uniqueCategories = allCategories.reduce<typeof allCategories>((acc, current) => {
       const exists = acc.find(cat => cat.name === current.name);
-      if (!exists) {
-        acc.push(current);
-      }
+      if (!exists) acc.push(current);
       return acc;
     }, []);
 
-    // Récupérer les compétences non masquées avec categoryId valide
-    const skills = await SkillModel.find({
-      isHidden: false,
-      categoryId: { $exists: true, $ne: null }
-    })
+    const skills = await SkillModel.find({ isHidden: false, categoryId: { $exists: true, $ne: null } })
       .populate('categoryId')
       .lean();
 
-    // Associer les compétences aux catégories uniques
     const skillsByCategory = uniqueCategories.map(category => ({
       _id: category._id,
       name: category.name,
       displayOrder: category.displayOrder,
-      skills: skills.filter(skill => (
+      skills: skills.filter(skill =>
         skill.categoryId &&
         typeof skill.categoryId === 'object' &&
         'name' in skill.categoryId &&
         (skill.categoryId as Category).name === category.name
-      )).sort((a, b) => a.displayOrder - b.displayOrder)
+      ).sort((a, b) => a.displayOrder - b.displayOrder)
     })).sort((a, b) => a.displayOrder - b.displayOrder);
 
     return {
       props: {
-        projects: JSON.parse(JSON.stringify(allProjects)),
+        projects: JSON.parse(JSON.stringify(projects)),
         experiences: JSON.parse(JSON.stringify(experiencesWithTechnologies)),
         skills: JSON.parse(JSON.stringify(skills)),
         homeData: JSON.parse(JSON.stringify(homeData)),
@@ -1732,7 +968,6 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
         homeData: defaultHomeData,
         skillsByCategory: [],
         settings: { email: '', linkedin: '', phone: '' },
-
       },
       revalidate: 1,
     };

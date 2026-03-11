@@ -9,15 +9,26 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#2563eb',
-        secondary: '#64748b',
+        primary: {
+          DEFAULT: '#6366f1', // Indigo 500
+          hover: '#818cf8',   // Indigo 400
+          dark: '#4f46e5',    // Indigo 600
+        },
+        secondary: '#71717a', // Zinc 500
         background: {
           light: '#ffffff',
-          dark: '#1a1a1a'
+          dark: '#09090b',    // Rich Black (SaaS Style)
+          card: '#18181b',    // Zinc 900
+          surface: '#121214',
+        },
+        border: {
+          subtle: 'rgba(255, 255, 255, 0.08)',
+          strong: '#27272a',  // Zinc 800
         }
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
       },
     },
   },

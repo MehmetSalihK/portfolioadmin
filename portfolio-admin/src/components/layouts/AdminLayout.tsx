@@ -97,8 +97,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const handleSignOut = async () => {
     // Nettoyer le stockage local et de session
     sessionStorage.clear();
-    // On garde le thème dans localStorage si possible, sinon on peut tout nettoyer :
-    // localStorage.clear(); 
     
     await signOut({ redirect: false });
     router.push('/admin/login');
@@ -106,7 +104,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   if (status === 'loading') {
     return (
-      <div className="flex justify-center items-center min-h-screen" style={{ backgroundColor: 'rgb(30, 30, 30)' }}>
+      <div className="flex justify-center items-center min-h-screen bg-background-dark">
         <motion.div
           animate={{
             scale: [1, 1.2, 1],
@@ -117,7 +115,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             repeat: Infinity,
             ease: "easeInOut"
           }}
-          className="w-12 h-12 border-t-2 border-b-2 border-blue-500 rounded-full"
+          className="w-12 h-12 border-t-2 border-b-2 border-indigo-500 rounded-full"
         />
       </div>
     );
@@ -134,8 +132,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen transition-colors duration-300" style={{ backgroundColor: 'rgb(30, 30, 30)' }}>
+    <div className="min-h-screen transition-colors duration-300 bg-background-dark text-gray-100">
       <CommandPalette />
+      <Toaster position="top-right" />
+      
       {/* Mobile Overlay */}
       {isSidebarOpen && (
         <motion.div
@@ -143,22 +143,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => setIsSidebarOpen(false)}
-          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden"
         />
       )}
-
-      {/* Toggle Button for Mobile */}
-      <button
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="fixed top-4 left-4 z-50 p-3 rounded-xl shadow-lg transition-all duration-300 md:hidden text-white hover:bg-gray-600"
-        style={{ backgroundColor: 'rgb(40, 40, 40)' }}
-      >
-        {isSidebarOpen ? (
-          <FiX className="w-5 h-5" />
-        ) : (
-          <FiMenu className="w-5 h-5" />
-        )}
-      </button>
 
       {/* Sidebar */}
       <AnimatePresence>
@@ -167,78 +154,66 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           animate={isSidebarOpen ? "open" : "closed"}
           variants={sidebarVariants}
           transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-          className="fixed inset-y-0 left-0 w-64 shadow-2xl z-40 transform md:translate-x-0 transition-colors duration-300 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+          className="fixed inset-y-0 left-0 w-64 z-40 transform md:translate-x-0 transition-colors duration-300 border-r border-border-subtle bg-background-dark"
         >
           <div className="flex flex-col h-full">
             {/* Header */}
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="px-6 py-6 border-b border-gray-200 dark:border-gray-600/50 transition-colors duration-300"
+              className="px-6 py-8 border-b border-border-subtle"
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
+                  <h1 className="text-lg font-bold tracking-tight text-white transition-colors duration-300">
                     Portfolio Admin
                   </h1>
-                  <p className="text-sm mt-1 text-gray-600 dark:text-gray-300 transition-colors duration-300">
-                    {session?.user?.email}
-                  </p>
                 </div>
                 <button
                   onClick={toggleTheme}
-                  className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-110"
+                  className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all duration-300"
                   title={`Passer au thème ${theme === 'dark' ? 'clair' : 'sombre'}`}
                 >
                   {theme === 'dark' ? (
-                    <FiSun className="w-5 h-5" />
+                    <FiSun className="w-4 h-4" />
                   ) : (
-                    <FiMoon className="w-5 h-5" />
+                    <FiMoon className="w-4 h-4" />
                   )}
                 </button>
               </div>
+              <p className="text-xs font-medium text-gray-500 truncate">
+                {session?.user?.email}
+              </p>
             </motion.div>
 
             {/* Navigation */}
-            <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
               {menuItems.map((item, index) => {
                 const isActive = router.pathname === item.href;
                 const Icon = item.icon;
                 return (
                   <motion.div
                     key={item.href}
-                    initial={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="relative"
+                    transition={{ delay: index * 0.03 }}
                   >
                     <Link
                       href={item.href}
-                      className={`group flex items-center px-4 py-3 rounded-xl transition-all duration-300 relative overflow-hidden ${isActive
-                        ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400 shadow-lg'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white'
+                      className={`group flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 relative ${isActive
+                        ? 'bg-indigo-500/10 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.1)]'
+                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
                         }`}
                     >
+                      <Icon className={`w-4 h-4 mr-3 transition-all duration-200 ${isActive ? 'text-indigo-400 scale-110' : 'group-hover:text-gray-100'
+                        }`} />
+                      <span className="font-medium text-sm tracking-tight">{item.label}</span>
+                      
                       {isActive && (
                         <motion.div
                           layoutId="activeIndicator"
-                          className="absolute left-0 top-0 bottom-0 w-1 rounded-r-full bg-blue-600 dark:bg-blue-400"
+                          className="absolute left-0 top-2 bottom-2 w-0.5 rounded-full bg-indigo-500"
                           transition={{ type: "spring", bounce: 0.2 }}
-                        />
-                      )}
-                      <Icon className={`w-5 h-5 mr-4 transition-all duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-105'
-                        }`} />
-                      <div className="flex-1">
-                        <span className="font-medium text-sm">{item.label}</span>
-                        <p className="text-xs mt-0.5 text-gray-500 dark:text-gray-400 transition-colors duration-300">
-                          {item.description}
-                        </p>
-                      </div>
-                      {isActive && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400"
                         />
                       )}
                     </Link>
@@ -249,16 +224,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
             {/* Footer */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-4 border-t border-gray-600/50 transition-colors duration-300"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="p-4 border-t border-border-subtle"
             >
               <button
                 onClick={handleSignOut}
-                className="flex items-center w-full px-4 py-3 rounded-xl transition-all duration-300 group text-gray-700 dark:text-gray-300 hover:bg-red-500/10 hover:text-red-400"
+                className="flex items-center w-full px-3 py-2.5 rounded-lg transition-all duration-200 group text-gray-400 hover:bg-red-500/10 hover:text-red-400"
               >
-                <FiLogOut className="w-5 h-5 mr-3 transition-transform duration-300 group-hover:-rotate-12" />
-                <span className="font-medium">Déconnexion</span>
+                <FiLogOut className="w-4 h-4 mr-3 transition-transform duration-300 group-hover:-translate-x-0.5" />
+                <span className="font-medium text-sm">Déconnexion</span>
               </button>
             </motion.div>
           </div>
@@ -266,14 +241,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className={`transition-all duration-200 ${isSidebarOpen ? 'md:ml-64' : 'ml-0'}`}>
+      <main className={`transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'ml-0'}`}>
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="min-h-screen p-6 bg-gray-50 dark:bg-gray-900 transition-colors duration-300"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className="min-h-screen p-8 bg-background-dark"
         >
-          {children}
+          <div className="max-w-[1440px] mx-auto">
+            {children}
+          </div>
         </motion.div>
       </main>
     </div>

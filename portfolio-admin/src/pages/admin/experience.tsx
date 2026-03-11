@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/layouts/AdminLayout';
+import Modal from '@/components/admin/Modal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiPlus, FiBriefcase, FiX, FiCalendar, FiMapPin, FiLink, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
@@ -143,95 +144,120 @@ export default function ExperiencePage() {
 
   return (
     <AdminLayout>
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <FiBriefcase className="w-8 h-8" />
-            Gestion des Expériences
-          </h1>
+      <div className="space-y-10">
+        {/* Header Section */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex flex-col md:flex-row md:items-end justify-between gap-4"
+        >
+          <div>
+            <div className="flex items-center gap-2 text-primary font-bold text-[10px] uppercase tracking-[0.2em] mb-2">
+              <span className="w-8 h-[1px] bg-primary"></span>
+              Management
+            </div>
+            <h1 className="text-4xl font-black text-white tracking-tight flex items-center gap-4">
+              Parcours
+              <span className="text-zinc-700 text-lg font-medium tabular-nums bg-white/5 px-3 py-1 rounded-full border border-white/10">
+                {experiences.length}
+              </span>
+            </h1>
+            <p className="text-zinc-500 mt-2 font-medium">
+              Gérez vos expériences professionnelles et académiques.
+            </p>
+          </div>
+          
           <button
             onClick={() => setIsAddingExperience(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200"
+            className="flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all duration-300 shadow-lg shadow-indigo-500/20 font-bold text-xs uppercase tracking-wider active:scale-95 border border-indigo-500"
           >
-            <FiPlus className="w-5 h-5" /> Ajouter une expérience
+            <FiPlus className="w-4 h-4" /> Ajouter une expérience
           </button>
-        </div>
+        </motion.div>
 
         {/* Liste des expériences */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {experiences.map((experience) => (
             <motion.div
               key={experience._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white dark:bg-gray-800 p-6 rounded-lg flex flex-col h-full shadow-lg"
+              className="bg-background-card border border-border-subtle rounded-2xl p-6 flex flex-col h-full group hover:border-border-strong transition-all duration-300 shadow-xl shadow-black/20"
             >
-              <div className="flex justify-between items-start mb-4">
+              <div className="flex justify-between items-start mb-6">
                 <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{experience.title}</h3>
-                  <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
-                    <FiBriefcase className="w-4 h-4 mr-2" />
+                  <h3 className="text-xl font-black text-white mb-2 tracking-tight group-hover:text-indigo-400 transition-colors duration-300">
+                    {experience.title}
+                  </h3>
+                  <div className="flex items-center text-zinc-400 font-medium text-sm mb-2">
+                    <FiBriefcase className="w-4 h-4 mr-2 text-indigo-500" />
                     {experience.company}
                   </div>
-                  <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
+                  <div className="flex items-center text-zinc-500 font-medium text-xs mb-4">
                     <FiMapPin className="w-4 h-4 mr-2" />
                     {experience.location}
                   </div>
-                  <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
-                    <FiCalendar className="w-4 h-4 mr-2" />
-                    {new Date(experience.startDate).toLocaleDateString('fr-FR', {
-                      month: 'short',
-                      year: 'numeric'
-                    })}
-                    {' - '}
-                    {experience.endDate 
-                      ? new Date(experience.endDate).toLocaleDateString('fr-FR', {
-                          month: 'short',
-                          year: 'numeric'
-                        })
-                      : 'Présent'
-                    }
+                  
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-2">
+                       <FiCalendar className="w-3 h-3 text-indigo-500" />
+                       {new Date(experience.startDate).toLocaleDateString('fr-FR', {
+                        month: 'short',
+                        year: 'numeric'
+                      })}
+                      {' - '}
+                      {experience.endDate 
+                        ? new Date(experience.endDate).toLocaleDateString('fr-FR', {
+                            month: 'short',
+                            year: 'numeric'
+                          })
+                        : 'Présent'
+                      }
+                    </div>
                   </div>
+
                   {experience.companyUrl && (
                     <a 
                       href={experience.companyUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 mb-2"
+                      className="inline-flex items-center text-indigo-400 hover:text-indigo-300 font-bold text-[10px] uppercase tracking-wider transition-colors"
                     >
-                      <FiLink className="w-4 h-4 mr-2" />
-                      Site web
+                      <FiLink className="w-3.5 h-3.5 mr-1.5" />
+                      Site de l'entreprise
                     </a>
                   )}
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => startEditing(experience)}
-                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-blue-500 transition-colors rounded-full hover:bg-blue-500/10"
+                    className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all duration-300"
                   >
-                    <FiEdit2 className="w-5 h-5" />
+                    <FiEdit2 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(experience._id)}
-                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-red-500/10"
+                    className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/20 transition-all duration-300"
                   >
-                    <FiTrash2 className="w-5 h-5" />
+                    <FiTrash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              <div className="text-gray-600 dark:text-gray-400 text-sm flex-1">
-                <p className="line-clamp-3">{experience.description}</p>
+              <div className="text-zinc-500 text-sm flex-1 leading-relaxed font-medium">
+                <p className="line-clamp-4">{experience.description}</p>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="mt-6 pt-6 border-t border-border-subtle">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <span className={`w-2 h-2 rounded-full ${
-                      !experience.endDate ? 'bg-green-500' : 'bg-blue-500'
+                      !experience.endDate ? 'bg-emerald-500 animate-pulse' : 'bg-indigo-500/40'
                     }`} />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {!experience.endDate ? 'Poste actuel' : 'Terminé'}
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                      !experience.endDate ? 'text-emerald-400' : 'text-zinc-500'
+                    }`}>
+                      {!experience.endDate ? 'En poste' : 'Terminé'}
                     </span>
                   </div>
                 </div>
@@ -241,158 +267,138 @@ export default function ExperiencePage() {
         </div>
 
         {/* Modal d'ajout d'expérience */}
-        <AnimatePresence>
-          {isAddingExperience && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50"
-            >
-              <motion.div
-                initial={{ scale: 0.95 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.95 }}
-                className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-lg"
+        <Modal 
+          isOpen={isAddingExperience} 
+          onClose={closeModal} 
+          title={editingExperience ? 'Modifier l\'expérience' : 'Ajouter une expérience'}
+        >
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">Titre du poste</label>
+                <input
+                  type="text"
+                  value={newExperience.title}
+                  onChange={(e) => setNewExperience({ ...newExperience, title: e.target.value })}
+                  className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300"
+                  placeholder="Ex: Développeur Fullstack"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">Entreprise</label>
+                <input
+                  type="text"
+                  value={newExperience.company}
+                  onChange={(e) => setNewExperience({ ...newExperience, company: e.target.value })}
+                  className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300"
+                  placeholder="Ex: Google, Vercel..."
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">Localisation</label>
+                <input
+                  type="text"
+                  value={newExperience.location}
+                  onChange={(e) => setNewExperience({ ...newExperience, location: e.target.value })}
+                  className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300"
+                  placeholder="Ex: Paris, Remote..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">URL de l'entreprise</label>
+                <input
+                  type="url"
+                  value={newExperience.companyUrl}
+                  onChange={(e) => setNewExperience({ ...newExperience, companyUrl: e.target.value })}
+                  className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300"
+                  placeholder="https://..."
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">Date de début</label>
+                <input
+                  type="date"
+                  value={newExperience.startDate}
+                  onChange={(e) => setNewExperience({ ...newExperience, startDate: e.target.value })}
+                  className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300 [color-scheme:dark]"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">Date de fin</label>
+                <input
+                  type="date"
+                  value={newExperience.endDate}
+                  onChange={(e) => setNewExperience({ ...newExperience, endDate: e.target.value })}
+                  className={`w-full px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border transition-all duration-300 [color-scheme:dark]
+                    ${newExperience.currentPosition 
+                      ? 'bg-zinc-900/50 text-zinc-600 border-white/5 cursor-not-allowed' 
+                      : 'bg-white/5 text-white border-white/10'
+                    }`}
+                  disabled={newExperience.currentPosition}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center bg-white/5 p-4 rounded-xl border border-white/10 group hover:border-indigo-500/30 transition-all duration-300">
+              <input
+                type="checkbox"
+                id="currentPosition"
+                checked={newExperience.currentPosition}
+                onChange={(e) => {
+                  setNewExperience({
+                    ...newExperience,
+                    currentPosition: e.target.checked,
+                    endDate: e.target.checked ? '' : newExperience.endDate
+                  });
+                }}
+                className="w-5 h-5 text-indigo-500 bg-zinc-800 rounded-lg focus:ring-indigo-500 focus:ring-offset-0 border-white/10"
+              />
+              <label htmlFor="currentPosition" className="ml-3 text-sm font-medium text-zinc-300 select-none group-hover:text-white transition-colors">
+                En poste actuellement
+              </label>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">Description des missions</label>
+              <textarea
+                value={newExperience.description}
+                onChange={(e) => setNewExperience({ ...newExperience, description: e.target.value })}
+                rows={5}
+                className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300"
+                placeholder="Détaillez vos réalisations et responsabilités..."
+                required
+              />
+            </div>
+
+            <div className="flex justify-end gap-4 mt-10 pt-8 border-t border-border-subtle">
+              <button
+                type="button"
+                onClick={closeModal}
+                className="px-6 py-2.5 text-zinc-500 hover:text-white font-bold text-xs uppercase tracking-wider transition-colors"
               >
-                <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
-                  <h2 className="text-xl text-gray-900 dark:text-white">
-                    {editingExperience ? 'Modifier l\'expérience' : 'Ajouter une expérience'}
-                  </h2>
-                  <button
-                    onClick={closeModal}
-                    className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white"
-                  >
-                    <FiX className="w-5 h-5" />
-                  </button>
-                </div>
-
-                <form onSubmit={handleSubmit} className="p-4 space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-gray-700 dark:text-gray-300 mb-1">Titre</label>
-                      <input
-                        type="text"
-                        value={newExperience.title}
-                        onChange={(e) => setNewExperience({ ...newExperience, title: e.target.value })}
-                        className="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2 rounded border border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-blue-500"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-gray-700 dark:text-gray-300 mb-1">Entreprise</label>
-                      <input
-                        type="text"
-                        value={newExperience.company}
-                        onChange={(e) => setNewExperience({ ...newExperience, company: e.target.value })}
-                        className="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2 rounded border border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-blue-500"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-gray-700 dark:text-gray-300 mb-1">Localisation</label>
-                      <input
-                        type="text"
-                        value={newExperience.location}
-                        onChange={(e) => setNewExperience({ ...newExperience, location: e.target.value })}
-                        className="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2 rounded border border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-gray-700 dark:text-gray-300 mb-1">
-                        URL de l'entreprise <span className="text-gray-500 dark:text-gray-400 text-sm">(facultatif)</span>
-                      </label>
-                      <input
-                        type="url"
-                        value={newExperience.companyUrl}
-                        onChange={(e) => setNewExperience({ ...newExperience, companyUrl: e.target.value })}
-                        className="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2 rounded border border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-gray-700 dark:text-gray-300 mb-1">Date de début</label>
-                      <input
-                        type="date"
-                        value={newExperience.startDate}
-                        onChange={(e) => setNewExperience({ ...newExperience, startDate: e.target.value })}
-                        className="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2 rounded border border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-blue-500"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-gray-700 dark:text-gray-300 mb-1">Date de fin</label>
-                      <input
-                        type="date"
-                        value={newExperience.endDate}
-                        onChange={(e) => setNewExperience({ ...newExperience, endDate: e.target.value })}
-                        className={`w-full p-2 rounded border border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-blue-500 transition-colors
-                          ${newExperience.currentPosition 
-                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-50' 
-                            : 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white'
-                          }`}
-                        disabled={newExperience.currentPosition}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="flex items-center text-gray-700 dark:text-gray-300">
-                      <input
-                        type="checkbox"
-                        checked={newExperience.currentPosition}
-                        onChange={(e) => {
-                          setNewExperience({
-                            ...newExperience,
-                            currentPosition: e.target.checked,
-                            endDate: e.target.checked ? '' : newExperience.endDate
-                          });
-                        }}
-                        className="mr-2 h-4 w-4 rounded border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700"
-                      />
-                      Poste actuel
-                    </label>
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 dark:text-gray-300 mb-1">Description</label>
-                    <textarea
-                      value={newExperience.description}
-                      onChange={(e) => setNewExperience({ ...newExperience, description: e.target.value })}
-                      rows={4}
-                      className="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2 rounded border border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <button
-                      type="button"
-                      onClick={closeModal}
-                      className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                    >
-                      Annuler
-                    </button>
-                    <button
-                      type="submit"
-                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                    >
-                      {editingExperience ? 'Enregistrer' : 'Ajouter'}
-                    </button>
-                  </div>
-                </form>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                Annuler
+              </button>
+              <button
+                type="submit"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2.5 rounded-xl transition-all duration-300 shadow-lg shadow-indigo-500/20 font-bold text-xs uppercase tracking-wider active:scale-95 border border-indigo-500"
+              >
+                {editingExperience ? 'Mettre à jour' : 'Ajouter l\'expérience'}
+              </button>
+            </div>
+          </form>
+        </Modal>
       </div>
     </AdminLayout>
   );

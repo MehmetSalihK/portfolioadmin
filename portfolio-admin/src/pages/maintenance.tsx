@@ -1,119 +1,94 @@
-import { GetServerSideProps } from 'next';
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
-import Maintenance from '../models/Maintenance';
-import connectDB from '../lib/db';
+import { motion } from 'framer-motion';
+import { FiSettings, FiMail, FiLinkedin, FiGithub } from 'react-icons/fi';
+import { GetStaticProps } from 'next';
+import connectDB from '@/lib/db';
 
-interface MaintenancePageProps {
-  maintenanceData: {
-    title: string;
-    message: string;
-    estimatedEndTime?: string;
-  } | null;
-}
-
-export default function MaintenancePage({ maintenanceData }: MaintenancePageProps) {
-  const [timeLeft, setTimeLeft] = useState<string>('');
-  const [isVisible, setIsVisible] = useState(false);
-  const [dots, setDots] = useState('');
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
-
-  useEffect(() => {
-    const dotsTimer = setInterval(() => {
-      setDots(prev => {
-        if (prev === '...') return '';
-        return prev + '.';
-      });
-    }, 500);
-
-    return () => clearInterval(dotsTimer);
-  }, []);
-
-  useEffect(() => {
-    if (maintenanceData?.estimatedEndTime) {
-      const timer = setInterval(() => {
-        const now = new Date().getTime();
-        const endTime = new Date(maintenanceData.estimatedEndTime!).getTime();
-        const difference = endTime - now;
-
-        if (difference > 0) {
-          const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-          setTimeLeft(`${days}j ${hours}h ${minutes}m ${seconds}s`);
-        } else {
-          setTimeLeft('Bientôt disponible');
-          clearInterval(timer);
-        }
-      }, 1000);
-
-      return () => clearInterval(timer);
-    }
-  }, [maintenanceData?.estimatedEndTime]);
-
+export default function Maintenance() {
   return (
-    <>
+    <div className="min-h-screen dark:bg-[#09090f] bg-white flex items-center justify-center p-6 relative overflow-hidden">
       <Head>
-        <title>{maintenanceData?.title || 'Maintenance en cours'}</title>
-        <meta name="description" content="Site en maintenance" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+        <title>Maintenance - Portfolio</title>
+        <meta name="robots" content="noindex, nofollow" />
       </Head>
 
-      <div className={`min-h-screen bg-gray-900 flex items-center justify-center p-4 transition-opacity duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-         <div className="text-center max-w-2xl mx-auto">
-           {/* Main Message */}
-           <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-white mb-8 leading-tight tracking-tight">
-             Le site est actuellement en maintenance
-           </h1>
-           
-           <p className="text-xl md:text-2xl text-gray-300 mb-12 font-normal">
-             Merci de revenir plus tard{dots}
-           </p>
+      {/* Ambient backgrounds */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] dark:bg-indigo-600/10 bg-indigo-50/60 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] dark:bg-violet-600/8 bg-violet-50/40 rounded-full blur-3xl" />
+      </div>
 
-           {/* Countdown if available */}
-           {timeLeft && (
-             <div className="mb-8">
-               <div className="inline-block bg-gray-800 text-gray-200 px-6 py-3 rounded-lg font-medium text-lg border border-gray-700">
-                 Retour estimé dans : {timeLeft}
-               </div>
-             </div>
-           )}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-xl w-full text-center relative z-10"
+      >
+        <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl dark:bg-zinc-900/60 bg-white dark:border-white/10 border-zinc-200 border shadow-2xl mb-8 relative">
+          <FiSettings className="w-10 h-10 text-indigo-500 animate-[spin_4s_linear_infinite]" />
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full border-4 dark:border-[#09090f] border-white" />
+        </div>
 
-           {/* Action buttons */}
-           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-             <button 
-               onClick={() => window.location.reload()}
-               className="bg-white text-gray-900 px-8 py-3 rounded-lg font-medium text-lg hover:bg-gray-100 transition-colors duration-200 border border-white"
-             >
-               Actualiser la page
-             </button>
-             
-             <a 
-                href="mailto:contact@mehmetsalihk.fr"
-                className="bg-transparent text-white px-8 py-3 rounded-lg font-medium text-lg hover:bg-gray-800 transition-colors duration-200 border border-gray-600 hover:border-gray-500"
-              >
-                Nous contacter
-              </a>
-           </div>
-         </div>
-       </div>
-    </>
+        <h1 className="text-4xl sm:text-5xl font-black dark:text-white text-zinc-900 tracking-tight mb-6 leading-tight">
+          Maintenance en cours
+        </h1>
+        
+        <p className="text-lg dark:text-zinc-400 text-zinc-600 font-medium mb-12 max-w-md mx-auto leading-relaxed">
+          Je mets à jour mon portfolio pour vous offrir une meilleure expérience. 
+          Le site sera de retour très prochainement.
+        </p>
+
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <motion.a 
+            whileHover={{ y: -3 }}
+            href="mailto:contact@mehmetsalihk.fr"
+            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/20"
+          >
+            <FiMail className="w-4 h-4" />
+            Me contacter
+          </motion.a>
+          
+          <div className="flex items-center gap-2">
+            <motion.a 
+              whileHover={{ y: -3 }}
+              target="_blank"
+              rel="noopener noreferrer"
+              href="https://www.linkedin.com/in/mehmetsalihk"
+              className="p-3 dark:bg-white/5 bg-zinc-100 dark:border-white/10 border-zinc-200 border rounded-xl dark:text-zinc-400 text-zinc-600 hover:text-indigo-500 transition-colors"
+              title="LinkedIn"
+            >
+              <FiLinkedin className="w-5 h-5" />
+            </motion.a>
+            <motion.a 
+              whileHover={{ y: -3 }}
+              target="_blank"
+              rel="noopener noreferrer"
+              href="https://github.com/MehmetSalihK"
+              className="p-3 dark:bg-white/5 bg-zinc-100 dark:border-white/10 border-zinc-200 border rounded-xl dark:text-zinc-400 text-zinc-600 hover:text-indigo-500 transition-colors"
+              title="GitHub"
+            >
+              <FiGithub className="w-5 h-5" />
+            </motion.a>
+          </div>
+        </div>
+
+        <div className="mt-16 pt-8 dark:border-white/5 border-zinc-100 border-t">
+          <p className="text-xs font-bold dark:text-zinc-600 text-zinc-400 uppercase tracking-widest">
+            © 2024 Mehmet Salih K.
+          </p>
+        </div>
+      </motion.div>
+    </div>
   );
-};
+}
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getStaticProps: GetStaticProps = async () => {
   try {
+    const MaintenanceModel = (await import('@/models/Maintenance')).default;
     await connectDB();
-    
-    const maintenance = await Maintenance.findOne({ isEnabled: true });
-    
-    if (!maintenance) {
+    const status = await MaintenanceModel.findOne().lean();
+
+    // If maintenance is NOT enabled, redirect to home
+    if (!status || !(status as any).isEnabled) {
       return {
         redirect: {
           destination: '/',
@@ -121,26 +96,13 @@ export const getServerSideProps: GetServerSideProps = async () => {
         },
       };
     }
-    
+
     return {
-      props: {
-        maintenanceData: {
-          title: maintenance.title || 'Site en maintenance',
-          message: maintenance.message || 'Le site est actuellement en maintenance. Veuillez revenir plus tard.',
-          estimatedEndTime: maintenance.estimatedEndTime ? maintenance.estimatedEndTime.toISOString() : null,
-        },
-      },
+      props: {},
     };
   } catch (error) {
-    console.error('Error fetching maintenance data:', error);
-    
     return {
-      props: {
-        maintenanceData: {
-          title: 'Site en maintenance',
-          message: 'Le site est actuellement en maintenance. Veuillez revenir plus tard.',
-        },
-      },
+      props: {},
     };
   }
 };

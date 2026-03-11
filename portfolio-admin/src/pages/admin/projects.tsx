@@ -250,10 +250,10 @@ export default function ProjectsPage() {
       <div
         ref={setNodeRef}
         style={style}
-        className={`group relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl overflow-hidden transition-all duration-300 ${
+        className={`group relative bg-background-card border border-border-subtle rounded-2xl overflow-hidden transition-all duration-500 ${
           !project.showOnHomepage ? 'opacity-50 grayscale' : ''
         } ${
-          isDragging ? 'shadow-lg scale-105 z-50' : 'hover:shadow-lg'
+          isDragging ? 'shadow-2xl shadow-indigo-500/20 scale-[1.02] border-indigo-500/50 z-50' : 'hover:border-indigo-500/30 hover:shadow-xl hover:shadow-black/40'
         }`}
       >
         {/* Drag Handle */}
@@ -261,28 +261,28 @@ export default function ProjectsPage() {
           <div
             {...attributes}
             {...listeners}
-            className="absolute top-3 left-3 z-30 p-2 rounded-lg bg-white/10 backdrop-blur-md cursor-grab active:cursor-grabbing hover:bg-white/20 transition-all duration-200"
+            className="absolute top-4 left-4 z-30 p-2.5 rounded-xl bg-black/60 backdrop-blur-md cursor-grab active:cursor-grabbing hover:bg-indigo-600 text-white border border-white/10 transition-all duration-300 shadow-lg"
           >
-            <FiMove className="w-4 h-4 text-gray-900 dark:text-white" />
+            <FiMove className="w-4 h-4" />
           </div>
         )}
 
         {/* Image Container avec overlay */}
-        <div className="relative aspect-video overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10" />
+        <div className="relative aspect-[16/10] overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
           <div className="relative w-full h-full">
             <Image
               src={project.imageUrl}
               alt={project.title}
               fill
-              className="object-cover transform group-hover:scale-110 transition-transform duration-700"
+              className="object-cover transform group-hover:scale-105 transition-transform duration-1000"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           </div>
           
           {/* Boutons d'action flottants */}
           {!isDragMode && (
-            <div className="absolute top-3 right-3 flex gap-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="absolute top-4 right-4 flex gap-2 z-20 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
               <button
                 onClick={(e) => {
                   e.preventDefault();
@@ -290,10 +290,10 @@ export default function ProjectsPage() {
                   handleToggleHomepage(project._id, project.showOnHomepage);
                 }}
                 disabled={isDeleting === project._id}
-                className={`p-2.5 rounded-lg backdrop-blur-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`p-2.5 rounded-xl backdrop-blur-md border transition-all duration-300 disabled:opacity-50 ${
                   project.showOnHomepage 
-                    ? 'bg-green-500/20 hover:bg-green-500/30 text-green-400 hover:text-green-300'
-                    : 'bg-gray-500/20 hover:bg-gray-500/30 text-gray-400 hover:text-gray-300'
+                    ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/40'
+                    : 'bg-zinc-900/60 border-white/10 text-zinc-400 hover:bg-zinc-800'
                 }`}
                 title={project.showOnHomepage ? 'Retirer de la page d\'accueil' : 'Afficher sur la page d\'accueil'}
               >
@@ -306,7 +306,7 @@ export default function ProjectsPage() {
                   handleEditClick(project);
                 }}
                 disabled={isDeleting === project._id}
-                className="p-2.5 rounded-lg bg-white/10 backdrop-blur-md hover:bg-white/20 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2.5 rounded-xl bg-zinc-900/60 backdrop-blur-md border border-white/10 text-white hover:bg-indigo-600 hover:border-indigo-400 transition-all duration-300 disabled:opacity-50"
               >
                 <FiEdit2 className="w-4 h-4" />
               </button>
@@ -317,7 +317,7 @@ export default function ProjectsPage() {
                   handleDeleteClick(project._id);
                 }}
                 disabled={isDeleting === project._id}
-                className="p-2.5 rounded-lg bg-red-500/10 backdrop-blur-md hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2.5 rounded-xl bg-rose-500/20 backdrop-blur-md border border-rose-500/30 text-rose-400 hover:bg-rose-500/40 transition-all duration-300 disabled:opacity-50"
               >
                 {isDeleting === project._id ? (
                   <FiLoader className="w-4 h-4 animate-spin" />
@@ -328,88 +328,82 @@ export default function ProjectsPage() {
             </div>
           )}
 
-            {/* Badges removed (Category, Status, Difficulty, Priority) */}
+          {/* Featured Badge */}
+          <div className="absolute bottom-4 left-4 z-20 flex gap-2">
             {project.featured && (
-              <div className="px-2.5 py-1 rounded-full bg-yellow-500/20 backdrop-blur-md text-yellow-300 text-xs font-medium flex items-center gap-1">
-                <FiStar className="w-3 h-3" />
+              <div className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 backdrop-blur-md text-amber-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-lg">
+                <FiStar className="w-3 h-3 fill-amber-300" />
                 Featured
               </div>
             )}
-            {project.showOnHomepage && (
-              <div className="px-2.5 py-1 rounded-full bg-green-500/20 backdrop-blur-md text-green-300 text-xs font-medium flex items-center gap-1">
-                <FiEye className="w-3 h-3" />
-                Homepage
+            {!project.showOnHomepage && (
+              <div className="px-3 py-1 rounded-full bg-zinc-900/60 border border-white/10 backdrop-blur-md text-zinc-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                Masqué
               </div>
             )}
+          </div>
         </div>
 
         {/* Contenu */}
-        <div className="p-5">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-1">
+        <div className="p-6">
+          <h3 className="text-lg font-black text-white mb-2 line-clamp-1 group-hover:text-indigo-400 transition-colors duration-300 tracking-tight">
             {project.title}
           </h3>
-          <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
+          <p className="text-zinc-500 text-sm mb-6 line-clamp-2 leading-relaxed font-medium">
             {project.description}
           </p>
 
           {/* Technologies */}
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {project.technologies.map((tech, index) => (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {project.technologies.slice(0, 4).map((tech, index) => (
               <span
                 key={index}
-                className="px-2 py-1 text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 backdrop-blur-sm"
+                className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg bg-white/5 border border-white/10 text-zinc-400"
               >
                 {tech}
               </span>
             ))}
+            {project.technologies.length > 4 && (
+              <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg bg-white/5 border border-white/10 text-zinc-500">
+                +{project.technologies.length - 4}
+              </span>
+            )}
           </div>
 
-          {/* Tags */}
-          {project.tags && project.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-4">
-              {project.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="px-2 py-1 text-xs rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 backdrop-blur-sm border border-indigo-300 dark:border-indigo-500/30"
-                >
-                  #{tag}
-                </span>
-              ))}
+          {/* Liens & Footer */}
+          <div className="flex items-center justify-between pt-5 border-t border-border-subtle">
+            <div className="flex gap-1.5">
+               {project.tags && project.tags.slice(0, 2).map((tag, index) => (
+                  <span key={index} className="text-[10px] font-bold text-indigo-500/70">
+                    #{tag}
+                  </span>
+               ))}
             </div>
-          )}
-
-          {/* Liens */}
-          <div className="flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-            {project.demoUrl && (
-              <a
-                href={project.demoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-200 group/link"
-              >
-                <div className="relative">
+            
+            <div className="flex gap-2">
+              {project.demoUrl && (
+                <a
+                  href={project.demoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all duration-300"
+                  title="Voir le site"
+                >
                   <FiExternalLink className="w-4 h-4" />
-                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 rounded opacity-0 group-hover/link:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                    Voir le projet
-                  </span>
-                </div>
-              </a>
-            )}
-            {project.githubUrl && (
-              <a
-                href={project.githubUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-200 group/link"
-              >
-                <div className="relative">
+                </a>
+              )}
+              {project.githubUrl && (
+                <a
+                  href={project.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all duration-300"
+                  title="Voir le code"
+                >
                   <FiGithub className="w-4 h-4" />
-                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 rounded opacity-0 group-hover/link:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                    Voir le code
-                  </span>
-                </div>
-              </a>
-            )}
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -418,84 +412,66 @@ export default function ProjectsPage() {
 
   return (
     <AdminLayout>
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f3f4f6;
-          border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #d1d5db;
-          border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #9ca3af;
-        }
-        @media (prefers-color-scheme: dark) {
-          .custom-scrollbar::-webkit-scrollbar-track {
-            background: #1A1A1A;
-          }
-          .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #2A2A2A;
-          }
-          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #333333;
-          }
-        }
-      `}</style>
-      
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-3">
-            <FiFolder className="w-8 h-8 text-gray-600 dark:text-gray-300" />
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Projects</h1>
+      <div className="space-y-10">
+        {/* Header Section */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex flex-col md:flex-row md:items-end justify-between gap-4"
+        >
+          <div>
+            <div className="flex items-center gap-2 text-primary font-bold text-[10px] uppercase tracking-[0.2em] mb-2">
+              <span className="w-8 h-[1px] bg-primary"></span>
+              Management
+            </div>
+            <h1 className="text-4xl font-black text-white tracking-tight flex items-center gap-4">
+              Projets
+              <span className="text-zinc-700 text-lg font-medium tabular-nums bg-white/5 px-3 py-1 rounded-full border border-white/10">
+                {projects.length}
+              </span>
+            </h1>
+            <p className="text-zinc-500 mt-2 font-medium">
+              Gérez vos réalisations, synchronisez avec GitHub et organisez votre portfolio.
+            </p>
           </div>
-          <div className="flex items-center gap-3">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+          
+          <div className="flex flex-wrap gap-3">
+            <button
               onClick={() => setIsDragMode(!isDragMode)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 font-bold text-xs uppercase tracking-wider border ${
                 isDragMode
-                  ? 'bg-green-600 hover:bg-green-700 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white'
+                  ? 'bg-emerald-500 border-emerald-400 text-white shadow-lg shadow-emerald-500/20'
+                  : 'bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white'
               }`}
             >
               <FiMove className="w-4 h-4" />
               {isDragMode ? 'Terminer' : 'Réorganiser'}
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            </button>
+            <button
               onClick={() => setShowPreview(!showPreview)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 font-bold text-xs uppercase tracking-wider border ${
                 showPreview
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white'
+                  ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                  : 'bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white'
               }`}
-              title={showPreview ? 'Masquer la prévisualisation' : 'Afficher la prévisualisation'}
             >
               <FiEye className="w-4 h-4" />
               {showPreview ? 'Masquer' : 'Prévisualiser'}
               {isConnected && (
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
               )}
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            </button>
+            <button
               onClick={() => {
                 setEditingProject(null);
                 setIsModalOpen(true);
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-all duration-200 hover:scale-105"
+              className="flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all duration-300 shadow-lg shadow-indigo-500/20 font-bold text-xs uppercase tracking-wider active:scale-95 border border-indigo-500"
             >
-              <FiPlus className="text-gray-900 dark:text-white" /> Add Project
-            </motion.button>
+              <FiPlus className="w-4 h-4" /> Ajouter
+            </button>
           </div>
-        </div>
+        </motion.div>
 
         {/* GitHub Synchronization */}
         <div className="mb-8">

@@ -20,15 +20,17 @@ interface StatsChartProps {
   title: string;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+const COLORS = ['#6366f1', '#a855f7', '#ec4899', '#f43f5e', '#3b82f6', '#10b981'];
 
 export default function StatsChart({ data, type = 'pie', title }: StatsChartProps) {
   const { theme } = useTheme();
-  const isDark = theme === 'dark';
-
+  
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">{title}</h3>
+    <div className="bg-background-card border border-border-subtle p-6 rounded-xl hover:border-border-strong transition-all duration-300">
+      <h3 className="text-sm font-semibold text-white mb-8 flex items-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+        {title}
+      </h3>
       <div className="h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           {type === 'pie' ? (
@@ -37,12 +39,12 @@ export default function StatsChart({ data, type = 'pie', title }: StatsChartProp
                 data={data}
                 cx="50%"
                 cy="50%"
-                innerRadius={60}
-                outerRadius={80}
+                innerRadius={70}
+                outerRadius={90}
                 fill="#8884d8"
-                paddingAngle={5}
+                paddingAngle={8}
                 dataKey="value"
-                label={({ name, percent }: { name: string; percent?: number }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                stroke="none"
               >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -50,34 +52,45 @@ export default function StatsChart({ data, type = 'pie', title }: StatsChartProp
               </Pie>
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: isDark ? '#1f2937' : '#ffffff',
-                  borderColor: isDark ? '#374151' : '#e5e7eb',
-                  color: isDark ? '#ffffff' : '#000000'
+                  backgroundColor: '#18181b', // background-card
+                  borderColor: '#27272a',    // border-strong
+                  borderRadius: '12px',
+                  color: '#ffffff',
+                  fontSize: '12px',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)'
                 }}
+                itemStyle={{ color: '#ffffff' }}
               />
-              <Legend />
+              <Legend verticalAlign="bottom" height={36} iconType="circle" />
             </PieChart>
           ) : (
             <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#e5e7eb'} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
               <XAxis 
                 dataKey="name" 
-                stroke={isDark ? '#9ca3af' : '#4b5563'}
-                tick={{ fill: isDark ? '#9ca3af' : '#4b5563' }}
+                stroke="#52525b"
+                tick={{ fill: '#71717a', fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
               />
               <YAxis 
-                stroke={isDark ? '#9ca3af' : '#4b5563'}
-                tick={{ fill: isDark ? '#9ca3af' : '#4b5563' }}
+                stroke="#52525b"
+                tick={{ fill: '#71717a', fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
               />
               <Tooltip 
-                cursor={{ fill: isDark ? '#374151' : '#f3f4f6' }}
+                cursor={{ fill: 'rgba(255, 255, 255, 0.03)' }}
                 contentStyle={{ 
-                  backgroundColor: isDark ? '#1f2937' : '#ffffff',
-                  borderColor: isDark ? '#374151' : '#e5e7eb',
-                  color: isDark ? '#ffffff' : '#000000'
+                  backgroundColor: '#18181b',
+                  borderColor: '#27272a',
+                  borderRadius: '12px',
+                  color: '#ffffff',
+                  fontSize: '12px',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)'
                 }}
               />
-              <Bar dataKey="value" fill="#8884d8">
+              <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={40}>
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
