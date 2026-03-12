@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+// Optimized for Cloudflare Pages
 const nextConfig = {
   reactStrictMode: true,
   productionBrowserSourceMaps: false,
