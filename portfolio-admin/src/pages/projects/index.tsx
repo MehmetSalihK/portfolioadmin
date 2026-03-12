@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '@/components/layout/Layout';
 import connectDB from '@/lib/db';
 import ProjectModel from '@/models/Project';
-import useAnalytics from '@/utils/hooks/useAnalytics';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { FiExternalLink, FiGithub, FiCode, FiStar, FiX } from 'react-icons/fi';
@@ -27,11 +26,6 @@ interface ProjectsPageProps {
 }
 
 export default function Projects({ projects }: ProjectsPageProps) {
-  useAnalytics({
-    enabled: true,
-    updateInterval: 30000,
-    trackTimeSpent: true
-  });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -68,22 +62,7 @@ export default function Projects({ projects }: ProjectsPageProps) {
     window.open(url, '_blank');
   };
 
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(async (entry) => {
-        if (entry.isIntersecting) {
-          const id = entry.target.getAttribute('data-project-id');
-          if (id) {
-            await trackClick(id, 'view');
-            observer.unobserve(entry.target);
-          }
-        }
-      });
-    }, { threshold: 0.1 });
 
-    document.querySelectorAll('[data-project-id]').forEach(el => observer.observe(el));
-    return () => observer.disconnect();
-  }, [projects]);
 
   return (
     <Layout>

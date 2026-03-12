@@ -24,11 +24,11 @@ interface ExperiencePageProps {
 }
 
 export default function Experiences({ experiences = [] }: ExperiencePageProps) {
-  useAnalytics({
+  /* useAnalytics({
     enabled: true,
     updateInterval: 30000,
     trackTimeSpent: true
-  });
+  }); */ // Désactivé pour économiser les ressources Vercel
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

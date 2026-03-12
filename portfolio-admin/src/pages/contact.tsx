@@ -7,7 +7,6 @@ import Head from 'next/head';
 import { GetStaticProps } from 'next';
 import connectDB from '@/lib/db';
 import Setting from '@/models/Setting';
-import useAnalytics from '@/utils/hooks/useAnalytics';
 import { motion } from 'framer-motion';
 
 interface ContactPageProps {
@@ -22,7 +21,6 @@ interface ContactPageProps {
 }
 
 export default function ContactPage({ settings = { email: '', github: '', linkedin: '', position: '' } }: ContactPageProps) {
-  useAnalytics({ enabled: true, updateInterval: 30000, trackTimeSpent: true });
 
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', company: '', phone: '',

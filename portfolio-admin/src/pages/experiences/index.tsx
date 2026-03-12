@@ -5,8 +5,7 @@ import { motion } from 'framer-motion';
 import { useTheme } from '@/contexts/ThemeContext';
 import { GetStaticProps } from 'next';
 import connectDB from '@/lib/db';
-import Experience from '@/models/Experience';
-import useAnalytics from '@/utils/hooks/useAnalytics';
+import ExperienceModel from '@/models/Experience';
 
 interface Experience {
   _id: string;
@@ -24,11 +23,6 @@ interface ExperiencesPageProps {
 }
 
 export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
-  useAnalytics({
-    enabled: true,
-    updateInterval: 30000,
-    trackTimeSpent: true
-  });
 
   const { theme } = useTheme();
 
@@ -131,7 +125,7 @@ export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
 export const getStaticProps: GetStaticProps = async () => {
   try {
     await connectDB();
-    const experiences = await Experience.find({})
+    const experiences = await ExperienceModel.find({})
       .sort({ startDate: -1, order: -1 })
       .lean();
 

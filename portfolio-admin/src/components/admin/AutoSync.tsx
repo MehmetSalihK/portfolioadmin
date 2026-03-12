@@ -8,6 +8,9 @@ export default function AutoSync() {
     const initializedRef = useRef(false);
 
     useEffect(() => {
+        const isAdminPage = router.pathname.startsWith('/admin');
+        if (!isAdminPage) return;
+
         let isMounted = true;
 
         async function syncAdmin() {

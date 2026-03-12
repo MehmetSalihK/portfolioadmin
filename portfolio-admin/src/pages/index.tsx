@@ -11,7 +11,6 @@ import SkillModel from '@/models/Skill';
 import HomePageModel from '@/models/HomePage';
 import SettingModel from '@/models/Setting';
 import { useRef, useEffect, useState } from 'react';
-import useAnalytics from '@/utils/hooks/useAnalytics';
 import {
   FaGithub, FaLinkedin, FaTwitter, FaWhatsapp, FaTelegram,
 } from 'react-icons/fa';
@@ -100,8 +99,6 @@ export default function Home({
   const mainRef = useRef<HTMLDivElement>(null);
   const [showBanner, setShowBanner] = useState(true);
 
-  // Analytics
-  useAnalytics({ enabled: true, updateInterval: 30000 });
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -144,19 +141,7 @@ export default function Home({
   const handleDemoClick = async (projectId: string, url: string) => { await trackClick(projectId, 'demo'); window.open(url, '_blank'); };
   const handleGithubClick = async (projectId: string, url: string) => { await trackClick(projectId, 'github'); window.open(url, '_blank'); };
 
-  // Intersection observer for project views
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(async (entry) => {
-        if (entry.isIntersecting) {
-          const id = entry.target.getAttribute('data-project-id');
-          if (id) { await trackClick(id, 'view'); observer.unobserve(entry.target); }
-        }
-      });
-    });
-    document.querySelectorAll('[data-project-id]').forEach(el => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
+
 
   return (
     <Layout>

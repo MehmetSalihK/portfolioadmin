@@ -5,7 +5,6 @@ import connectDB from '@/lib/db';
 import Education from '@/models/Education';
 import { FiBookOpen, FiCalendar, FiMapPin, FiAward, FiExternalLink } from 'react-icons/fi';
 import { motion } from 'framer-motion';
-import useAnalytics from '@/utils/hooks/useAnalytics';
 
 interface FormationsPageProps {
   educations: {
@@ -26,11 +25,6 @@ interface FormationsPageProps {
 }
 
 export default function FormationsPage({ educations = [] }: FormationsPageProps) {
-  useAnalytics({
-    enabled: true,
-    updateInterval: 30000,
-    trackTimeSpent: true
-  });
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
