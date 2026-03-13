@@ -17,7 +17,7 @@ import {
 import { HiArrowDown } from 'react-icons/hi';
 import {
   FiExternalLink, FiGithub, FiX, FiDownload,
-  FiCode, FiSettings, FiStar
+  FiCode, FiSettings, FiStar, FiSend
 } from 'react-icons/fi';
 import parse from 'html-react-parser';
 import DOMPurify from 'isomorphic-dompurify';
@@ -193,75 +193,79 @@ export default function Home({
 
             {/* ── Left: Identity ── */}
             <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: 'easeOut' }}>
-              {/* Available badge */}
+              {/* Disponibility Badge - Refined */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2.5 px-4 py-2 dark:bg-indigo-500/10 bg-indigo-50 dark:border-indigo-500/20 border-indigo-200 border rounded-full mb-8"
+                className="inline-flex items-center gap-3 px-4 py-2 dark:bg-indigo-500/10 bg-indigo-50 dark:border-indigo-500/20 border-indigo-200 border rounded-2xl mb-10"
               >
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500" />
-                </span>
-                <span className="text-[10px] font-black dark:text-indigo-400 text-indigo-600 uppercase tracking-widest">
-                  Disponible pour de nouvelles opportunités
+                <div className="relative flex h-2 w-2">
+                  <div className="absolute inset-0 rounded-full bg-indigo-500 animate-ping opacity-75" />
+                  <div className="relative rounded-full h-2 w-2 bg-indigo-500" />
+                </div>
+                <span className="text-[10px] font-black dark:text-indigo-400 text-indigo-600 uppercase tracking-[0.2em]">
+                  Artisan Digital disponible pour votre vision
                 </span>
               </motion.div>
-
+              
               {/* Name & Title */}
-              <motion.h1
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.7 }}
-                className="text-5xl sm:text-6xl lg:text-7xl font-black dark:text-white text-zinc-900 leading-tight tracking-tight mb-6"
+                className="mb-8"
               >
-                {homeData.title}
-              </motion.h1>
+                <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black dark:text-white text-zinc-900 leading-[0.9] tracking-tight mb-2">
+                  {homeData.title.split(' ').map((word, i) => (
+                    <span key={i} className={i === homeData.title.split(' ').length - 1 ? "text-indigo-600 dark:text-indigo-500" : ""}>
+                      {word}{' '}
+                    </span>
+                  ))}
+                </h1>
+              </motion.div>
 
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.7 }}
-                className="text-lg dark:text-zinc-400 text-zinc-600 mb-10 max-w-lg leading-relaxed font-medium"
+                className="text-xl dark:text-zinc-500 text-zinc-600 mb-12 max-w-lg leading-relaxed font-medium"
               >
                 {homeData.subtitle}
               </motion.p>
 
-              {/* CTA Buttons */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="flex flex-wrap gap-3 mb-10"
+              {/* Action Buttons - Redesigned for Premium Hub */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="flex flex-wrap items-center gap-4 mb-12"
+              >
+                <Link
+                  href="/projects"
+                  className="h-14 px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-indigo-600/20 transition-all active:scale-95 flex items-center justify-center gap-2"
                 >
-                  <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }}>
-                    <Link
-                      href="#projects"
-                      className="inline-flex items-center gap-2 px-7 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/20 transition-all"
-                    >
-                      <FiCode className="w-4 h-4" />
-                      Voir mes projets
-                    </Link>
-                  </motion.div>
-                  <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }}>
-                    <button
-                      onClick={() => setIsCVModalOpen(true)}
-                      className="inline-flex items-center gap-2 px-7 py-3.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:text-white text-zinc-900 dark:border-white/10 border-zinc-300 border rounded-xl text-sm font-bold transition-all"
-                    >
-                      <FiDownload className="w-4 h-4" />
-                      Télécharger CV
-                    </button>
-                  </motion.div>
-                  <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }}>
-                    <Link
-                      href="/contact"
-                      className="inline-flex items-center gap-2 px-7 py-3.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:text-white text-zinc-900 dark:border-white/10 border-zinc-300 border rounded-xl text-sm font-bold transition-all"
-                    >
-                      Me contacter
-                    </Link>
-                  </motion.div>
-                </motion.div>
+                  <FiCode className="w-4 h-4" />
+                  Explorer mes Projets
+                </Link>
+                
+                <button
+                  onClick={() => setIsCVModalOpen(true)}
+                  className="h-14 px-8 dark:bg-white/5 bg-zinc-50 dark:hover:bg-white/10 hover:bg-zinc-100 dark:text-white text-zinc-900 dark:border-white/5 border-zinc-200 border rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <FiDownload className="w-4 h-4" />
+                  Profil CV
+                </button>
+
+                <div className="w-px h-8 dark:bg-white/10 bg-zinc-200 mx-2 hidden sm:block" />
+
+                <Link 
+                  href="/about"
+                  className="text-[11px] font-black uppercase tracking-widest text-indigo-500 hover:text-indigo-400 p-2 transition-all"
+                >
+                  En savoir plus
+                </Link>
+              </motion.div>
 
               {/* Social Links */}
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="flex gap-3">
@@ -608,23 +612,26 @@ export default function Home({
                     </div>
 
                     {/* Action row */}
-                    <div className="flex items-center gap-4 pt-4 dark:border-white/5 border-zinc-100 border-t">
-                      {project.demoUrl && (
-                        <button
-                          onClick={() => project.demoUrl && handleDemoClick(project._id, project.demoUrl)}
-                          className="flex items-center gap-1.5 text-indigo-500 hover:text-indigo-400 font-black text-[10px] uppercase tracking-widest transition-colors"
-                        >
-                          <FiExternalLink className="w-3.5 h-3.5" />Demo
-                        </button>
-                      )}
-                      {project.githubUrl && (
-                        <button
-                          onClick={() => project.githubUrl && handleGithubClick(project._id, project.githubUrl)}
-                          className="flex items-center gap-1.5 dark:text-zinc-500 text-zinc-400 dark:hover:text-white hover:text-zinc-900 font-black text-[10px] uppercase tracking-widest transition-colors"
-                        >
-                          <FiGithub className="w-3.5 h-3.5" />Code
-                        </button>
-                      )}
+                    <div className="flex items-center justify-between pt-6 mt-auto border-t dark:border-white/5 border-zinc-100">
+                      <div className="flex gap-4">
+                        {project.demoUrl && (
+                          <button
+                            onClick={() => project.demoUrl && handleDemoClick(project._id, project.demoUrl)}
+                            className="flex items-center gap-1.5 text-indigo-500 hover:text-indigo-400 font-black text-[10px] uppercase tracking-widest transition-colors"
+                          >
+                            <FiExternalLink className="w-3.5 h-3.5" />Demo
+                          </button>
+                        )}
+                        {project.githubUrl && (
+                          <button
+                            onClick={() => project.githubUrl && handleGithubClick(project._id, project.githubUrl)}
+                            className="flex items-center gap-1.5 dark:text-zinc-500 text-zinc-400 dark:hover:text-white hover:text-zinc-900 font-black text-[10px] uppercase tracking-widest transition-colors"
+                          >
+                            <FiGithub className="w-3.5 h-3.5" />Code
+                          </button>
+                        )}
+                      </div>
+                      <div className="w-1.5 h-1.5 rounded-full dark:bg-white/10 bg-zinc-200" />
                     </div>
                   </div>
                 </motion.div>
@@ -807,23 +814,21 @@ export default function Home({
                 Vous cherchez un développeur pour votre prochain projet ? Je suis disponible pour des missions freelance, CDD ou CDI.
               </p>
               <div className="flex flex-wrap gap-4 justify-center mb-10">
-                <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }}>
-                  <Link
-                    href="/contact"
-                    className="inline-flex items-center gap-2 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/20 transition-all"
-                  >
-                    Me contacter
-                  </Link>
-                </motion.div>
-                <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }}>
-                  <button
-                    onClick={() => setIsCVModalOpen(true)}
-                    className="inline-flex items-center gap-2 px-8 py-4 dark:bg-white/5 bg-white dark:hover:bg-white/10 hover:bg-zinc-50 dark:text-white text-zinc-900 dark:border-white/10 border-zinc-300 border rounded-xl text-sm font-bold transition-all shadow-sm"
-                  >
-                    <FiDownload className="w-4 h-4" />
-                    Télécharger CV
-                  </button>
-                </motion.div>
+                <Link
+                  href="/contact"
+                  className="h-16 px-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-indigo-600/20 transition-all active:scale-95 flex items-center justify-center gap-3"
+                >
+                  <FiSend className="w-4 h-4" />
+                  Démarrer une Collaboration
+                </Link>
+                
+                <button
+                  onClick={() => setIsCVModalOpen(true)}
+                  className="h-16 px-10 dark:bg-white/5 bg-white dark:hover:bg-white/10 hover:bg-zinc-50 dark:text-white text-zinc-900 dark:border-white/5 border-zinc-200 border rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-3 shadow-sm"
+                >
+                  <FiDownload className="w-4 h-4" />
+                  Consulter le Dossier CV
+                </button>
               </div>
               
               {/* Contact options */}

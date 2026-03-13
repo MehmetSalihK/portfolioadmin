@@ -2,7 +2,6 @@ import Head from 'next/head';
 import { motion } from 'framer-motion';
 import { FiSettings, FiMail, FiLinkedin, FiGithub } from 'react-icons/fi';
 import { GetStaticProps } from 'next';
-import connectDB from '@/lib/db';
 
 export default function Maintenance() {
   return (
@@ -82,27 +81,7 @@ export default function Maintenance() {
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  try {
-    const MaintenanceModel = (await import('@/models/Maintenance')).default;
-    await connectDB();
-    const status = await MaintenanceModel.findOne().lean();
-
-    // If maintenance is NOT enabled, redirect to home
-    if (!status || !(status as any).isEnabled) {
-      return {
-        redirect: {
-          destination: '/',
-          permanent: false,
-        },
-      };
-    }
-
-    return {
-      props: {},
-    };
-  } catch (error) {
-    return {
-      props: {},
-    };
-  }
+  return {
+    props: {},
+  };
 };
