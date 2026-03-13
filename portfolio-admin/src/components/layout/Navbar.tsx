@@ -11,7 +11,6 @@ const navItems = [
   { name: 'Projets', path: '/projects', icon: FiCode },
   { name: 'Formations', path: '/formations', icon: FiAward },
   { name: 'Expériences', path: '/experiences', icon: FiBriefcase },
-  { name: 'Contact', path: '/contact', icon: FiMail },
 ];
 
 export default function Navbar() {
@@ -34,12 +33,12 @@ export default function Navbar() {
   const isDark = theme === 'dark';
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-[92%] sm:max-w-[560px] md:max-w-[740px] lg:max-w-[960px]">
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-[92%] sm:max-w-[480px] md:max-w-[580px] lg:max-w-[680px]">
       <motion.nav
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className={`rounded-2xl px-4 py-2.5 transition-all duration-300 ${
+        className={`rounded-2xl px-4 py-2 transition-all duration-300 ${
           scrolled
             ? 'dark:bg-[#09090f]/90 bg-white/90 backdrop-blur-xl dark:border-white/10 border-zinc-200 border shadow-2xl dark:shadow-black/40 shadow-zinc-300/40'
             : 'dark:bg-[#09090f]/70 bg-white/70 backdrop-blur-md dark:border-white/5 border-zinc-200/60 border'
@@ -93,14 +92,6 @@ export default function Navbar() {
               </motion.button>
             )}
 
-            {/* Contact CTA */}
-            <Link
-              href="/contact"
-              className="hidden md:flex items-center gap-1.5 px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-xl transition-all shadow-lg shadow-indigo-600/20"
-            >
-              <FiMail className="w-3.5 h-3.5" />
-              Me contacter
-            </Link>
 
             {/* Mobile hamburger */}
             <button
@@ -140,15 +131,6 @@ export default function Navbar() {
                     </Link>
                   );
                 })}
-                <div className="pt-2">
-                  <Link
-                    href="/contact"
-                    className="flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-black"
-                  >
-                    <FiMail className="w-4 h-4" />
-                    Me contacter
-                  </Link>
-                </div>
               </div>
             </motion.div>
           )}
