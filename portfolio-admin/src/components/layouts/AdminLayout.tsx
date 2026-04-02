@@ -1,19 +1,16 @@
-import { ReactNode } from 'react';
-import { useSession } from 'next-auth/react';
+import { ReactNode, useState, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
-  FiHome, FiUser, FiBriefcase, FiCode, FiFolder, FiLogOut, FiMenu, FiMail,
-  FiSettings, FiList, FiBarChart2, FiBookOpen, FiActivity, FiSun, FiMoon,
-  FiImage, FiTag, FiShield, FiGlobe, FiX
+  FiHome, FiBriefcase, FiCode, FiFolder, FiLogOut, FiMenu, FiMail,
+  FiSettings, FiBarChart2, FiBookOpen, FiActivity, FiSun, FiMoon,
+  FiImage, FiShield, FiX, FiSearch, FiBell, FiChevronRight, FiGrid, FiCommand, FiTerminal, FiZap
 } from 'react-icons/fi';
-import { signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { useTheme } from '@/contexts/ThemeContext';
 import CommandPalette from '../admin/CommandPalette';
-
 import { useDevToolsProtection } from '@/hooks/useDevToolsProtection';
 
 interface AdminLayoutProps {
@@ -21,278 +18,248 @@ interface AdminLayoutProps {
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
-  // Activer la protection contre les outils de développement (en production)
   useDevToolsProtection();
-
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
   const { theme, toggleTheme } = useTheme();
+  const [scrolled, setScrolled] = useState(false);
 
-  const menuItems = [
-    {
-      href: '/admin',
-      label: 'Dashboard',
-      icon: FiHome,
-      description: 'Vue d\'ensemble et statistiques'
-    },
-    {
-      href: '/admin/projects',
-      label: 'Projets',
-      icon: FiFolder,
-      description: 'Gestion des projets portfolio'
-    },
-    {
-      href: '/admin/skills',
-      label: 'Compétences',
-      icon: FiCode,
-      description: 'Technologies et compétences'
-    },
-    {
-      href: '/admin/experience',
-      label: 'Expériences',
-      icon: FiBriefcase,
-      description: 'Parcours professionnel'
-    },
-    {
-      href: '/admin/education',
-      label: 'Formation',
-      icon: FiBookOpen,
-      description: 'Parcours académique'
-    },
-    {
-      href: '/admin/media',
-      label: 'Médias',
-      icon: FiImage,
-      description: 'Galerie et fichiers'
-    },
-    {
-      href: '/admin/analytics',
-      label: 'Analytics',
-      icon: FiBarChart2,
-      description: 'Statistiques et suivi'
-    },
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
+  const menuGroups = [
     {
-      href: '/admin/backup',
-      label: 'Sauvegardes',
-      icon: FiShield,
-      description: 'Gestion des sauvegardes'
+      title: 'Contenu',
+      items: [
+        { href: '/admin/projects', label: 'Projets', icon: FiFolder },
+        { href: '/admin/skills', label: 'Compétences', icon: FiCode },
+        { href: '/admin/experience', label: 'Expériences', icon: FiBriefcase },
+        { href: '/admin/education', label: 'Formation', icon: FiBookOpen },
+        { href: '/admin/media', label: 'Médias', icon: FiImage },
+      ]
     },
     {
-      href: '/admin/messages',
-      label: 'Messages',
-      icon: FiMail,
-      description: 'Messages de contact'
-    },
-    {
-      href: '/admin/settings',
-      label: 'Paramètres',
-      icon: FiSettings,
-      description: 'Configuration système'
-    },
+      title: 'Système',
+      items: [
+        { href: '/admin/analytics', label: 'Analytics', icon: FiBarChart2 },
+        { href: '/admin/backup', label: 'Sauvegardes', icon: FiShield },
+        { href: '/admin/messages', label: 'Messages', icon: FiMail },
+        { href: '/admin/settings', label: 'Paramètres', icon: FiSettings },
+      ]
+    }
   ];
-
-  const handleSignOut = async () => {
-    // Nettoyer le stockage local et de session
-    sessionStorage.clear();
-    
-    await signOut({ redirect: false });
-    router.push('/admin/login');
-  };
 
   if (status === 'loading') {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-background-dark">
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 180, 360],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="w-12 h-12 border-t-2 border-b-2 border-indigo-500 rounded-full"
-        />
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#09090b]">
+        <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} className="w-12 h-12 border-2 border-primary-500/20 border-t-primary-500 rounded-full mb-4" />
+        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">Initialisation Gateway...</span>
       </div>
     );
   }
 
-  if (status === 'unauthenticated') {
-    router.push('/admin/login');
-    return null;
-  }
-
-  const sidebarVariants = {
-    open: { x: 0 },
-    closed: { x: "-100%" },
-  };
+  if (status === 'unauthenticated') { router.push('/admin/login'); return null; }
 
   return (
-    <div className="min-h-screen dark:bg-[#09090f] bg-zinc-50 dark:text-gray-100 transition-colors duration-500 overflow-x-hidden">
+    <div className="min-h-screen dark:bg-[#09090c] bg-slate-50 font-jakarta transition-colors duration-500 selection:bg-primary-500/30">
       <CommandPalette />
-      <Toaster position="top-right" />
+      <Toaster position="top-right" toastOptions={{
+        className: 'font-jakarta text-xs font-bold uppercase tracking-wider',
+        style: { background: theme === 'dark' ? 'rgba(15,15,20,0.8)' : '#fff', color: theme === 'dark' ? '#f1f5f9' : '#1e293b', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)', borderRadius: '24px', padding: '16px 24px' }
+      }} />
       
-      {/* Mobile Overlay */}
+      {/* Dynamic Backgrounds */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-500/5 blur-[120px] rounded-full -mr-64 -mt-64" />
+         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-500/5 blur-[100px] rounded-full -ml-48 -mb-48" />
+      </div>
+
       <AnimatePresence>
         {isSidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsSidebarOpen(false)}
-            className="fixed inset-0 bg-[#09090f]/80 backdrop-blur-md z-40 md:hidden"
-          />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsSidebarOpen(false)} className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-40 md:hidden" />
         )}
       </AnimatePresence>
 
-      {/* Sidebar - Command Center Vertical Navigation */}
+      {/* Sidebar Redesign */}
       <motion.aside
         initial={false}
         animate={isSidebarOpen ? "open" : "closed"}
-        variants={{
-          open: { width: 280, x: 0 },
-          closed: { width: 80, x: 0 }
-        }}
-        className={`fixed inset-y-0 left-0 z-50 dark:bg-zinc-900/40 bg-white backdrop-blur-2xl border-r dark:border-white/5 border-zinc-200 overflow-hidden flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-[280px]' : 'w-0 md:w-20 -translate-x-full md:translate-x-0'}`}
+        variants={{ open: { width: 300, x: 0 }, closed: { width: 90, x: 0 } }}
+        className={`fixed inset-y-0 left-0 z-50 dark:bg-background-card/60 bg-white/60 backdrop-blur-3xl border-r dark:border-white/5 border-slate-200 flex flex-col transition-all duration-500 shadow-2xl ${isSidebarOpen ? 'w-[300px]' : 'w-0 md:w-[90px] -translate-x-full md:translate-x-0'}`}
       >
-        {/* Sidebar Header */}
-        <div className="p-8 border-b dark:border-white/5 border-zinc-100 flex items-center justify-between">
-          <motion.div 
-            animate={{ opacity: isSidebarOpen ? 1 : 0 }}
-            className="flex items-center gap-3"
-          >
-            <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/20">
-               <FiActivity className="text-white w-4 h-4" />
+        <div className="h-24 px-8 flex items-center justify-between">
+          <Link href="/admin" className="flex items-center gap-4 group">
+            <div className="w-11 h-11 rounded-2xl bg-primary-500 flex items-center justify-center shadow-xl shadow-primary-500/25 group-hover:rotate-12 transition-transform">
+               <FiTerminal className="text-white w-6 h-6" />
             </div>
-            <span className="font-black text-sm uppercase tracking-widest dark:text-white">HQ</span>
-          </motion.div>
-          
-          <button 
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="p-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors"
-          >
-            <FiMenu className="w-4 h-4 text-zinc-500" />
-          </button>
+            {isSidebarOpen && (
+              <div className="flex flex-col">
+                 <span className="font-black text-lg tracking-tighter dark:text-white text-slate-900 group-hover:text-primary-500 transition-colors">ADMIN HQ</span>
+                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">v2.0 Elite</span>
+              </div>
+            )}
+          </Link>
         </div>
 
-        {/* Navigation Section */}
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto overflow-x-hidden scrollbar-hide">
-          <div className="px-4 py-2 mb-2">
-             <span className="text-[10px] font-black uppercase tracking-[0.3em] dark:text-zinc-600 text-zinc-400">Navigation</span>
-          </div>
-          {menuItems.map((item, index) => {
-            const isActive = router.pathname === item.href;
-            const Icon = item.icon;
-            return (
-              <Link key={item.href} href={item.href}>
-                <motion.div
-                  className={`flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 relative group cursor-pointer ${
-                    isActive 
-                    ? 'dark:bg-indigo-600/10 bg-indigo-50 dark:text-indigo-400 text-indigo-600'
-                    : 'dark:text-zinc-500 text-zinc-500 hover:dark:bg-white/5 hover:bg-zinc-50 hover:dark:text-white hover:text-zinc-900'
-                  }`}
-                >
-                  <Icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-500 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
-                  <span className={`font-bold text-sm tracking-tight transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
-                    {item.label}
-                  </span>
-                  
-                  {isActive && (
-                    <motion.div 
-                      layoutId="sidebarActive"
-                      className="absolute left-0 top-3 bottom-3 w-1 bg-indigo-500 rounded-r-full"
-                    />
-                  )}
-                </motion.div>
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Sidebar Footer - System Health */}
-        <div className="p-6 border-t dark:border-white/5 border-zinc-100 space-y-4">
-          <div className={`p-4 rounded-2xl dark:bg-emerald-500/5 bg-emerald-50 border border-emerald-500/10 flex items-center gap-3 transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
-             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-             <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">System Secure</span>
+        <div className="flex-1 overflow-y-auto py-8 px-5 space-y-10 scrollbar-hide">
+          <div>
+            <Link href="/admin" className={`flex items-center gap-4 px-5 py-4 rounded-[20px] transition-all duration-300 group ${router.pathname === '/admin' ? 'bg-primary-500 text-white shadow-xl shadow-primary-500/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'}`}>
+              <FiGrid className="w-5 h-5 shrink-0" />
+              {isSidebarOpen && <span className="font-black text-xs uppercase tracking-widest">Aperçu Global</span>}
+            </Link>
           </div>
 
-          <button
-            onClick={handleSignOut}
-            className="flex items-center gap-4 w-full px-4 py-3 rounded-2xl text-zinc-500 hover:bg-red-500/5 hover:text-red-500 transition-all group"
+          {menuGroups.map((group, idx) => (
+            <div key={idx} className="space-y-4">
+              {isSidebarOpen && (
+                <div className="flex items-center gap-3 px-5">
+                   <div className="h-[1px] grow bg-slate-200 dark:bg-white/5" />
+                   <h3 className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-400 shrink-0">{group.title}</h3>
+                   <div className="h-[1px] w-4 bg-slate-200 dark:bg-white/5" />
+                </div>
+              )}
+              <div className="space-y-1">
+                {group.items.map((item) => {
+                  const isActive = router.pathname === item.href;
+                  return (
+                    <Link key={item.href} href={item.href} className={`flex items-center gap-4 px-5 py-3.5 rounded-[20px] transition-all duration-500 group relative ${isActive ? 'dark:bg-white/[0.04] bg-primary-500/5 text-primary-500' : 'text-slate-500 hover:dark:bg-white/[0.02] hover:bg-slate-50 hover:text-slate-900 dark:hover:text-white'}`}>
+                      {isActive && <motion.div layoutId="activeNav" className="absolute left-0 w-1.5 h-6 bg-primary-500 rounded-r-full" />}
+                      <item.icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-primary-500 scale-110 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]' : 'group-hover:scale-110 transition-transform'}`} />
+                      {isSidebarOpen && <span className={`font-black text-[11px] uppercase tracking-widest ${isActive ? 'text-primary-500' : ''}`}>{item.label}</span>}
+                      {isActive && isSidebarOpen && <FiChevronRight className="ml-auto opacity-50" size={14} />}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="p-6 space-y-4 border-t dark:border-white/5 border-slate-100 bg-slate-50/50 dark:bg-white/[0.02]">
+          {isSidebarOpen && (
+            <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-[24px]">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+              <div className="flex flex-col">
+                 <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500">Live Secure</span>
+                 <span className="text-[8px] font-bold text-emerald-600/60 dark:text-emerald-400/40 uppercase">Encrypted Session</span>
+              </div>
+            </div>
+          )}
+
+          <button 
+            onClick={() => signOut({ callbackUrl: '/admin/login' })} 
+            className="flex items-center gap-4 w-full px-5 py-4 rounded-[20px] text-slate-500 hover:bg-rose-500 hover:text-white transition-all shadow-hover-rose group"
+            aria-label="Se déconnecter"
+            title="Déconnexion"
           >
             <FiLogOut className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-            <span className={`font-bold text-sm tracking-tight ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>Déconnexion</span>
+            {isSidebarOpen && <span className="font-black text-xs uppercase tracking-widest">Sign Out</span>}
           </button>
         </div>
       </motion.aside>
 
-      {/* Main Content Area */}
-      <main 
-        className={`transition-all duration-500 min-h-screen flex flex-col pt-4 md:pt-0 ${
-          isSidebarOpen ? 'md:pl-[280px]' : 'md:pl-20'
-        }`}
-      >
-        {/* Top Navbar - Global Controls */}
-        <header className="h-20 flex items-center justify-between px-8 bg-transparent sticky top-0 z-30">
-           <div className="flex items-center gap-4">
-             {/* Command Palette Trigger UI can go here or breadcrumbs */}
-              <div className="hidden md:flex items-center gap-2 text-zinc-500 text-xs font-medium">
-                 <span>Admin</span>
-                 <span>/</span>
-                 <span className="dark:text-white capitalize">{router.pathname.split('/').pop() || 'Dashboard'}</span>
-              </div>
-           </div>
+      {/* Main Perspective */}
+      <main className={`transition-all duration-700 min-h-screen flex flex-col relative z-10 ${isSidebarOpen ? 'md:pl-[300px]' : 'md:pl-[90px]'}`}>
+        
+        {/* Superior Top Bar */}
+        <header className={`h-24 flex items-center justify-between px-10 sticky top-0 z-40 transition-all duration-500 ${scrolled ? 'dark:bg-[#09090c]/80 bg-white/80 backdrop-blur-xl border-b dark:border-white/5 border-slate-200 shadow-2xl shadow-black/5' : 'bg-transparent'}`}>
+          <div className="flex items-center gap-6">
+            <button 
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+              className="w-12 h-12 rounded-[18px] dark:bg-zinc-900/50 bg-white border dark:border-white/5 border-slate-200 flex items-center justify-center text-slate-500 hover:text-primary-500 hover:border-primary-500/30 transition-all shadow-sm"
+              aria-label={isSidebarOpen ? "Fermer le menu" : "Ouvrir le menu"}
+              title={isSidebarOpen ? "Fermer Sidebar" : "Ouvrir Sidebar"}
+            >
+              <FiMenu className="w-5 h-5" />
+            </button>
+            <div className="hidden lg:flex items-center gap-3">
+               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Architecture</span>
+               <FiChevronRight className="text-slate-300" size={12} />
+               <span className="text-xs font-black dark:text-white text-slate-900 uppercase tracking-[0.15em]">{router.pathname.split('/').pop()?.replace(/-/g, ' ') || 'HQ Dashboard'}</span>
+            </div>
+          </div>
 
-           <div className="flex items-center gap-6">
-              <button
-                onClick={toggleTheme}
-                className="w-10 h-10 rounded-xl dark:bg-zinc-900/60 bg-white border dark:border-white/5 border-zinc-200 flex items-center justify-center text-zinc-500 hover:dark:text-white hover:text-zinc-900 transition-all"
-              >
-                {theme === 'dark' ? <FiSun /> : <FiMoon />}
-              </button>
-
-              <div className="flex items-center gap-3 pl-6 border-l dark:border-white/5 border-zinc-200">
-                 <div className="text-right hidden sm:block">
-                    <p className="text-xs font-black dark:text-white uppercase tracking-tight">{session?.user?.name || 'Administrator'}</p>
-                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Digital Craftsman</p>
-                 </div>
-                 <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center font-black text-white text-xs shadow-lg shadow-indigo-600/20">
-                    {session?.user?.email?.charAt(0).toUpperCase()}
-                 </div>
+          <div className="flex items-center gap-5">
+            <div className="hidden sm:flex items-center dark:bg-zinc-900/50 bg-white border dark:border-white/5 border-slate-200 rounded-[20px] px-5 py-2.5 gap-4 group focus-within:border-primary-500/50 transition-all shadow-sm cursor-pointer" onClick={() => (window as any).dispatchKeyEvent?.(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}>
+              <FiSearch className="w-4 h-4 text-slate-400 group-hover:text-primary-500 transition-colors" />
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest w-32">Quick Command...</span>
+              <div className="flex items-center gap-1 opacity-30">
+                 <FiCommand size={10} />
+                 <span className="text-[9px] font-black">K</span>
               </div>
-           </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+               <button 
+                 onClick={toggleTheme} 
+                 className="w-11 h-11 rounded-[16px] dark:bg-zinc-900/50 bg-white border dark:border-white/5 border-slate-200 flex items-center justify-center text-slate-500 hover:text-primary-500 transition-all shadow-sm"
+                 aria-label={theme === 'dark' ? "Passer au mode clair" : "Passer au mode sombre"}
+                 title={theme === 'dark' ? "Mode Clair" : "Mode Sombre"}
+               >
+                 <AnimatePresence mode="wait">
+                    {theme === 'dark' ? <FiSun className="w-5 h-5" key="sun" /> : <FiMoon className="w-5 h-5" key="moon" />}
+                 </AnimatePresence>
+               </button>
+
+               <button 
+                 className="w-11 h-11 rounded-[16px] dark:bg-zinc-900/50 bg-white border dark:border-white/5 border-slate-200 flex items-center justify-center text-slate-500 relative hover:text-indigo-500 transition-all shadow-sm"
+                 aria-label="Voir les notifications"
+                 title="Notifications"
+               >
+                 <FiBell className="w-5 h-5" />
+                 <span className="absolute top-3 right-3 w-2 h-2 bg-rose-500 rounded-full border-2 dark:border-[#09090c] border-white" />
+               </button>
+            </div>
+
+            <div className="h-10 w-[1px] bg-slate-200 dark:bg-white/10 mx-2" />
+
+            <div className="flex items-center gap-4 group cursor-pointer p-1.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-all">
+               <div className="text-right hidden sm:flex flex-col">
+                  <span className="text-xs font-black dark:text-white text-slate-900 uppercase tracking-tight line-clamp-1">{session?.user?.name || 'Administrator'}</span>
+                  <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Main User Node</span>
+               </div>
+               <div className="w-11 h-11 rounded-[16px] bg-gradient-to-br from-indigo-500 to-primary-600 flex items-center justify-center font-black text-white shadow-xl shadow-primary-500/20 text-sm p-px group-hover:scale-105 transition-transform duration-500 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-white/10 animate-pulse" />
+                  <span className="relative z-10">{session?.user?.name?.charAt(0).toUpperCase() || 'A'}</span>
+               </div>
+            </div>
+          </div>
         </header>
 
-        {/* Page Content */}
-        <div className="flex-1 p-8 pt-4">
-           <motion.div
-             initial={{ opacity: 0, y: 10 }}
-             animate={{ opacity: 1, y: 0 }}
-             className="max-w-7xl mx-auto"
-           >
+        {/* Dynamic Content Stream */}
+        <div className="flex-1 p-10 pt-6">
+           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} className="max-w-7xl mx-auto">
              {children}
            </motion.div>
         </div>
 
-        {/* Global Footer */}
-        <footer className="p-8 border-t dark:border-white/5 border-zinc-200 flex flex-col md:flex-row items-center justify-between gap-4">
-           <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-              © 2024 Mehmet Salih K. <span className="mx-2">·</span> Command Center v2.0
-           </p>
-           <div className="flex items-center gap-4">
-              <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-500">
-                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                 API Live
-              </span>
-              <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-500">
-                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                 Ready to Deploy
-              </span>
-           </div>
+        {/* Terminal Footer */}
+        <footer className="px-10 py-10 border-t dark:border-white/5 border-slate-200 flex flex-col xl:flex-row items-center justify-between gap-8 bg-slate-50/50 dark:bg-black/[0.02]">
+          <div className="flex items-center gap-6">
+             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
+               © 2024 PORTFOLIO CORE <span className="mx-3 text-primary-500/30">/</span> MSK ADMIN V2.2
+             </p>
+             <div className="hidden md:flex items-center gap-4">
+                <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-white/5 text-[9px] font-black text-slate-500 uppercase tracking-widest border dark:border-white/5">AES-256 Enabled</span>
+                <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-white/5 text-[9px] font-black text-slate-500 uppercase tracking-widest border dark:border-white/5">TLS v1.3</span>
+             </div>
+          </div>
+          
+          <div className="flex items-center gap-8">
+             <div className="flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-500">Node Sync Active</span>
+             </div>
+             <div className="h-6 w-[1px] bg-slate-200 dark:bg-white/5" />
+             <div className="flex items-center gap-3">
+                <FiZap className="text-primary-500" size={14} />
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary-500">Turbo Optimization</span>
+             </div>
+          </div>
         </footer>
       </main>
     </div>

@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiPlus, FiX, FiEye, FiGithub, FiExternalLink, FiStar, FiEdit2, FiTrash2, FiLoader, FiFolder, FiUpload, FiMove } from 'react-icons/fi';
+import { FiPlus, FiX, FiEye, FiGithub, FiExternalLink, FiStar, FiEdit2, FiTrash2, FiLoader, FiFolder, FiUpload, FiMove, FiCheck, FiMoreVertical } from 'react-icons/fi';
 import GitHubSync from '@/components/admin/github/GitHubSync';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
@@ -67,18 +67,11 @@ export default function ProjectsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
-  
   const [isDragMode, setIsDragMode] = useState(false);
   
-  // États pour la prévisualisation en temps réel
   const [showPreview, setShowPreview] = useState(false);
   const { notifyChange, isConnected, forceSync } = usePreviewSync({ enabled: true });
 
-  // Utiliser directement les projets (plus de filtre)
-  const filteredProjects = projects;
-
-
-  /* Restored missing functions */
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -89,37 +82,33 @@ export default function ProjectsPage() {
   const fetchSkills = useCallback(async () => {
     try {
       const response = await fetch('/api/skills');
-      if (!response.ok) {
-        throw new Error('Failed to fetch skills');
+      if (response.ok) {
+        const data = await response.json();
+        setSkills(data);
       }
-      const data = await response.json();
-      setSkills(data);
     } catch (error) {
       console.error('Error fetching skills:', error);
-      toast.error('Failed to load skills');
     }
   }, []);
 
   const fetchProjects = useCallback(async () => {
     try {
       const response = await fetch('/api/projects');
-      if (!response.ok) {
-        throw new Error('Failed to fetch projects');
+      if (response.ok) {
+        const data = await response.json();
+        const sortedProjects = data.sort((a: Project, b: Project) => (a.order || 0) - (b.order || 0));
+        setProjects(sortedProjects);
       }
-      const data = await response.json();
-      // Trier les projets par ordre
-      const sortedProjects = data.sort((a: Project, b: Project) => (a.order || 0) - (b.order || 0));
-      setProjects(sortedProjects);
     } catch (error) {
       console.error('Error fetching projects:', error);
-      toast.error('Failed to load projects');
+      toast.error('Erreur lors du chargement des projets');
     }
   }, []);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/admin/login');
-    } else {
+    } else if (status === 'authenticated') {
       fetchProjects();
       fetchSkills();
     }
@@ -131,25 +120,19 @@ export default function ProjectsPage() {
   };
 
   const handleDeleteClick = async (projectId: string) => {
-    if (window.confirm('Are you sure you want to delete this project?')) {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce projet ?')) {
       setIsDeleting(projectId);
       try {
         const response = await fetch(`/api/projects/${projectId}`, {
           method: 'DELETE',
         });
-
-        if (!response.ok) {
-          throw new Error('Failed to delete project');
+        if (response.ok) {
+          setProjects(prev => prev.filter(p => p._id !== projectId));
+          toast.success('Projet supprimé');
+          notifyChange(`project_deleted_${Date.now()}`);
         }
-
-        setProjects(prev => prev.filter(p => p._id !== projectId));
-        toast.success('Project deleted successfully');
-        
-        // Notifier la prévisualisation du changement
-        notifyChange(`project_deleted_${Date.now()}`);
       } catch (error) {
-        console.error('Error deleting project:', error);
-        toast.error('Failed to delete project');
+        toast.error('Erreur lors de la suppression');
       } finally {
         setIsDeleting(null);
       }
@@ -158,45 +141,24 @@ export default function ProjectsPage() {
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-
     if (active.id !== over?.id) {
-      const oldIndex = projects.findIndex((project) => project._id === active.id);
-      const newIndex = projects.findIndex((project) => project._id === over?.id);
-
+      const oldIndex = projects.findIndex((p) => p._id === active.id);
+      const newIndex = projects.findIndex((p) => p._id === over?.id);
       const newProjects = arrayMove(projects, oldIndex, newIndex);
-      
-      // Mettre à jour l'ordre local immédiatement
-      const updatedProjects = newProjects.map((project: Project, index: number) => ({
-        ...project,
-        order: index
-      }));
-      
+      const updatedProjects = newProjects.map((p, index) => ({ ...p, order: index }));
       setProjects(updatedProjects);
-
-      // Sauvegarder l'ordre sur le serveur
       try {
         const response = await fetch('/api/projects/reorder', {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            items: updatedProjects.map((p: Project) => ({ id: p._id, order: p.order }))
-          }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: updatedProjects.map(p => ({ id: p._id, order: p.order })) }),
         });
-
-        if (!response.ok) {
-          throw new Error('Failed to update project order');
+        if (response.ok) {
+          toast.success('Ordre mis à jour');
+          notifyChange(`project_reorder_${Date.now()}`);
         }
-
-        toast.success('Ordre des projets mis à jour');
-        
-        // Notifier la prévisualisation du changement
-        notifyChange(`project_reorder_${Date.now()}`);
       } catch (error) {
-        console.error('Error updating project order:', error);
-        toast.error('Erreur lors de la mise à jour de l\'ordre');
-        // Restaurer l'ordre précédent en cas d'erreur
+        toast.error('Erreur de sauvegarde de l\'ordre');
         fetchProjects();
       }
     }
@@ -206,204 +168,106 @@ export default function ProjectsPage() {
     try {
       const response = await fetch(`/api/projects/${projectId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          showOnHomepage: !currentStatus,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ showOnHomepage: !currentStatus }),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to update project');
+      if (response.ok) {
+        await fetchProjects();
+        toast.success(`Visibilité mise à jour`);
+        notifyChange(`project_homepage_toggle_${Date.now()}`);
       }
-
-      await fetchProjects();
-      toast.success(`Projet ${!currentStatus ? 'affiché sur' : 'retiré de'} la page d'accueil`);
-      
-      // Notifier la prévisualisation du changement
-      notifyChange(`project_homepage_toggle_${Date.now()}`);
     } catch (error) {
-      console.error('Error updating project:', error);
-      toast.error('Erreur lors de la mise à jour du projet');
+      toast.error('Erreur de mise à jour');
     }
   };
 
-  // Composant pour les cartes de projet triables
   const SortableProjectCard = ({ project }: { project: Project }) => {
-    const {
-      attributes,
-      listeners,
-      setNodeRef,
-      transform,
-      transition,
-      isDragging,
-    } = useSortable({ id: project._id });
-
-    const style = {
-      transform: CSS.Transform.toString(transform),
-      transition,
-      opacity: isDragging ? 0.5 : 1,
-    };
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: project._id });
+    const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.6 : 1, zIndex: isDragging ? 50 : 'auto' };
 
     return (
       <div
         ref={setNodeRef}
         style={style}
-        className={`group relative bg-background-card border border-border-subtle rounded-2xl overflow-hidden transition-all duration-500 ${
-          !project.showOnHomepage ? 'opacity-50 grayscale' : ''
-        } ${
-          isDragging ? 'shadow-2xl shadow-indigo-500/20 scale-[1.02] border-indigo-500/50 z-50' : 'hover:border-indigo-500/30 hover:shadow-xl hover:shadow-black/40'
-        }`}
+        className={`group relative dark:bg-background-card/40 bg-white border border-slate-200 dark:border-white/5 rounded-[24px] overflow-hidden transition-all duration-500 shadow-sm hover:shadow-premium-lg ${!project.showOnHomepage ? 'opacity-70 grayscale-[0.5]' : ''}`}
       >
-        {/* Drag Handle */}
         {isDragMode && (
-          <div
-            {...attributes}
-            {...listeners}
-            className="absolute top-4 left-4 z-30 p-2.5 rounded-xl bg-black/60 backdrop-blur-md cursor-grab active:cursor-grabbing hover:bg-indigo-600 text-white border border-white/10 transition-all duration-300 shadow-lg"
-          >
+          <div {...attributes} {...listeners} className="absolute top-4 left-4 z-40 p-3 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-white/10 cursor-grab active:cursor-grabbing text-white shadow-xl">
             <FiMove className="w-4 h-4" />
           </div>
         )}
 
-        {/* Image Container avec overlay */}
-        <div className="relative aspect-[16/10] overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
-          <div className="relative w-full h-full">
-            <Image
-              src={project.imageUrl}
-              alt={project.title}
-              fill
-              className="object-cover transform group-hover:scale-105 transition-transform duration-1000"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-          </div>
+        {/* Thumbnail */}
+        <div className="relative aspect-[16/11] overflow-hidden">
+          <Image src={project.imageUrl} alt={project.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 100vw, 33vw" />
+          <div className="absolute inset-0 bg-slate-950/20 group-hover:bg-slate-950/10 transition-colors" />
           
-          {/* Boutons d'action flottants */}
-          {!isDragMode && (
-            <div className="absolute top-4 right-4 flex gap-2 z-20 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleToggleHomepage(project._id, project.showOnHomepage);
-                }}
-                disabled={isDeleting === project._id}
-                className={`p-2.5 rounded-xl backdrop-blur-md border transition-all duration-300 disabled:opacity-50 ${
-                  project.showOnHomepage 
-                    ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/40'
-                    : 'bg-zinc-900/60 border-white/10 text-zinc-400 hover:bg-zinc-800'
-                }`}
-                title={project.showOnHomepage ? 'Retirer de la page d\'accueil' : 'Afficher sur la page d\'accueil'}
-              >
-                <FiEye className="w-4 h-4" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleEditClick(project);
-                }}
-                disabled={isDeleting === project._id}
-                className="p-2.5 rounded-xl bg-zinc-900/60 backdrop-blur-md border border-white/10 text-white hover:bg-indigo-600 hover:border-indigo-400 transition-all duration-300 disabled:opacity-50"
-              >
-                <FiEdit2 className="w-4 h-4" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleDeleteClick(project._id);
-                }}
-                disabled={isDeleting === project._id}
-                className="p-2.5 rounded-xl bg-rose-500/20 backdrop-blur-md border border-rose-500/30 text-rose-400 hover:bg-rose-500/40 transition-all duration-300 disabled:opacity-50"
-              >
-                {isDeleting === project._id ? (
-                  <FiLoader className="w-4 h-4 animate-spin" />
-                ) : (
-                  <FiTrash2 className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-          )}
+          <div className="absolute top-4 right-4 flex gap-2 z-30 translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+            <button onClick={() => handleEditClick(project)} className="p-2.5 rounded-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl dark:text-white text-slate-900 border dark:border-white/5 border-slate-200 hover:bg-primary-500 hover:text-white transition-all shadow-lg">
+              <FiEdit2 className="w-4 h-4" />
+            </button>
+            <button onClick={() => handleDeleteClick(project._id)} className="p-2.5 rounded-xl bg-rose-500/10 dark:bg-rose-500/20 backdrop-blur-xl text-rose-500 border border-rose-500/20 hover:bg-rose-500 hover:text-white transition-all shadow-lg">
+              {isDeleting === project._id ? <FiLoader className="w-4 h-4 animate-spin" /> : <FiTrash2 className="w-4 h-4" />}
+            </button>
+          </div>
 
-          {/* Featured Badge */}
-          <div className="absolute bottom-4 left-4 z-20 flex gap-2">
+          <div className="absolute bottom-4 left-4 flex gap-2">
             {project.featured && (
-              <div className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 backdrop-blur-md text-amber-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-lg">
-                <FiStar className="w-3 h-3 fill-amber-300" />
-                Featured
-              </div>
+              <span className="px-3 py-1 rounded-full bg-amber-400 text-slate-900 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-lg">
+                <FiStar className="w-3 h-3 fill-slate-900" /> Vedette
+              </span>
             )}
             {!project.showOnHomepage && (
-              <div className="px-3 py-1 rounded-full bg-zinc-900/60 border border-white/10 backdrop-blur-md text-zinc-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <span className="px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider border border-white/10 shadow-lg">
                 Masqué
-              </div>
+              </span>
             )}
           </div>
         </div>
 
-        {/* Contenu */}
-        <div className="p-6">
-          <h3 className="text-lg font-black text-white mb-2 line-clamp-1 group-hover:text-indigo-400 transition-colors duration-300 tracking-tight">
-            {project.title}
-          </h3>
-          <p className="text-zinc-500 text-sm mb-6 line-clamp-2 leading-relaxed font-medium">
-            {project.description}
-          </p>
+        {/* Content */}
+        <div className="p-7 space-y-5">
+          <div className="space-y-1.5">
+            <h3 className="text-xl font-extrabold tracking-tight dark:text-white text-slate-900 group-hover:text-primary-500 transition-colors truncate">
+              {project.title}
+            </h3>
+            <p className="text-slate-500 text-sm font-medium line-clamp-2 leading-relaxed">
+              {project.description}
+            </p>
+          </div>
 
-          {/* Technologies */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {project.technologies.slice(0, 4).map((tech, index) => (
-              <span
-                key={index}
-                className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg bg-white/5 border border-white/10 text-zinc-400"
-              >
+          <div className="flex flex-wrap gap-2">
+            {project.technologies.slice(0, 3).map((tech, index) => (
+              <span key={index} className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400">
                 {tech}
               </span>
             ))}
-            {project.technologies.length > 4 && (
-              <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg bg-white/5 border border-white/10 text-zinc-500">
-                +{project.technologies.length - 4}
+            {project.technologies.length > 3 && (
+              <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400">
+                +{project.technologies.length - 3}
               </span>
             )}
           </div>
 
-          {/* Liens & Footer */}
-          <div className="flex items-center justify-between pt-5 border-t border-border-subtle">
-            <div className="flex gap-1.5">
-               {project.tags && project.tags.slice(0, 2).map((tag, index) => (
-                  <span key={index} className="text-[10px] font-bold text-indigo-500/70">
-                    #{tag}
-                  </span>
-               ))}
-            </div>
-            
-            <div className="flex gap-2">
-              {project.demoUrl && (
-                <a
-                  href={project.demoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all duration-300"
-                  title="Voir le site"
+          <div className="pt-5 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+             <div className="flex -space-x-1">
+                {project.tags?.slice(0, 3).map((tag, i) => (
+                  <span key={i} className="text-[10px] font-bold text-primary-500 bg-primary-500/5 px-2 py-0.5 rounded-full border border-primary-500/10">#{tag}</span>
+                ))}
+             </div>
+             <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => handleToggleHomepage(project._id, project.showOnHomepage)}
+                  className={`text-slate-400 hover:text-primary-500 transition-colors transition-all ${project.showOnHomepage ? 'text-primary-500' : ''}`}
                 >
-                  <FiExternalLink className="w-4 h-4" />
-                </a>
-              )}
-              {project.githubUrl && (
-                <a
-                  href={project.githubUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all duration-300"
-                  title="Voir le code"
-                >
-                  <FiGithub className="w-4 h-4" />
-                </a>
-              )}
-            </div>
+                  <FiEye className="w-4 h-4" />
+                </button>
+                {project.demoUrl && (
+                  <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-primary-500 transition-all">
+                    <FiExternalLink className="w-4 h-4" />
+                  </a>
+                )}
+             </div>
           </div>
         </div>
       </div>
@@ -412,104 +276,68 @@ export default function ProjectsPage() {
 
   return (
     <AdminLayout>
-      <div className="space-y-10">
-        {/* Header Section */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex flex-col md:flex-row md:items-end justify-between gap-4"
-        >
-          <div>
-            <div className="flex items-center gap-2 text-primary font-bold text-[10px] uppercase tracking-[0.2em] mb-2">
-              <span className="w-8 h-[1px] bg-primary"></span>
-              Management
+      <div className="space-y-12 pb-20">
+        {/* Superior Header */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+               <div className="w-10 h-10 rounded-2xl bg-primary-500/10 flex items-center justify-center text-primary-500 border border-primary-500/20">
+                  <FiFolder className="w-5 h-5" />
+               </div>
+               <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-500">Réalisations</span>
             </div>
-            <h1 className="text-4xl font-black text-white tracking-tight flex items-center gap-4">
-              Projets
-              <span className="text-zinc-700 text-lg font-medium tabular-nums bg-white/5 px-3 py-1 rounded-full border border-white/10">
-                {projects.length}
-              </span>
+            <h1 className="text-4xl font-extrabold tracking-tight dark:text-white text-slate-900 flex items-center gap-4">
+               Projets
+               <span className="text-sm font-bold bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-3 py-1 rounded-full text-slate-500">
+                  {projects.length}
+               </span>
             </h1>
-            <p className="text-zinc-500 mt-2 font-medium">
-              Gérez vos réalisations, synchronisez avec GitHub et organisez votre portfolio.
-            </p>
+            <p className="text-slate-500 font-medium max-w-lg">Gérez vos réalisations, synchronisez avec GitHub et organisez la présentation de votre portfolio.</p>
           </div>
-          
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => setIsDragMode(!isDragMode)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 font-bold text-xs uppercase tracking-wider border ${
-                isDragMode
-                  ? 'bg-emerald-500 border-emerald-400 text-white shadow-lg shadow-emerald-500/20'
-                  : 'bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              <FiMove className="w-4 h-4" />
-              {isDragMode ? 'Terminer' : 'Réorganiser'}
-            </button>
-            <button
-              onClick={() => setShowPreview(!showPreview)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 font-bold text-xs uppercase tracking-wider border ${
-                showPreview
-                  ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/20'
-                  : 'bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              <FiEye className="w-4 h-4" />
-              {showPreview ? 'Masquer' : 'Prévisualiser'}
-              {isConnected && (
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              )}
-            </button>
-            <button
-              onClick={() => {
-                setEditingProject(null);
-                setIsModalOpen(true);
-              }}
-              className="flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all duration-300 shadow-lg shadow-indigo-500/20 font-bold text-xs uppercase tracking-wider active:scale-95 border border-indigo-500"
-            >
-              <FiPlus className="w-4 h-4" /> Ajouter
-            </button>
-          </div>
-        </motion.div>
 
-        {/* GitHub Synchronization */}
-        <div className="mb-8">
-          <GitHubSync />
+          <div className="flex flex-wrap gap-3">
+             <button
+                onClick={() => setIsDragMode(!isDragMode)}
+                className={`flex items-center gap-2.5 px-5 py-2.5 rounded-2xl font-bold text-xs uppercase tracking-wider border transition-all ${isDragMode ? 'bg-emerald-500 border-emerald-400 text-white shadow-lg shadow-emerald-500/20' : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-500 hover:border-primary-500/30 hover:text-primary-500 shadow-sm'}`}
+             >
+                <FiMove className="w-4 h-4" /> {isDragMode ? 'Enregistrer' : 'Réordonner'}
+             </button>
+             <button
+                onClick={() => setShowPreview(!showPreview)}
+                className={`flex items-center gap-2.5 px-5 py-2.5 rounded-2xl font-bold text-xs uppercase tracking-wider border transition-all ${showPreview ? 'bg-primary-500 border-primary-400 text-white shadow-lg shadow-primary-500/20' : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-500 hover:border-primary-500/30 hover:text-primary-500 shadow-sm'}`}
+             >
+                <FiEye className="w-4 h-4" /> {showPreview ? 'Masquer Aperçu' : 'Aperçu Direct'}
+             </button>
+             <button
+                onClick={() => { setEditingProject(null); setIsModalOpen(true); }}
+                className="flex items-center gap-2.5 px-6 py-2.5 bg-primary-500 text-white rounded-2xl font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary-500/25 border border-primary-400 hover:bg-primary-600 transition-all active:scale-95"
+             >
+                <FiPlus className="w-5 h-5" /> Ajouter un projet
+             </button>
+          </div>
         </div>
 
-        {/* Filters Removed */}
+        {/* GitHub Integration Area */}
+        <div className="p-1.5 rounded-[32px] bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5">
+           <GitHubSync />
+        </div>
 
-        {isDragMode ? (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext items={filteredProjects.map(p => p._id)} strategy={verticalListSortingStrategy}>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProjects.map((project) => (
-                  <SortableProjectCard key={project._id} project={project} />
+        {/* Projects Grid */}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={projects.map(p => p._id)} strategy={verticalListSortingStrategy}>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {projects.map((project) => (
+                   <SortableProjectCard key={project._id} project={project} />
                 ))}
-              </div>
-            </SortableContext>
-          </DndContext>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((project) => (
-              <SortableProjectCard key={project._id} project={project} />
-            ))}
-          </div>
-        )}
+             </div>
+          </SortableContext>
+        </DndContext>
 
-        {/* Modal d'ajout/modification de projet */}
+        {/* Form Modal */}
         <ProjectForm
           isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-            setEditingProject(null);
-          }}
-          title={editingProject ? 'Edit Project' : 'Add New Project'}
+          onClose={() => { setIsModalOpen(false); setEditingProject(null); }}
+          title={editingProject ? 'Modifier le projet' : 'Nouveau Projet'}
           initialData={editingProject ? {
             title: editingProject.title,
             description: editingProject.description,
@@ -521,54 +349,29 @@ export default function ProjectsPage() {
           } : undefined}
           onSubmit={async (data) => {
             try {
-              const url = editingProject 
-                ? `/api/projects/${editingProject._id}`
-                : '/api/projects';
-              
+              const url = editingProject ? `/api/projects/${editingProject._id}` : '/api/projects';
               const method = editingProject ? 'PUT' : 'POST';
-
-              // Map 'image' back to 'imageUrl' for the API
-              const apiData = {
-                ...data,
-                imageUrl: data.image, 
-                // remove 'image' if API doesn't want it, though extra fields usually ignored
-              };
-
+              const apiData = { ...data, imageUrl: data.image };
               const response = await fetch(url, {
                 method,
-                headers: {
-                  'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(apiData),
               });
-
-              if (!response.ok) {
-                throw new Error(`Failed to ${editingProject ? 'update' : 'create'} project`);
+              if (response.ok) {
+                await fetchProjects();
+                setIsModalOpen(false);
+                setEditingProject(null);
+                toast.success(`Projet ${editingProject ? 'mis à jour' : 'créé'}`);
+                notifyChange(`project_${editingProject ? 'updated' : 'created'}_${Date.now()}`);
               }
-
-              await fetchProjects();
-              setIsModalOpen(false);
-              setEditingProject(null);
-              toast.success(`Project ${editingProject ? 'updated' : 'created'} successfully`);
-              
-              // Notifier la prévisualisation du changement
-              notifyChange(`project_${editingProject ? 'updated' : 'created'}_${Date.now()}`);
             } catch (error) {
-              console.error('Error submitting project:', error);
-              toast.error(`Failed to ${editingProject ? 'update' : 'create'} project`);
+              toast.error('Erreur lors de la sauvegarde');
             }
           }}
         />
+
+        <LivePreview isVisible={showPreview} onToggle={() => setShowPreview(!showPreview)} previewUrl={getPreviewUrl()} autoRefresh={isConnected} refreshInterval={2000} />
       </div>
-      
-      {/* Composant de prévisualisation en temps réel */}
-      <LivePreview
-        isVisible={showPreview}
-        onToggle={() => setShowPreview(!showPreview)}
-        previewUrl={getPreviewUrl()}
-        autoRefresh={isConnected}
-        refreshInterval={2000}
-      />
     </AdminLayout>
   );
 }

@@ -9,6 +9,8 @@ import Navbar from '@/components/layout/Navbar';
 import AutoSync from '@/components/admin/AutoSync';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 
+import CustomCursor from '@/components/ui/CustomCursor';
+
 function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const router = useRouter();
 
@@ -21,6 +23,7 @@ function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
     <SessionProvider session={session}>
       <ThemeProvider>
+        {!isAdminPage && <CustomCursor />}
         <AutoSync />
         <div className="min-h-screen">
           {!isAdminPage && !isMaintenancePage && <Navbar />}

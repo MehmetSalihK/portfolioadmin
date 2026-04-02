@@ -17,7 +17,7 @@ import {
 import { HiArrowDown } from 'react-icons/hi';
 import {
   FiExternalLink, FiGithub, FiX, FiDownload,
-  FiCode, FiSettings, FiStar, FiSend
+  FiCode, FiSettings, FiStar, FiSend, FiChevronRight
 } from 'react-icons/fi';
 import parse from 'html-react-parser';
 import DOMPurify from 'isomorphic-dompurify';
@@ -26,6 +26,7 @@ import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import Link from 'next/link';
 import SkillsSection from '@/components/home/SkillsSection';
+import JSONLD, { schemas } from '@/components/layout/JSONLD';
 
 // ─── Interfaces ────────────────────────────────────────────────────────────────
 interface Project {
@@ -143,8 +144,12 @@ export default function Home({
 
 
 
+
+
+
   return (
     <Layout>
+      <JSONLD type="Person" data={schemas.me} />
       <Head>
         <title>{seoData?.title || homeData.title || 'Portfolio - Accueil'}</title>
         <meta name="description" content={seoData?.description || 'Portfolio professionnel - Développeur Full Stack'} />
@@ -177,321 +182,164 @@ export default function Home({
       {/* Scroll progress bar */}
       <motion.div className="fixed top-0 left-0 right-0 h-0.5 bg-indigo-500 origin-left z-50" style={{ scaleX: scrollYProgress }} />
 
+
       {/* ═══════════════════════════════════════
           HERO SECTION
       ═══════════════════════════════════════ */}
-      <section className="relative min-h-screen flex items-center overflow-hidden dark:bg-[#09090f] bg-white pt-24 pb-16">
-        {/* Ambient blobs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] dark:bg-indigo-600/10 bg-indigo-100/60 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] dark:bg-violet-600/8 bg-violet-100/40 rounded-full blur-3xl" />
-          <div className="absolute inset-0 dark:bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.04)_0%,transparent_70%)]" />
+      <section className="relative min-h-[92vh] flex items-center dark:bg-[#0a0a0f] bg-[#fafafc] pt-14">
+        {/* Subtle radial glow — lightweight */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] dark:bg-indigo-600/6 bg-indigo-100/40 rounded-full blur-[100px]" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 w-full relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="max-w-[1100px] mx-auto px-6 w-full relative z-10">
+          <div className="max-w-[680px] mx-auto text-center">
 
-            {/* ── Left: Identity ── */}
-            <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: 'easeOut' }}>
-              {/* Disponibility Badge - Refined */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-3 px-4 py-2 dark:bg-indigo-500/10 bg-indigo-50 dark:border-indigo-500/20 border-indigo-200 border rounded-2xl mb-10"
-              >
-                <div className="relative flex h-2 w-2">
-                  <div className="absolute inset-0 rounded-full bg-indigo-500 animate-ping opacity-75" />
-                  <div className="relative rounded-full h-2 w-2 bg-indigo-500" />
-                </div>
-                <span className="text-[10px] font-black dark:text-indigo-400 text-indigo-600 uppercase tracking-[0.2em]">
-                  Artisan Digital disponible pour votre vision
-                </span>
-              </motion.div>
-              
-              {/* Name & Title */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.7 }}
-                className="mb-8"
-              >
-                <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black dark:text-white text-zinc-900 leading-[0.9] tracking-tight mb-2">
-                  {homeData.title.split(' ').map((word, i) => (
-                    <span key={i} className={i === homeData.title.split(' ').length - 1 ? "text-indigo-600 dark:text-indigo-500" : ""}>
-                      {word}{' '}
-                    </span>
-                  ))}
-                </h1>
-              </motion.div>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.7 }}
-                className="text-xl dark:text-zinc-500 text-zinc-600 mb-12 max-w-lg leading-relaxed font-medium"
-              >
-                {homeData.subtitle}
-              </motion.p>
-
-              {/* Action Buttons - Redesigned for Premium Hub */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="flex flex-wrap items-center gap-4 mb-12"
-              >
-                <Link
-                  href="/projects"
-                  className="h-14 px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-indigo-600/20 transition-all active:scale-95 flex items-center justify-center gap-2"
-                >
-                  <FiCode className="w-4 h-4" />
-                  Explorer mes Projets
-                </Link>
-                
-                <button
-                  onClick={() => setIsCVModalOpen(true)}
-                  className="h-14 px-8 dark:bg-white/5 bg-zinc-50 dark:hover:bg-white/10 hover:bg-zinc-100 dark:text-white text-zinc-900 dark:border-white/5 border-zinc-200 border rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2"
-                >
-                  <FiDownload className="w-4 h-4" />
-                  Profil CV
-                </button>
-
-                <div className="w-px h-8 dark:bg-white/10 bg-zinc-200 mx-2 hidden sm:block" />
-
-                <Link 
-                  href="/about"
-                  className="text-[11px] font-black uppercase tracking-widest text-indigo-500 hover:text-indigo-400 p-2 transition-all"
-                >
-                  En savoir plus
-                </Link>
-              </motion.div>
-
-              {/* Social Links */}
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="flex gap-3">
-                {homeData.socialLinks.github && (
-                  <motion.a href={homeData.socialLinks.github} target="_blank" rel="noopener noreferrer"
-                    whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }} title="GitHub"
-                    className="p-2.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:border-white/10 border-zinc-200 border rounded-xl dark:text-zinc-400 text-zinc-600 dark:hover:text-white hover:text-zinc-900 transition-all"
-                  ><FaGithub className="w-5 h-5" /></motion.a>
-                )}
-                {homeData.socialLinks.linkedin && (
-                  <motion.a href={homeData.socialLinks.linkedin} target="_blank" rel="noopener noreferrer"
-                    whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }} title="LinkedIn"
-                    className="p-2.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:border-white/10 border-zinc-200 border rounded-xl dark:text-zinc-400 text-zinc-600 dark:hover:text-white hover:text-zinc-900 transition-all"
-                  ><FaLinkedin className="w-5 h-5" /></motion.a>
-                )}
-                {homeData.socialLinks.twitter && (
-                  <motion.a href={homeData.socialLinks.twitter} target="_blank" rel="noopener noreferrer"
-                    whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }} title="Twitter / X"
-                    className="p-2.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:border-white/10 border-zinc-200 border rounded-xl dark:text-zinc-400 text-zinc-600 dark:hover:text-white hover:text-zinc-900 transition-all"
-                  ><FaTwitter className="w-5 h-5" /></motion.a>
-                )}
-                {homeData.socialLinks.whatsapp && (
-                  <motion.a href={homeData.socialLinks.whatsapp} target="_blank" rel="noopener noreferrer"
-                    whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }} title="WhatsApp"
-                    className="p-2.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:border-white/10 border-zinc-200 border rounded-xl dark:text-zinc-400 text-zinc-600 dark:hover:text-white hover:text-zinc-900 transition-all"
-                  ><FaWhatsapp className="w-5 h-5" /></motion.a>
-                )}
-                {homeData.socialLinks.telegram && (
-                  <motion.a href={homeData.socialLinks.telegram} target="_blank" rel="noopener noreferrer"
-                    whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }} title="Telegram"
-                    className="p-2.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:border-white/10 border-zinc-200 border rounded-xl dark:text-zinc-400 text-zinc-600 dark:hover:text-white hover:text-zinc-900 transition-all"
-                  ><FaTelegram className="w-5 h-5" /></motion.a>
-                )}
-              </motion.div>
+            {/* Status badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 dark:bg-white/[0.04] bg-zinc-100 dark:border-white/[0.07] border-zinc-200 border rounded-full mb-10"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span className="text-[12px] font-medium dark:text-zinc-400 text-zinc-500">
+                Disponible pour de nouveaux projets
+              </span>
             </motion.div>
 
-            {/* ── Right: Abstract Visual ── */}
-            <motion.div
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
-              className="hidden lg:block"
+            {/* H1 */}
+            <motion.h1
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.4, ease: [0.2, 0, 0, 1] }}
+              className="text-5xl sm:text-6xl lg:text-7xl font-extrabold dark:text-white text-zinc-900 leading-[1.05] tracking-tight mb-6 text-balance"
             >
-              <div className="relative">
-                <div className="w-full aspect-square max-w-[420px] mx-auto">
-                  <div className="absolute inset-0 dark:bg-[radial-gradient(circle_at_30%_30%,rgba(99,102,241,0.15),transparent_50%)]" />
-                  <div className="absolute inset-0 dark:bg-[radial-gradient(circle_at_70%_70%,rgba(167,139,250,0.1),transparent_50%)]" />
-                  
-                  {/* Central glow */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 dark:bg-indigo-500/20 bg-indigo-100 rounded-full blur-3xl" />
-                  
-                  {/* Floating tech rings */}
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 30, ease: 'linear' }}
-                    className="absolute inset-8"
-                  >
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-16 dark:bg-zinc-900/80 bg-white rounded-2xl border dark:border-white/10 border-zinc-200 shadow-xl flex items-center justify-center">
-                      <span className="text-xl font-black dark:text-indigo-400 text-indigo-600">N</span>
-                    </div>
-                  </motion.div>
-                  
-                  <motion.div
-                    animate={{ rotate: -360 }}
-                    transition={{ repeat: Infinity, duration: 25, ease: 'linear' }}
-                    className="absolute inset-12"
-                  >
-                    <div className="absolute top-0 right-8 w-14 h-14 dark:bg-zinc-900/80 bg-white rounded-2xl border dark:border-white/10 border-zinc-200 shadow-xl flex items-center justify-center">
-                      <span className="text-lg font-black dark:text-emerald-400 text-emerald-600">R</span>
-                    </div>
-                  </motion.div>
-                  
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 20, ease: 'linear' }}
-                    className="absolute inset-16"
-                  >
-                    <div className="absolute bottom-8 left-4 w-14 h-14 dark:bg-zinc-900/80 bg-white rounded-2xl border dark:border-white/10 border-zinc-200 shadow-xl flex items-center justify-center">
-                      <span className="text-lg font-black dark:text-violet-400 text-violet-600">T</span>
-                    </div>
-                  </motion.div>
-                  
-                  <motion.div
-                    animate={{ rotate: -360 }}
-                    transition={{ repeat: Infinity, duration: 35, ease: 'linear' }}
-                    className="absolute inset-20"
-                  >
-                    <div className="absolute bottom-0 right-1/2 translate-x-1/2 w-12 h-12 dark:bg-zinc-900/80 bg-white rounded-2xl border dark:border-white/10 border-zinc-200 shadow-xl flex items-center justify-center">
-                      <span className="text-sm font-black dark:text-amber-400 text-amber-600">M</span>
-                    </div>
-                  </motion.div>
-                  
-                  {/* Center dot */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <div className="w-20 h-20 dark:bg-zinc-900/90 bg-white rounded-2xl border dark:border-white/10 border-zinc-200 shadow-2xl flex items-center justify-center">
-                      <div className="w-3 h-3 bg-indigo-500 rounded-full">
-                        <div className="w-3 h-3 bg-indigo-500 rounded-full animate-ping absolute" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
+              Codeur par&nbsp;<span className="text-indigo-500 italic">métier</span>,{' '}<br className="hidden sm:block" />
+              créatif par&nbsp;<span className="text-indigo-500 italic">nature</span>.
+            </motion.h1>
 
-        {/* Scroll cue */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.4 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-        >
-          <motion.button
-            onClick={scrollToContent}
-            animate={{ y: [0, 6, 0] }}
-            transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-            className="p-2.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:border-white/10 border-zinc-200 border rounded-xl dark:text-zinc-500 text-zinc-400 dark:hover:text-white hover:text-zinc-900 transition-all"
-          >
-            <HiArrowDown className="w-5 h-5" />
-          </motion.button>
-        </motion.div>
-      </section>
-
-      {/* ═══════════════════════════════════════
-          ABOUT BRIEF SECTION
-      ═══════════════════════════════════════ */}
-      <section className="py-20 dark:bg-[#09090f] bg-white relative overflow-hidden">
-        <div className="absolute inset-0 dark:bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.03)_0%,transparent_70%)]" />
-        <div className="max-w-6xl mx-auto px-6 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            {/* Left: About text */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.18, duration: 0.4, ease: [0.2, 0, 0, 1] }}
+              className="text-lg dark:text-zinc-500 text-zinc-500 mb-10 max-w-[520px] mx-auto leading-[1.75] font-normal"
             >
-              <div className="flex items-center gap-2 text-indigo-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-4">
-                <span className="w-8 h-[1px] bg-indigo-500" />
-                À propos
-              </div>
-              <h2 className="text-3xl lg:text-4xl font-black dark:text-white text-zinc-900 tracking-tight mb-6">
-                Développeur passionné par la création d&apos;expériences numériques
-              </h2>
-              <div className="space-y-4 dark:text-zinc-400 text-zinc-600 leading-relaxed">
-                <p>
-                  Fort de plus de 3 ans d&apos;expérience en développement web, je me spécialise dans la création 
-                  d&apos;applications modernes et performantes avec les technologies les plus récentes.
-                </p>
-                <p>
-                  Mon approche combine expertise technique et sens de l&apos;utilisateur pourDeliver 
-                  des solutions qui répondent aux besoins réels des entreprises.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-3 mt-8">
-                <Link
-                  href="/about"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:text-white text-zinc-900 dark:border-white/10 border-zinc-300 border rounded-xl text-xs font-bold transition-all"
-                >
-                  En savoir plus
-                </Link>
-                <Link
-                  href="/experience"
-                  className="inline-flex items-center gap-2 text-indigo-500 hover:text-indigo-400 font-bold text-sm transition-colors"
-                >
-                  Voir mon parcours →
-                </Link>
-              </div>
+              De l&apos;architecture logicielle au prototypage hardware — je conçois des produits numériques complets où la technique rencontre l&apos;esthétique.
+            </motion.p>
+
+            {/* CTAs */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25, duration: 0.35 }}
+              className="flex flex-wrap items-center justify-center gap-3 mb-14"
+            >
+              <Link
+                href="/projects"
+                className="h-11 px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors duration-150 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
+              >
+                Voir mes projets
+              </Link>
+              <button
+                onClick={() => setIsCVModalOpen(true)}
+                className="h-11 px-6 dark:bg-white/[0.04] bg-white dark:hover:bg-white/[0.08] hover:bg-zinc-50 dark:text-zinc-200 text-zinc-700 dark:border-white/[0.08] border-zinc-200 border rounded-lg text-sm font-semibold transition-all duration-150 flex items-center justify-center gap-2"
+              >
+                <FiDownload className="w-4 h-4" />
+                Télécharger le CV
+              </button>
             </motion.div>
 
-            {/* Right: Quick stats cards */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-              className="grid grid-cols-2 gap-4"
-            >
-              {[
-                { number: '50+', label: 'Projets livrés', desc: 'Applications web & mobiles' },
-                { number: '3+', label: "Années d'expérience", desc: 'En développement full-stack' },
-                { number: '15+', label: 'Technologies', desc: 'Stack moderne' },
-                { number: '100%', label: 'Engagement', desc: 'Satisfaction client' },
-              ].map((stat, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
-                  className="dark:bg-zinc-900/60 bg-white backdrop-blur-sm rounded-2xl p-5 dark:border-white/5 border-zinc-200 border"
-                >
-                  <div className={`text-3xl font-black mb-1 ${i === 0 ? 'text-indigo-500' : i === 1 ? 'text-violet-500' : i === 2 ? 'text-emerald-500' : 'text-amber-500'}`}>
-                    {stat.number}
-                  </div>
-                  <div className="text-sm font-bold dark:text-white text-zinc-900 mb-1">{stat.label}</div>
-                  <div className="text-xs dark:text-zinc-500 text-zinc-500">{stat.desc}</div>
-                </motion.div>
-              ))}
+            {/* Social links */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex items-center justify-center gap-2">
+              {homeData.socialLinks.github && (
+                <a href={homeData.socialLinks.github} target="_blank" rel="noopener noreferrer" title="GitHub"
+                  className="p-2 dark:text-zinc-600 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600 transition-colors duration-150"
+                ><FaGithub className="w-5 h-5" /></a>
+              )}
+              {homeData.socialLinks.linkedin && (
+                <a href={homeData.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" title="LinkedIn"
+                  className="p-2 dark:text-zinc-600 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600 transition-colors duration-150"
+                ><FaLinkedin className="w-5 h-5" /></a>
+              )}
+              {homeData.socialLinks.twitter && (
+                <a href={homeData.socialLinks.twitter} target="_blank" rel="noopener noreferrer" title="Twitter"
+                  className="p-2 dark:text-zinc-600 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600 transition-colors duration-150"
+                ><FaTwitter className="w-5 h-5" /></a>
+              )}
+              {homeData.socialLinks.whatsapp && (
+                <a href={homeData.socialLinks.whatsapp} target="_blank" rel="noopener noreferrer" title="WhatsApp"
+                  className="p-2 dark:text-zinc-600 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600 transition-colors duration-150"
+                ><FaWhatsapp className="w-5 h-5" /></a>
+              )}
+              {homeData.socialLinks.telegram && (
+                <a href={homeData.socialLinks.telegram} target="_blank" rel="noopener noreferrer" title="Telegram"
+                  className="p-2 dark:text-zinc-600 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600 transition-colors duration-150"
+                ><FaTelegram className="w-5 h-5" /></a>
+              )}
             </motion.div>
           </div>
         </div>
       </section>
 
+
       {/* ═══════════════════════════════════════
-          STATS BAR
+          3 UNIVERS — Hub identitaire
       ═══════════════════════════════════════ */}
-      <section className="dark:bg-zinc-900/40 bg-zinc-50 dark:border-white/5 border-zinc-200 border-y py-14">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:divide-x dark:divide-white/5 divide-zinc-200">
+      <section className="py-20 dark:bg-[#0a0a0f] bg-[#fafafc] border-t dark:border-white/[0.05] border-zinc-100">
+        <div className="max-w-[1100px] mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              { number: '50+', label: 'Projets réalisés', accent: 'text-indigo-500' },
-              { number: '3+', label: "Années d'expérience", accent: 'text-violet-500' },
-              { number: '15+', label: 'Technologies maîtrisées', accent: 'text-emerald-500' },
-            ].map((stat, i) => (
+              {
+                href: '/developpeur',
+                label: 'Développeur',
+                title: "L'Architecte",
+                desc: 'Stack MERN, Next.js, systèmes complets et automatisation serveur.',
+                accent: 'indigo',
+                border: 'hover:border-indigo-500/30'
+              },
+              {
+                href: '/designer',
+                label: 'Créatif',
+                title: "L'Artiste",
+                desc: 'Vidéo, montage, color grading, direction artistique et création de contenu.',
+                accent: 'rose',
+                border: 'hover:border-rose-500/30'
+              },
+              {
+                href: '/maker',
+                label: 'Maker',
+                title: 'Le Builder',
+                desc: 'Diagnostic hardware, réparation smartphones, assemblage PC et IoT.',
+                accent: 'amber',
+                border: 'hover:border-amber-500/30'
+              },
+            ].map((item, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="text-center sm:px-8"
+                transition={{ delay: i * 0.08, duration: 0.35, ease: [0.2, 0, 0, 1] }}
               >
-                <div className={`text-5xl font-black mb-2 ${stat.accent}`}>{stat.number}</div>
-                <div className="text-xs dark:text-zinc-500 text-zinc-500 font-bold uppercase tracking-widest">{stat.label}</div>
+                <Link
+                  href={item.href}
+                  className={`group block p-6 rounded-2xl dark:bg-white/[0.02] bg-white border dark:border-white/[0.06] border-zinc-200 ${item.border} transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-black/40`}
+                >
+                  <div className={`text-[11px] font-semibold uppercase tracking-widest mb-3 ${
+                    item.accent === 'indigo' ? 'text-indigo-500' :
+                    item.accent === 'rose' ? 'text-rose-500' : 'text-amber-500'
+                  }`}>{item.label}</div>
+                  <h3 className="text-lg font-bold dark:text-white text-zinc-900 mb-2 tracking-tight">{item.title}</h3>
+                  <p className="text-sm dark:text-zinc-500 text-zinc-500 leading-relaxed mb-4">{item.desc}</p>
+                  <span className={`text-[12px] font-semibold flex items-center gap-1.5 group-hover:gap-2.5 transition-all duration-150 ${
+                    item.accent === 'indigo' ? 'text-indigo-500' :
+                    item.accent === 'rose' ? 'text-rose-500' : 'text-amber-500'
+                  }`}>
+                    Découvrir <FiChevronRight className="w-3.5 h-3.5" />
+                  </span>
+                </Link>
               </motion.div>
             ))}
           </div>

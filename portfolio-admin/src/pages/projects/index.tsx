@@ -71,30 +71,24 @@ export default function Projects({ projects }: ProjectsPageProps) {
         <meta name="description" content="Découvrez mes réalisations et projets en développement web." />
       </Head>
 
-      <main className="relative min-h-screen dark:bg-[#09090f] bg-white pt-40 pb-32 overflow-hidden">
-        {/* Ambient Background Effects */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] dark:bg-indigo-600/5 bg-indigo-50/40 rounded-full blur-[120px] opacity-70" />
-          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] dark:bg-violet-600/5 bg-violet-50/30 rounded-full blur-[120px] opacity-70" />
-        </div>
+      <main className="min-h-screen dark:bg-[#0a0a0f] bg-[#fafafc] pt-14">
+        <div className="max-w-[1100px] mx-auto px-6 pt-20 pb-24">
 
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          {/* Header Section */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            className="mb-20 text-center"
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: [0.2, 0, 0, 1] }}
+            className="mb-16"
           >
-            <div className="inline-flex items-center gap-2 text-indigo-500 font-bold text-[10px] uppercase tracking-[0.3em] mb-6">
-              <span className="w-10 h-[1px] bg-indigo-500" />
-              Portfolio de Projets
-              <span className="w-10 h-[1px] bg-indigo-500" />
+            <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-5">
+              Portfolio
             </div>
-            <h1 className="text-5xl md:text-7xl font-black dark:text-white text-zinc-900 tracking-tight mb-8">
-              Sélection de <span className="text-indigo-600 dark:text-indigo-500">Travaux</span>.
+            <h1 className="text-5xl md:text-6xl font-extrabold dark:text-white text-zinc-900 tracking-tight mb-5 text-balance">
+              Sélection de <span className="text-indigo-500 italic">travaux</span>.
             </h1>
-            <p className="dark:text-zinc-500 text-zinc-600 text-xl font-medium max-w-2xl mx-auto leading-relaxed">
-              Une immersion dans les applications, interfaces et solutions numériques poussées que j&apos;ai conçues avec précision.
+            <p className="dark:text-zinc-500 text-zinc-500 text-lg max-w-[520px] leading-[1.75]">
+              Applications, interfaces et solutions que j&apos;ai conçues.
             </p>
           </motion.div>
 
@@ -141,58 +135,61 @@ export default function Projects({ projects }: ProjectsPageProps) {
             </motion.div>
           )}
 
-          {/* Projects Gallery Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          {/* Projects Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {projects.filter(p => !p.featured || projects.indexOf(p) !== projects.findIndex(fp => fp.featured)).map((project, index) => (
               <motion.div
                 key={project._id}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="group relative flex flex-col"
+                transition={{ duration: 0.3, delay: index * 0.06, ease: [0.2, 0, 0, 1] }}
+                onClick={() => openModal(project)}
+                className="group cursor-pointer dark:bg-white/[0.02] bg-white rounded-2xl border dark:border-white/[0.06] border-zinc-200 hover:dark:border-white/[0.12] hover:border-zinc-300 overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-black/40"
               >
-                <div 
-                  onClick={() => openModal(project)}
-                  className="relative aspect-[16/10] rounded-[2.5rem] overflow-hidden dark:bg-zinc-900 bg-zinc-50 dark:border-white/5 border-zinc-200 border cursor-pointer mb-8 shadow-sm group-hover:shadow-2xl transition-all duration-500"
-                >
+                {/* Image */}
+                <div className="relative aspect-[16/9] dark:bg-zinc-900 bg-zinc-100 overflow-hidden">
                   <Image
                     src={project.imageUrl}
                     alt={project.title}
                     fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                    sizes="(max-width: 768px) 100vw, 600px"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 540px"
                   />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-500" />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 scale-90 group-hover:scale-100">
-                    <span className="px-8 py-3 bg-white text-zinc-900 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl">Explorer le Projet</span>
-                  </div>
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
                 </div>
 
-                <div className="px-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight group-hover:text-indigo-500 transition-colors">
+                {/* Content */}
+                <div className="p-5">
+                  <div className="flex items-start justify-between gap-4 mb-2">
+                    <h3 className="text-base font-bold dark:text-white text-zinc-900 tracking-tight leading-snug">
                       {project.title}
                     </h3>
-                    <div className="flex gap-4">
-                       {project.githubUrl && (
-                        <button onClick={() => project.githubUrl && handleGithubClick(project._id, project.githubUrl)} className="p-2 dark:text-zinc-500 text-zinc-400 dark:hover:text-white hover:text-zinc-900 transition-colors">
-                          <FiGithub className="w-5 h-5" />
+                    <div className="flex gap-2 shrink-0">
+                      {project.githubUrl && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); project.githubUrl && handleGithubClick(project._id, project.githubUrl); }}
+                          className="p-1.5 dark:text-zinc-600 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600 transition-colors"
+                        >
+                          <FiGithub className="w-4 h-4" />
                         </button>
-                       )}
-                       {project.demoUrl && (
-                        <button onClick={() => project.demoUrl && handleDemoClick(project._id, project.demoUrl)} className="p-2 dark:text-zinc-500 text-zinc-400 dark:hover:text-white hover:text-zinc-900 transition-colors">
-                          <FiExternalLink className="w-5 h-5" />
+                      )}
+                      {project.demoUrl && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); project.demoUrl && handleDemoClick(project._id, project.demoUrl); }}
+                          className="p-1.5 dark:text-zinc-600 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600 transition-colors"
+                        >
+                          <FiExternalLink className="w-4 h-4" />
                         </button>
-                       )}
+                      )}
                     </div>
                   </div>
-                  <p className="text-zinc-500 dark:text-zinc-500 text-sm leading-relaxed line-clamp-2 mb-6">
+                  <p className="text-zinc-500 text-sm leading-relaxed line-clamp-2 mb-4">
                     {project.description}
                   </p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {project.technologies.slice(0, 4).map((tech, ti) => (
-                      <span key={ti} className="px-3 py-1 dark:bg-white/5 bg-zinc-50 dark:text-zinc-600 text-zinc-400 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                      <span key={ti} className="px-2.5 py-1 dark:bg-white/[0.04] bg-zinc-50 dark:text-zinc-500 text-zinc-500 rounded-md text-[11px] font-medium border dark:border-white/[0.05] border-zinc-100">
                         {tech}
                       </span>
                     ))}
@@ -203,16 +200,16 @@ export default function Projects({ projects }: ProjectsPageProps) {
           </div>
 
           {projects.length === 0 && (
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              className="text-center py-32 dark:bg-zinc-900/20 bg-zinc-50 rounded-[3rem] border-2 border-dashed dark:border-white/5 border-zinc-200"
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-24 dark:bg-white/[0.02] bg-white rounded-2xl border dark:border-white/[0.06] border-zinc-200 border-dashed"
             >
-              <div className="w-24 h-24 rounded-3xl dark:bg-indigo-500/10 bg-indigo-100 flex items-center justify-center mx-auto mb-8">
-                <FiCode className="w-10 h-10 text-indigo-500" />
+              <div className="w-16 h-16 rounded-2xl dark:bg-indigo-500/10 bg-indigo-50 flex items-center justify-center mx-auto mb-6">
+                <FiCode className="w-7 h-7 text-indigo-500" />
               </div>
-              <h3 className="text-2xl font-black dark:text-white text-zinc-900 mb-2">Aucun projet à afficher</h3>
-              <p className="dark:text-zinc-500 text-zinc-500 font-medium">Revenez bientôt pour de nouvelles réalisations.</p>
+              <h3 className="text-xl font-bold dark:text-white text-zinc-900 mb-2 tracking-tight">Aucun projet à afficher</h3>
+              <p className="dark:text-zinc-500 text-zinc-500 text-sm">Revenez bientôt pour de nouvelles réalisations.</p>
             </motion.div>
           )}
         </div>

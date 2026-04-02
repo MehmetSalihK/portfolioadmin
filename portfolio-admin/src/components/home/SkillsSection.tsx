@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion';
+import { motion, useMotionTemplate, useMotionValue } from 'framer-motion';
+import { MouseEvent } from 'react';
 import Link from 'next/link';
 import { 
   FaReact, FaNodeJs, FaGit, FaDocker, FaPhp,
@@ -10,7 +11,6 @@ import {
   SiAdobepremierepro, SiFlutter, SiVuedotjs, SiMysql,
   SiFirebase, SiVisualstudiocode, SiPostman, SiBootstrap, SiFigma
 } from 'react-icons/si';
-import { FiArrowRight } from 'react-icons/fi';
 
 const skillCategories = [
   {
@@ -72,7 +72,6 @@ const skillCategories = [
   },
 ];
 
-// Chip styles for dark mode + light mode
 const accentMap: Record<string, { chip: string; dot: string; badge: string }> = {
   indigo: {
     chip: 'dark:bg-indigo-500/10 bg-indigo-50 dark:text-indigo-400 text-indigo-600 dark:border-indigo-500/20 border-indigo-200',
@@ -102,6 +101,15 @@ const accentMap: Record<string, { chip: string; dot: string; badge: string }> = 
 };
 
 export default function SkillsSection() {
+  let mouseX = useMotionValue(0);
+  let mouseY = useMotionValue(0);
+
+  function handleMouseMove({ currentTarget, clientX, clientY }: MouseEvent) {
+    let { left, top } = currentTarget.getBoundingClientRect();
+    mouseX.set(clientX - left);
+    mouseY.set(clientY - top);
+  }
+
   return (
     <section id="skills" className="py-24 dark:bg-[#09090f] bg-white relative overflow-hidden transition-colors duration-300">
       {/* Ambient BG */}
@@ -140,17 +148,34 @@ export default function SkillsSection() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: categoryIndex * 0.1 }}
-                  className="group"
+                  onMouseMove={handleMouseMove}
+                  className="group relative"
                 >
-                  <div className="dark:bg-zinc-900/60 bg-white backdrop-blur-sm rounded-3xl p-7 dark:border-white/5 border-zinc-200 border dark:hover:border-indigo-500/30 hover:border-indigo-400 transition-all duration-300 h-full shadow-sm hover:shadow-xl">
+                  <div className="absolute -inset-px rounded-3xl bg-gradient-to-r from-indigo-500 to-violet-500 opacity-0 group-hover:opacity-100 transition duration-500 blur-sm pointer-events-none" />
+                  
+                  <div className="relative dark:bg-zinc-900/90 bg-white/90 backdrop-blur-sm rounded-3xl p-7 dark:border-white/10 border-zinc-200 border transition-all duration-300 h-full shadow-sm">
+                    {/* Floating Glow Effect */}
+                    <motion.div
+                      className="pointer-events-none absolute -inset-px rounded-3xl opacity-0 group-hover:opacity-100 transition duration-300"
+                      style={{
+                        background: useMotionTemplate`
+                          radial-gradient(
+                            400px circle at ${mouseX}px ${mouseY}px,
+                            rgba(99, 102, 241, 0.15),
+                            transparent 80%
+                          )
+                        `,
+                      }}
+                    />
+
                     {/* Category Header */}
-                    <div className="flex items-center gap-3 mb-6">
+                    <div className="flex items-center gap-3 mb-6 relative z-10">
                       <div className={`w-3 h-3 rounded-full ${accent.dot} shadow-lg`} />
-                      <h3 className="text-base font-black dark:text-white text-zinc-900 tracking-tight">{category.title}</h3>
+                      <h3 className="text-base font-black dark:text-white text-zinc-900 tracking-tight uppercase tracking-wider">{category.title}</h3>
                     </div>
 
-                    {/* Skills chips - improved layout */}
-                    <div className="flex flex-wrap gap-2.5">
+                    {/* Skills chips */}
+                    <div className="flex flex-wrap gap-2.5 relative z-10">
                       {category.skills.map((skill, skillIndex) => (
                         <motion.div
                           key={skill.name}
@@ -158,8 +183,8 @@ export default function SkillsSection() {
                           whileInView={{ opacity: 1, scale: 1 }}
                           viewport={{ once: true }}
                           transition={{ duration: 0.3, delay: categoryIndex * 0.1 + skillIndex * 0.05 }}
-                          whileHover={{ scale: 1.05 }}
-                          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-bold border transition-all duration-200 cursor-default ${accent.chip}`}
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all duration-200 cursor-default ${accent.chip} hover:shadow-lg`}
                         >
                           <span className="opacity-90">{skill.icon}</span>
                           {skill.name}

@@ -2,15 +2,15 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiMenu, FiX, FiHome, FiUser, FiCode, FiAward, FiBriefcase, FiMail, FiSun, FiMoon } from 'react-icons/fi';
+import { FiMenu, FiX, FiSun, FiMoon } from 'react-icons/fi';
 import { useTheme } from '@/contexts/ThemeContext';
 
 const navItems = [
-  { name: 'Accueil', path: '/', icon: FiHome },
-  { name: 'À propos', path: '/about', icon: FiUser },
-  { name: 'Projets', path: '/projects', icon: FiCode },
-  { name: 'Formations', path: '/formations', icon: FiAward },
-  { name: 'Expériences', path: '/experiences', icon: FiBriefcase },
+  { name: 'Accueil', path: '/' },
+  { name: 'À propos', path: '/about' },
+  { name: 'Projets', path: '/projects' },
+  { name: 'Formations', path: '/formations' },
+  { name: 'Expériences', path: '/experiences' },
 ];
 
 export default function Navbar() {
@@ -27,115 +27,158 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => { setIsOpen(false); }, [router.pathname]);
 
   const isDark = theme === 'dark';
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-[92%] sm:max-w-[480px] md:max-w-[580px] lg:max-w-[680px]">
-      <motion.nav
-        initial={{ opacity: 0, y: -16 }}
+    <>
+      {/* ── Desktop & Tablet Nav ── */}
+      <motion.header
+        initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className={`rounded-2xl px-4 py-2 transition-all duration-300 ${
+        transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
+        className={`fixed top-0 left-0 right-0 z-50 h-14 flex items-center transition-all duration-200 ${
           scrolled
-            ? 'dark:bg-[#09090f]/90 bg-white/90 backdrop-blur-xl dark:border-white/10 border-zinc-200 border shadow-2xl dark:shadow-black/40 shadow-zinc-300/40'
-            : 'dark:bg-[#09090f]/70 bg-white/70 backdrop-blur-md dark:border-white/5 border-zinc-200/60 border'
+            ? 'dark:bg-[#0a0a0f]/88 bg-white/88 backdrop-blur-xl border-b dark:border-white/[0.06] border-zinc-200/80'
+            : 'dark:bg-transparent bg-transparent'
         }`}
       >
-        <div className="flex items-center justify-between">
+        <div className="max-w-[1100px] mx-auto px-6 w-full flex items-center justify-between">
+
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-indigo-600/30">
+          <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+            <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs font-black shadow-md shadow-indigo-600/30">
               S
             </div>
-            <span className="text-sm font-black dark:text-white text-zinc-900 tracking-tight group-hover:text-indigo-500 transition-colors">
+            <span className="text-sm font-bold dark:text-white text-zinc-900 tracking-tight group-hover:text-indigo-500 transition-colors duration-150">
               Portfolio
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1 dark:bg-white/5 bg-zinc-100 rounded-xl p-1">
+          {/* Desktop Nav links */}
+          <nav className="hidden md:flex items-center gap-0.5">
             {navItems.map((item) => {
               const isActive = router.pathname === item.path;
               return (
                 <Link
                   key={item.path}
                   href={item.path}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`relative px-3.5 py-2 rounded-lg text-[13px] font-medium transition-colors duration-150 ${
                     isActive
-                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                      : 'dark:text-zinc-400 text-zinc-600 hover:dark:text-white hover:text-zinc-900 dark:hover:bg-white/10 hover:bg-white'
+                      ? 'dark:text-white text-zinc-900'
+                      : 'dark:text-zinc-500 text-zinc-500 hover:dark:text-zinc-200 hover:text-zinc-800'
                   }`}
                 >
-                  <item.icon className="w-3.5 h-3.5" />
-                  <span>{item.name}</span>
+                  {item.name}
+                  {isActive && (
+                    <motion.span
+                      layoutId="nav-dot"
+                      className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-indigo-500"
+                    />
+                  )}
                 </Link>
               );
             })}
-          </div>
+          </nav>
 
-          {/* Right side: Theme Toggle + CTA + Mobile hamburger */}
+          {/* Right: theme + CTA + hamburger */}
           <div className="flex items-center gap-2">
-            {/* Theme Toggle */}
             {mounted && (
-              <motion.button
+              <button
                 onClick={toggleTheme}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="p-2 rounded-xl dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:text-zinc-400 text-zinc-600 hover:dark:text-white hover:text-zinc-900 transition-all"
-                aria-label="Toggle dark/light mode"
-                title={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
+                className="p-2 rounded-lg dark:text-zinc-500 text-zinc-400 hover:dark:text-zinc-200 hover:text-zinc-700 transition-colors duration-150"
+                aria-label="Basculer thème"
               >
-                {isDark ? <FiSun className="w-3.5 h-3.5" /> : <FiMoon className="w-3.5 h-3.5" />}
-              </motion.button>
+                {isDark ? <FiSun className="w-4 h-4" /> : <FiMoon className="w-4 h-4" />}
+              </button>
             )}
 
+            <Link
+              href="/contact"
+              className="hidden md:flex h-8 px-4 text-[12px] font-semibold dark:text-zinc-200 text-zinc-700 border dark:border-white/10 border-zinc-200 rounded-lg hover:dark:bg-white/[0.06] hover:bg-zinc-100 transition-all duration-150 items-center"
+            >
+              Contact
+            </Link>
 
-            {/* Mobile hamburger */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden p-2 rounded-xl dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:text-zinc-400 text-zinc-600 hover:dark:text-white hover:text-zinc-900 transition-all"
-              aria-label="Toggle menu"
+              className="md:hidden p-2 rounded-lg dark:text-zinc-400 text-zinc-500 hover:dark:text-white hover:text-zinc-900 transition-colors duration-150"
+              aria-label="Menu"
             >
-              {isOpen ? <FiX className="w-4 h-4" /> : <FiMenu className="w-4 h-4" />}
+              {isOpen ? <FiX className="w-5 h-5" /> : <FiMenu className="w-5 h-5" />}
             </button>
           </div>
         </div>
+      </motion.header>
 
-        {/* Mobile Navigation */}
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden overflow-hidden"
-            >
-              <div className="pt-3 pb-1 space-y-1 dark:border-white/5 border-zinc-200 border-t mt-2">
-                {navItems.map((item) => {
-                  const isActive = router.pathname === item.path;
-                  return (
+      {/* ── Mobile Overlay Menu ── */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18, ease: [0.2, 0, 0, 1] }}
+            className="fixed inset-0 z-40 dark:bg-[#0a0a0f] bg-white md:hidden flex flex-col"
+          >
+            {/* Top bar */}
+            <div className="h-14 flex items-center justify-between px-6 border-b dark:border-white/[0.06] border-zinc-100 shrink-0">
+              <Link href="/" className="flex items-center gap-2.5" onClick={() => setIsOpen(false)}>
+                <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs font-black">
+                  S
+                </div>
+                <span className="text-sm font-bold dark:text-white text-zinc-900">Portfolio</span>
+              </Link>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-2 rounded-lg dark:text-zinc-400 text-zinc-500"
+              >
+                <FiX className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Links */}
+            <nav className="flex flex-col px-6 pt-6 flex-1">
+              {navItems.map((item, i) => {
+                const isActive = router.pathname === item.path;
+                return (
+                  <motion.div
+                    key={item.path}
+                    initial={{ opacity: 0, x: -6 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.04, duration: 0.18 }}
+                  >
                     <Link
-                      key={item.path}
                       href={item.path}
-                      className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                      onClick={() => setIsOpen(false)}
+                      className={`flex items-center justify-between py-4 border-b dark:border-white/[0.05] border-zinc-100 text-base font-medium transition-colors duration-150 ${
                         isActive
-                          ? 'bg-indigo-600/20 text-indigo-500 border border-indigo-500/20'
-                          : 'dark:text-zinc-400 text-zinc-600 hover:dark:text-white hover:text-zinc-900 dark:hover:bg-white/5 hover:bg-zinc-100'
+                          ? 'text-indigo-500'
+                          : 'dark:text-zinc-300 text-zinc-700'
                       }`}
                     >
-                      <item.icon className="w-4 h-4" />
                       {item.name}
+                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />}
                     </Link>
-                  );
-                })}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.nav>
-    </div>
+                  </motion.div>
+                );
+              })}
+            </nav>
+
+            {/* CTA */}
+            <div className="px-6 pb-10 shrink-0">
+              <Link
+                href="/contact"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center justify-center w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/20 transition-colors duration-150"
+              >
+                Me contacter
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

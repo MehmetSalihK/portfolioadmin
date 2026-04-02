@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import { FiPlus, FiTrash2, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiEye, FiEyeOff, FiAward, FiX, FiCheck } from 'react-icons/fi';
 import { getSkillIcon } from '@/utils/skillIcons';
 
 interface Skill {
@@ -17,49 +17,40 @@ interface SkillsManagementProps {
 export default function SkillsManagement({ initialSkills }: SkillsManagementProps) {
   const [skills, setSkills] = useState<Skill[]>(initialSkills);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newSkill, setNewSkill] = useState({ 
-    name: '',
-    isVisible: true
-  });
+  const [newSkill, setNewSkill] = useState({ name: '', isVisible: true });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleAddSkill = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const response = await fetch('/api/skills', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newSkill),
       });
-
-      if (!response.ok) throw new Error('Erreur lors de l\'ajout');
-
+      if (!response.ok) throw new Error('Erreur d\'ajout');
       const addedSkill = await response.json();
-      setSkills(prevSkills => [...prevSkills, addedSkill]);
-      
-      toast.success('Compétence ajoutée avec succès');
+      setSkills(prev => [...prev, addedSkill]);
+      toast.success('Compétence ajoutée');
       setIsModalOpen(false);
       setNewSkill({ name: '', isVisible: true });
     } catch (error) {
-      toast.error('Erreur lors de l\'ajout de la compétence');
+      toast.error('Erreur lors de l\'ajout');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleDelete = async (skillId: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette compétence ?')) {
-      try {
-        const response = await fetch(`/api/skills?id=${skillId}`, {
-          method: 'DELETE',
-        });
-
-        if (!response.ok) throw new Error('Erreur lors de la suppression');
-
-        setSkills(prevSkills => prevSkills.filter(skill => skill._id !== skillId));
-        toast.success('Compétence supprimée avec succès');
-      } catch (error) {
-        toast.error('Erreur lors de la suppression de la compétence');
-      }
+    if (!window.confirm('Supprimer cette compétence ?')) return;
+    try {
+      const response = await fetch(`/api/skills?id=${skillId}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Erreur');
+      setSkills(prev => prev.filter(s => s._id !== skillId));
+      toast.success('Supprimée');
+    } catch (error) {
+      toast.error('Erreur de suppression');
     }
   };
 
@@ -67,143 +58,100 @@ export default function SkillsManagement({ initialSkills }: SkillsManagementProp
     try {
       const response = await fetch(`/api/skills/${skillId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isVisible: !currentVisibility }),
       });
-
-      if (!response.ok) throw new Error('Erreur lors de la modification');
-
-      setSkills(prevSkills => 
-        prevSkills.map(skill => 
-          skill._id === skillId 
-            ? { ...skill, isVisible: !skill.isVisible }
-            : skill
-        )
-      );
-
-      toast.success('Visibilité modifiée avec succès');
+      if (!response.ok) throw new Error('Erreur');
+      setSkills(prev => prev.map(s => s._id === skillId ? { ...s, isVisible: !s.isVisible } : s));
+      toast.success('Visibilité mise à jour');
     } catch (error) {
-      toast.error('Erreur lors de la modification de la visibilité');
+      toast.error('Erreur de modification');
     }
   };
 
   return (
-    <div className="space-y-8">
-      {/* En-tête avec bouton */}
+    <div className="space-y-12">
+      {/* Header Actions */}
       <div className="flex justify-end">
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl transition-all duration-300 shadow-lg shadow-indigo-500/20 active:scale-95 text-sm font-bold uppercase tracking-wider"
+          className="px-8 py-3 bg-primary-500 text-white rounded-[20px] font-bold text-xs uppercase tracking-[0.2em] shadow-lg shadow-primary-500/20 hover:bg-primary-600 transition-all active:scale-95 flex items-center gap-3 border border-primary-400"
         >
-          <FiPlus className="w-5 h-5" />
-          Ajouter une compétence
+          <FiPlus className="w-5 h-5" /> Ajouter
         </button>
       </div>
 
-      {/* Grille des compétences */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {skills.map((skill) => {
+      {/* Modern Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {skills.map((skill, idx) => {
           const SkillIcon = getSkillIcon(skill.name);
           return (
-            <div
+            <motion.div
               key={skill._id}
-              className="bg-background-card border border-border-subtle rounded-xl p-6 flex items-center justify-between group hover:border-border-strong transition-all duration-300"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              className="bg-white dark:bg-background-card/40 border border-slate-200 dark:border-white/5 rounded-[28px] p-6 group hover:shadow-premium-lg transition-all duration-500"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl group-hover:scale-110 transition-transform duration-300">
-                  <SkillIcon className="w-6 h-6 text-indigo-400" />
+              <div className="flex items-center justify-between mb-8">
+                <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-100 dark:border-white/5 flex items-center justify-center group-hover:scale-110 group-hover:border-primary-500/30 transition-all duration-500">
+                  <SkillIcon className="w-7 h-7 text-primary-500" />
                 </div>
-                <div>
-                  <div className="text-white font-bold tracking-tight">{skill.name}</div>
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <span className={`w-1.5 h-1.5 rounded-full ${skill.isVisible ? 'bg-emerald-500' : 'bg-zinc-600'}`} />
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                      {skill.isVisible ? 'Visible' : 'Masquée'}
-                    </span>
-                  </div>
+                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                   <button onClick={() => handleToggleVisibility(skill._id, skill.isVisible)} className={`p-2 rounded-xl transition-all ${skill.isVisible ? 'text-emerald-500 bg-emerald-500/10' : 'text-slate-400 bg-slate-100 dark:bg-white/5'}`}>{skill.isVisible ? <FiEye /> : <FiEyeOff />}</button>
+                   <button onClick={() => handleDelete(skill._id)} className="p-2 rounded-xl text-rose-500 bg-rose-500/10"><FiTrash2 /></button>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleToggleVisibility(skill._id, skill.isVisible)}
-                  className={`p-2 rounded-lg transition-all duration-300 border ${
-                    skill.isVisible 
-                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20' 
-                      : 'bg-zinc-500/10 border-zinc-500/20 text-zinc-500 hover:bg-zinc-500/20'
-                  }`}
-                  title={skill.isVisible ? "Masquer" : "Afficher"}
-                >
-                  {skill.isVisible ? <FiEye className="w-4 h-4" /> : <FiEyeOff className="w-4 h-4" />}
-                </button>
-                <button
-                  onClick={() => handleDelete(skill._id)}
-                  className="bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 p-2 rounded-lg transition-all duration-300"
-                  title="Supprimer"
-                >
-                  <FiTrash2 className="w-4 h-4" />
-                </button>
+              
+              <div>
+                 <h3 className="text-xl font-extrabold dark:text-white text-slate-900 tracking-tight mb-1">{skill.name}</h3>
+                 <div className="flex items-center gap-2">
+                    <span className={`w-1.5 h-1.5 rounded-full ${skill.isVisible ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-400'}`} />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{skill.isVisible ? 'Affiché' : 'Masqué'}</span>
+                 </div>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
 
-      {/* Modal d'ajout amélioré */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="bg-background-card border border-border-strong rounded-2xl p-8 w-full max-w-md shadow-2xl shadow-indigo-500/10"
-          >
-            <h2 className="text-2xl font-black text-white mb-8 tracking-tight">Nouvelle compétence</h2>
-            <form onSubmit={handleAddSkill} className="space-y-6">
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">
-                  Nom de la compétence
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={newSkill.name}
-                  onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })}
-                  className="w-full bg-white/5 text-white px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-zinc-600 border border-white/10 transition-all duration-300"
-                  placeholder="Ex: JavaScript, Python, React..."
-                />
-              </div>
-              <div className="flex items-center bg-white/5 p-4 rounded-xl border border-white/10 group hover:border-indigo-500/30 transition-all duration-300">
-                <input
-                  type="checkbox"
-                  id="isVisible"
-                  checked={newSkill.isVisible}
-                  onChange={(e) => setNewSkill({ ...newSkill, isVisible: e.target.checked })}
-                  className="w-5 h-5 text-indigo-500 bg-zinc-800 rounded-lg focus:ring-indigo-500 focus:ring-offset-0 border-white/10"
-                />
-                <label htmlFor="isVisible" className="ml-3 text-sm font-medium text-zinc-300 select-none group-hover:text-white transition-colors">
-                  Visible sur le portfolio
-                </label>
-              </div>
-              <div className="flex justify-end gap-4 mt-10">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-6 py-2.5 text-zinc-500 hover:text-white font-bold text-xs uppercase tracking-wider transition-colors"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2.5 rounded-xl transition-all duration-300 shadow-lg shadow-indigo-500/20 font-bold text-xs uppercase tracking-wider active:scale-95"
-                >
-                  Ajouter
-                </button>
-              </div>
-            </form>
+      {/* Glassmorphism Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] bg-slate-950/40 backdrop-blur-xl flex items-center justify-center p-6" onClick={() => setIsModalOpen(false)}>
+             <motion.div initial={{ scale: 0.95, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 30 }} className="bg-white dark:bg-[#0f0f15] border border-slate-200 dark:border-white/10 rounded-[40px] p-10 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center justify-between mb-10">
+                   <div>
+                      <span className="text-[10px] font-black text-primary-500 uppercase tracking-[0.3em]">Nouveau Talent</span>
+                      <h2 className="text-3xl font-extrabold tracking-tight dark:text-white text-slate-900">Ajout</h2>
+                   </div>
+                   <button onClick={() => setIsModalOpen(false)} className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors"><FiX className="w-6 h-6"/></button>
+                </div>
+
+                <form onSubmit={handleAddSkill} className="space-y-8">
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">Nom de la compétence</label>
+                      <input 
+                        required
+                        value={newSkill.name}
+                        onChange={e => setNewSkill({ ...newSkill, name: e.target.value })}
+                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 transition-all text-sm placeholder:text-slate-300" 
+                        placeholder="Ex: TypeScript, Figma..."
+                      />
+                   </div>
+
+                   <button 
+                    type="submit" 
+                    disabled={isLoading}
+                    className="w-full bg-primary-500 py-5 rounded-[24px] text-white font-black uppercase tracking-[0.2em] text-sm shadow-xl shadow-primary-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                   >
+                     {isLoading ? <FiAward className="animate-spin" /> : <FiCheck className="w-5 h-5" />} Confirmer
+                   </button>
+                </form>
+             </motion.div>
           </motion.div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }

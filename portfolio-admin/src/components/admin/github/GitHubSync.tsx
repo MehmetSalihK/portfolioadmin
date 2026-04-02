@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiGithub, FiRefreshCw, FiCheck, FiAlertTriangle, FiInfo } from 'react-icons/fi';
+import { FiGithub, FiRefreshCw, FiCheck, FiAlertTriangle, FiInfo, FiLayers, FiActivity, FiBriefcase } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 
 interface SyncStats {
@@ -26,35 +26,25 @@ const GitHubSync: React.FC = () => {
 
   const handleSync = async () => {
     setIsLoading(true);
-    
     try {
       const response = await fetch('/api/github/sync', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          archiveRemoved
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ archiveRemoved })
       });
-
       const data: SyncResponse = await response.json();
-
       if (data.success) {
         toast.success(data.message);
         setSyncStats(data.stats);
         setLastSync(data.lastSync);
-        
         if (data.errors && data.errors.length > 0) {
-          console.warn('Sync completed with errors:', data.errors);
-          toast.error(`Synchronisation terminée avec ${data.errors.length} erreur(s)`);
+          toast.error(`Synchronisation terminée avec des erreurs.`);
         }
       } else {
         toast.error(data.message || 'Erreur lors de la synchronisation');
       }
     } catch (error) {
-      console.error('Sync error:', error);
-      toast.error('Erreur de connexion lors de la synchronisation');
+      toast.error('Erreur de connexion');
     } finally {
       setIsLoading(false);
     }
@@ -62,133 +52,116 @@ const GitHubSync: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('fr-FR', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
     });
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
-          <FiGithub className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Synchronisation GitHub
-          </h2>
+    <div className="p-8 space-y-8">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-xl">
+            <FiGithub className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-xl font-extrabold dark:text-white text-slate-900 tracking-tight">Synchronisation GitHub</h2>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-0.5">Automatisation du pipeline</p>
+          </div>
         </div>
         
         <button
           onClick={handleSync}
           disabled={isLoading}
-          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors duration-200"
+          className="flex items-center gap-3 px-6 py-3 bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary-500/25 transition-all active:scale-95 border border-primary-400"
         >
           <FiRefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-          <span>{isLoading ? 'Synchronisation...' : 'Synchroniser'}</span>
+          <span>{isLoading ? 'Synchronisation...' : 'Lancer la synchro'}</span>
         </button>
       </div>
 
-      <div className="space-y-4">
-        {/* Description */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <div className="flex items-start space-x-3">
-            <FiInfo className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-            <div className="text-sm text-blue-800 dark:text-blue-200">
-              <p className="font-medium mb-1">À propos de la synchronisation GitHub</p>
-              <p>
-                Cette fonctionnalité récupère automatiquement vos repositories publics depuis GitHub 
-                et les ajoute à votre portfolio. Les projets existants seront mis à jour avec les 
-                dernières informations.
-              </p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Info & Options */}
+        <div className="space-y-6">
+          <div className="p-6 rounded-[24px] bg-primary-500/[0.03] border border-primary-500/10 backdrop-blur-sm">
+            <div className="flex items-start gap-4">
+              <div className="p-2 rounded-lg bg-primary-500/10 text-primary-500">
+                <FiInfo className="w-5 h-5" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-extrabold dark:text-white text-slate-900">À propos de l'automatisation</p>
+                <p className="text-xs font-medium text-slate-500 leading-relaxed">
+                  Récupérez vos repositories publics. Les projets existants seront mis à jour, les nouveaux seront créés automatiquement.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Options */}
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <label className="flex items-center space-x-3">
-            <input
-              type="checkbox"
-              checked={archiveRemoved}
-              onChange={(e) => setArchiveRemoved(e.target.checked)}
-              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-            />
-            <span className="text-sm text-gray-700 dark:text-gray-300">
-              Archiver les projets GitHub supprimés ou rendus privés
+          <label className="flex items-center gap-4 p-5 rounded-[24px] border border-slate-200 dark:border-white/5 bg-white dark:bg-white/[0.02] cursor-pointer hover:border-primary-500/30 transition-all group">
+            <div className="relative flex items-center">
+               <input
+                type="checkbox"
+                checked={archiveRemoved}
+                onChange={(e) => setArchiveRemoved(e.target.checked)}
+                className="w-5 h-5 appearance-none border-2 border-slate-300 dark:border-slate-700 rounded-lg checked:bg-primary-500 checked:border-primary-500 transition-all cursor-pointer"
+              />
+              <FiCheck className={`absolute left-1 w-3 h-3 text-white pointer-events-none transition-opacity ${archiveRemoved ? 'opacity-100' : 'opacity-0'}`} />
+            </div>
+            <span className="text-xs font-bold dark:text-slate-300 text-slate-600 uppercase tracking-wide group-hover:text-primary-500 transition-colors">
+              Archiver les projets GitHub supprimés ou privés
             </span>
           </label>
         </div>
 
-        {/* Dernière synchronisation */}
-        {lastSync && (
-          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-            <div className="flex items-center space-x-3">
-              <FiCheck className="w-5 h-5 text-green-600 dark:text-green-400" />
-              <div className="text-sm text-green-800 dark:text-green-200">
-                <p className="font-medium">Dernière synchronisation réussie</p>
-                <p>{formatDate(lastSync)}</p>
+        {/* Status & Stats */}
+        <div className="space-y-6">
+          {lastSync ? (
+            <div className="p-6 rounded-[24px] bg-emerald-500/[0.03] border border-emerald-500/10 backdrop-blur-sm flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500">
+                  <FiCheck className="w-5 h-5" />
+                </div>
+                <div>
+                   <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-500">Dernière réussite</p>
+                   <p className="text-sm font-extrabold dark:text-white text-slate-900">{formatDate(lastSync)}</p>
+                </div>
               </div>
+              <div className="text-[10px] font-black text-emerald-500/40 uppercase tracking-widest rotate-90 origin-right">Status OK</div>
             </div>
-          </div>
-        )}
+          ) : (
+             <div className="p-6 rounded-[24px] bg-slate-100 dark:bg-white/[0.02] border border-dashed border-slate-300 dark:border-white/10 flex items-center justify-center text-center">
+                <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Aucune synchronisation récente</p>
+             </div>
+          )}
 
-        {/* Statistiques */}
-        {syncStats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {syncStats.total}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Total trouvés
-              </div>
+          {syncStats && (
+            <div className="grid grid-cols-2 gap-4">
+               {[
+                 { label: 'Total', value: syncStats.total, icon: FiLayers, color: 'text-slate-400' },
+                 { label: 'Créés', value: syncStats.created, icon: FiPlus, color: 'text-primary-500' },
+                 { label: 'Mis à jour', value: syncStats.updated, icon: FiActivity, color: 'text-emerald-500' },
+                 { label: 'Erreurs', value: syncStats.errors, icon: FiAlertTriangle, color: 'text-rose-500' },
+               ].map((stat, i) => (
+                 <div key={i} className="p-5 rounded-[24px] bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 flex flex-col justify-between h-32 hover:border-primary-500/20 transition-all">
+                    <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                    <div>
+                       <p className="text-2xl font-black dark:text-white text-slate-900 tracking-tight">{stat.value}</p>
+                       <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{stat.label}</p>
+                    </div>
+                 </div>
+               ))}
             </div>
-            
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {syncStats.created}
-              </div>
-              <div className="text-sm text-blue-600 dark:text-blue-400">
-                Créés
-              </div>
-            </div>
-            
-            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {syncStats.updated}
-              </div>
-              <div className="text-sm text-green-600 dark:text-green-400">
-                Mis à jour
-              </div>
-            </div>
-            
-            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                {syncStats.errors}
-              </div>
-              <div className="text-sm text-red-600 dark:text-red-400">
-                Erreurs
-              </div>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
+      </div>
 
-        {/* Avertissement */}
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-          <div className="flex items-start space-x-3">
-            <FiAlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
-            <div className="text-sm text-yellow-800 dark:text-yellow-200">
-              <p className="font-medium mb-1">Important</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Seuls les repositories publics avec une description seront importés</li>
-                <li>Les repositories de configuration (.github, README) sont exclus</li>
-                <li>Les images personnalisées des projets existants seront préservées</li>
-                <li>La synchronisation peut prendre quelques secondes selon le nombre de repositories</li>
-              </ul>
-            </div>
-          </div>
+      {/* Warning Footer */}
+      <div className="p-6 rounded-[24px] border border-amber-500/10 bg-amber-500/[0.02] flex items-start gap-4">
+        <FiAlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <p className="text-xs font-extrabold text-amber-600 dark:text-amber-500 uppercase tracking-wider">Avertissement de sécurité</p>
+          <p className="text-[11px] font-medium text-amber-700/70 dark:text-amber-500/60 leading-relaxed">
+            Seuls les repositories publics avec une description sont importés. Les repositories de configuration (.github, README) sont exclus par défaut.
+          </p>
         </div>
       </div>
     </div>

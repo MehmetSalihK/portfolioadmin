@@ -3,31 +3,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  FiDownload,
-  FiUpload,
-  FiDatabase,
-  FiShield,
-  FiClock,
-  FiCheck,
-  FiAlertTriangle,
-  FiRefreshCw,
-  FiTrash2,
-  FiHardDrive,
-  FiServer,
-  FiCloud,
-  FiLock,
-  FiActivity,
-  FiZap,
-  FiTrendingUp,
-  FiSearch,
-  FiFilter,
-  FiInfo,
-  FiSettings,
-  FiCalendar,
-  FiFileText,
-  FiPlus
-} from 'react-icons/fi';
+import { FiDownload, FiUpload, FiDatabase, FiShield, FiClock, FiCheck, FiAlertTriangle, FiRefreshCw, FiTrash2, FiHardDrive, FiServer, FiCloud, FiLock, FiActivity, FiZap, FiPlus, FiFileText, FiLoader, FiArrowRight } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 interface BackupData {
@@ -49,375 +25,184 @@ const BackupPage = () => {
   const [backupProgress, setBackupProgress] = useState(0);
   const [restoreProgress, setRestoreProgress] = useState(0);
   const [activeTab, setActiveTab] = useState<'create' | 'restore' | 'manage'>('create');
-  const [backups, setBackups] = useState<BackupData[]>([]);
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/admin/login');
-    }
-  }, [status, router]);
+  useEffect(() => { if (status === 'unauthenticated') router.push('/admin/login'); }, [status, router]);
 
-  const handleCreateBackup = async (type: 'full' | 'partial') => {
+  const handleCreateBackup = async () => {
     setIsCreatingBackup(true);
     setBackupProgress(0);
-
     try {
-      const progressInterval = setInterval(() => {
-        setBackupProgress(prev => {
-          if (prev >= 90) return 90;
-          return prev + Math.random() * 10;
-        });
-      }, 200);
-
-      const response = await fetch('/api/admin/backup/export');
-      if (!response.ok) throw new Error('Export failed');
-
-      const blob = await response.blob();
+      const interval = setInterval(() => { setBackupProgress(p => p >= 90 ? 90 : p + 5); }, 200);
+      const res = await fetch('/api/admin/backup/export');
+      if (!res.ok) throw new Error('Export failed');
+      const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `portfolio-backup-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-
-      clearInterval(progressInterval);
-      setBackupProgress(100);
-      toast.success('Sauvegarde téléchargée avec succès');
-    } catch (error) {
-      console.error(error);
-      toast.error('Erreur lors de la création de la sauvegarde');
-    } finally {
-      setTimeout(() => {
-        setIsCreatingBackup(false);
-        setBackupProgress(0);
-      }, 1000);
-    }
+      const a = document.createElement('a'); a.href = url; a.download = `portfolio-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); document.body.removeChild(a);
+      clearInterval(interval); setBackupProgress(100);
+      toast.success('Sauvegarde générée');
+    } catch (e) { toast.error('Erreur export'); } finally { setTimeout(() => setIsCreatingBackup(false), 1000); }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (!file.name.endsWith('.json')) {
-        toast.error('Format de fichier non supporté. Utilisez .json');
-        return;
-      }
-      setSelectedFile(file);
-      toast.success(`Fichier "${file.name}" sélectionné`);
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (f) {
+      if (!f.name.endsWith('.json')) { toast.error('Format .json requis'); return; }
+      setSelectedFile(f); toast.success('Fichier prêt');
     }
   };
 
   const handleRestoreBackup = async () => {
-    if (!selectedFile) {
-      toast.error('Veuillez sélectionner un fichier');
-      return;
-    }
-
-    if (!window.confirm('Attention: Cette action va écraser toutes les données actuelles. Continuer ?')) {
-      return;
-    }
-
-    setIsRestoring(true);
-    setRestoreProgress(0);
-
+    if (!selectedFile || !window.confirm('Écraser les données ?')) return;
+    setIsRestoring(true); setRestoreProgress(0);
     try {
-      const formData = new FormData();
-      formData.append('backup', selectedFile);
-
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', '/api/admin/backup/import');
-
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          setRestoreProgress((event.loaded / event.total) * 100);
-        }
-      };
-
-      xhr.onload = () => {
-        if (xhr.status === 200) {
-          toast.success('Restauration terminée avec succès');
-          setSelectedFile(null);
-          setTimeout(() => window.location.reload(), 1500);
-        } else {
-          toast.error('Erreur lors de la restauration');
-        }
-        setIsRestoring(false);
-      };
-
-      xhr.onerror = () => {
-        toast.error('Erreur réseau');
-        setIsRestoring(false);
-      };
-
+      const formData = new FormData(); formData.append('backup', selectedFile);
+      const xhr = new XMLHttpRequest(); xhr.open('POST', '/api/admin/backup/import');
+      xhr.upload.onprogress = (e) => { if (e.lengthComputable) setRestoreProgress((e.loaded / e.total) * 100); };
+      xhr.onload = () => { if (xhr.status === 200) { toast.success('Restauration terminée'); setTimeout(() => window.location.reload(), 1500); } else { toast.error('Erreur'); setIsRestoring(false); } };
       xhr.send(formData);
-    } catch (error) {
-      console.error(error);
-      toast.error('Erreur inattendue');
-      setIsRestoring(false);
-    }
+    } catch (e) { toast.error('Erreur'); setIsRestoring(false); }
   };
 
-  if (status === 'loading') {
-    return (
-      <AdminLayout>
-          <div className="flex flex-col items-center justify-center min-h-[400px]">
-          <div className="w-16 h-16 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
-          <p className="text-zinc-500 font-bold text-xs uppercase tracking-widest">Initialisation...</p>
-        </div>
-      </AdminLayout>
-    );
-  }
+  if (status === 'loading') return null;
 
   return (
     <AdminLayout>
-      <div className="space-y-10">
-        {/* Header */}
-        <div className="mb-12">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-              <FiDatabase className="w-5 h-5 text-indigo-500" />
-            </div>
-            <h1 className="text-3xl font-black text-white tracking-tight">Sauvegardes</h1>
-          </div>
-          <p className="text-zinc-500 font-medium">Sécurisez et restaurez vos données portfolio en un clic.</p>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="group bg-zinc-900/50 p-6 rounded-3xl border border-white/5 hover:border-indigo-500/30 transition-all duration-500 relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-3xl -mr-16 -mt-16"></div>
-            <div className="relative">
-              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center mb-4">
-                <FiShield className="w-5 h-5 text-indigo-500" />
-              </div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">Protection</p>
-              <h3 className="text-xl font-black text-white uppercase tracking-tight">Activer</h3>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="group bg-zinc-900/50 p-6 rounded-3xl border border-white/5 hover:border-emerald-500/30 transition-all duration-500 relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-3xl -mr-16 -mt-16"></div>
-            <div className="relative">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4">
-                <FiHardDrive className="w-5 h-5 text-emerald-500" />
-              </div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">Intégrité</p>
-              <h3 className="text-xl font-black text-white uppercase tracking-tight">100% OK</h3>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="group bg-zinc-900/50 p-6 rounded-3xl border border-white/5 hover:border-purple-500/30 transition-all duration-500 relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 blur-3xl -mr-16 -mt-16"></div>
-            <div className="relative">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center mb-4">
-                <FiCloud className="w-5 h-5 text-purple-500" />
-              </div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">Stockage</p>
-              <h3 className="text-xl font-black text-white uppercase tracking-tight">JSON Export</h3>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="group bg-zinc-900/50 p-6 rounded-3xl border border-white/5 hover:border-orange-500/30 transition-all duration-500 relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl -mr-16 -mt-16"></div>
-            <div className="relative">
-              <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center mb-4">
-                <FiActivity className="w-5 h-5 text-orange-500" />
-              </div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">Santé</p>
-              <h3 className="text-xl font-black text-white uppercase tracking-tight">Optimale</h3>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex gap-2 p-1 bg-zinc-900/50 rounded-2xl border border-white/5 w-full mb-10">
-          {[
-            { id: 'create', label: 'Exporter', icon: FiDownload, color: 'indigo' },
-            { id: 'restore', label: 'Importer', icon: FiUpload, color: 'emerald' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${activeTab === tab.id
-                ? `bg-${tab.color}-600 text-white shadow-lg shadow-${tab.color}-600/20`
-                : 'text-zinc-500 hover:text-white hover:bg-white/5'
-                }`}
-            >
-              <tab.icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Content */}
-        <AnimatePresence mode="wait">
-          {activeTab === 'create' ? (
-            <motion.div
-              key="create"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              className="bg-zinc-900/50 rounded-[2.5rem] border border-white/5 p-12 text-center relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-transparent"></div>
-              <div className="relative z-10 max-w-lg mx-auto">
-                <div className="w-20 h-20 rounded-[2rem] bg-indigo-500/10 flex items-center justify-center mx-auto mb-8">
-                  <FiDownload className="w-10 h-10 text-indigo-500" />
+      <div className="space-y-12">
+        {/* Superior Header */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8">
+           <div className="space-y-2">
+             <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-primary-500/10 flex items-center justify-center text-primary-500 border border-primary-500/20">
+                   <FiDatabase className="w-5 h-5" />
                 </div>
-                <h2 className="text-3xl font-black text-white mb-4 tracking-tight">Prêt pour l'export ?</h2>
-                <p className="text-zinc-500 font-medium mb-10 leading-relaxed">
-                  Cette action générera un fichier JSON contenant l'intégralité de votre base de données (Compétences, Projets, Expériences, Formations, Messages).
-                </p>
-
-                {isCreatingBackup && (
-                  <div className="mb-10 space-y-3">
-                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-indigo-400">
-                      <span>Génération en cours...</span>
-                      <span>{Math.round(backupProgress)}%</span>
-                    </div>
-                    <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${backupProgress}%` }}
-                        className="h-full bg-indigo-500 rounded-full"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  onClick={() => handleCreateBackup('full')}
-                  disabled={isCreatingBackup}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-5 rounded-2xl transition-all duration-300 shadow-xl shadow-indigo-600/20 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-4 disabled:opacity-50"
-                >
-                  {isCreatingBackup ? (
-                    <FiRefreshCw className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <FiZap className="w-5 h-5" />
-                  )}
-                  Générer le fichier JSON
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-500">Intégrité & Sécurité</span>
+             </div>
+             <h1 className="text-4xl font-extrabold tracking-tight dark:text-white text-slate-900">Backup Center</h1>
+             <p className="text-slate-500 font-medium max-w-lg">Exportez et restaurez l'intégralité de vos données en un clic avec une fiabilité maximale.</p>
+           </div>
+           
+           <div className="flex p-1.5 bg-slate-100 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm">
+              {[
+                { id: 'create', label: 'Exporter', icon: FiDownload },
+                { id: 'restore', label: 'Importer', icon: FiUpload },
+              ].map((tab) => (
+                <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`flex items-center gap-2 px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab.id ? 'bg-white dark:bg-primary-500 text-primary-500 dark:text-white shadow-premium' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
+                   <tab.icon className="w-4 h-4" /> {tab.label}
                 </button>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="restore"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              className="bg-zinc-900/50 rounded-[2.5rem] border border-white/5 p-12 relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent"></div>
-              <div className="relative z-10">
-                <div className="text-center max-w-lg mx-auto mb-12">
-                  <div className="w-20 h-20 rounded-[2rem] bg-emerald-500/10 flex items-center justify-center mx-auto mb-8">
-                    <FiUpload className="w-10 h-10 text-emerald-500" />
-                  </div>
-                  <h2 className="text-3xl font-black text-white mb-4 tracking-tight">Restauration</h2>
-                  <p className="text-zinc-500 font-medium leading-relaxed">
-                    Importez votre fichier de sauvegarde JSON pour restaurer votre portfolio à un état précédent.
-                  </p>
-                </div>
+              ))}
+           </div>
+        </div>
 
-                <div
-                  onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
-                  onDragLeave={() => setIsDragOver(false)}
-                  onDrop={(e) => { e.preventDefault(); setIsDragOver(false); /* handle drop */ }}
-                  className={`max-w-xl mx-auto border-2 border-dashed rounded-[2rem] p-12 text-center transition-all duration-300 ${isDragOver 
-                    ? 'border-emerald-500 bg-emerald-500/5 scale-[1.02]' 
-                    : selectedFile 
-                      ? 'border-emerald-500/50 bg-emerald-500/5' 
-                      : 'border-white/10 hover:border-emerald-500/30 hover:bg-white/5'
-                  }`}
-                >
-                  <input
-                    type="file"
-                    accept=".json"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    id="restore-input"
-                  />
-                  <label htmlFor="restore-input" className="cursor-pointer">
-                    {selectedFile ? (
-                      <div className="space-y-4">
-                        <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center mx-auto">
-                          <FiFileText className="w-8 h-8 text-emerald-500" />
-                        </div>
-                        <div>
-                          <p className="text-white font-black text-sm uppercase tracking-tight">{selectedFile.name}</p>
-                          <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mt-1">
-                            {(selectedFile.size / 1024).toFixed(2)} KB
-                          </p>
-                        </div>
-                        <button 
-                          onClick={(e) => { e.preventDefault(); setSelectedFile(null); }}
-                          className="text-[10px] font-black text-rose-500 hover:text-rose-400 uppercase tracking-widest"
-                        >
-                          Supprimer
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="w-16 h-16 rounded-2xl bg-zinc-800 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
-                          <FiPlus className="w-8 h-8 text-zinc-500" />
-                        </div>
-                        <p className="text-zinc-400 font-black text-[10px] uppercase tracking-widest">Cliquez ou déposez votre fichier .json</p>
-                      </div>
-                    )}
-                  </label>
-                </div>
-
-                {selectedFile && (
-                  <div className="max-w-xl mx-auto mt-10">
-                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 mb-8 flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
-                        <FiAlertTriangle className="w-5 h-5 text-amber-500" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-black text-amber-400 uppercase tracking-widest mb-1">Attention</h4>
-                        <p className="text-[10px] text-zinc-500 font-medium leading-relaxed">
-                          La restauration écrasera toutes vos données actuelles. Assurez-vous d'avoir une sauvegarde de l'état actuel si nécessaire.
-                        </p>
-                      </div>
+        {/* Security Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+           {[
+             { label: 'Protégé', value: 'Activée', icon: FiShield, color: 'primary' },
+             { label: 'Intégrité', value: '100%', icon: FiHardDrive, color: 'emerald' },
+             { label: 'Format', value: 'JSON Hub', icon: FiCloud, color: 'indigo' },
+             { label: 'Santé', value: 'Optimale', icon: FiActivity, color: 'rose' },
+           ].map((stat, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="bg-white dark:bg-background-card/40 border border-slate-200 dark:border-white/5 rounded-[32px] p-8 hover:shadow-premium-lg transition-all duration-500 group relative overflow-hidden">
+                 <div className={`absolute top-0 right-0 w-32 h-32 bg-${stat.color}-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-${stat.color}-500/10 transition-colors`} />
+                 <div className="relative">
+                    <div className={`w-12 h-12 rounded-2xl bg-${stat.color}-500/10 flex items-center justify-center text-${stat.color}-500 mb-6 group-hover:scale-110 transition-transform`}>
+                       <stat.icon className="w-6 h-6" />
                     </div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                    <h3 className="text-2xl font-black dark:text-white text-slate-900 tracking-tight uppercase">{stat.value}</h3>
+                 </div>
+              </motion.div>
+           ))}
+        </div>
 
-                    <button
-                      onClick={handleRestoreBackup}
-                      disabled={isRestoring}
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-5 rounded-2xl transition-all duration-300 shadow-xl shadow-emerald-600/20 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-4 disabled:opacity-50"
-                    >
-                      {isRestoring ? (
-                        <FiRefreshCw className="w-5 h-5 animate-spin" />
-                      ) : (
-                        <FiCheck className="w-5 h-5" />
+        {/* Main Content Area */}
+        <AnimatePresence mode="wait">
+           {activeTab === 'create' ? (
+             <motion.div key="create" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="bg-white dark:bg-background-card/40 border border-slate-200 dark:border-white/5 rounded-[40px] p-12 lg:p-20 text-center relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-b from-primary-500/5 to-transparent pointer-events-none" />
+                <div className="relative z-10 max-w-2xl mx-auto space-y-10">
+                   <div className="w-24 h-24 rounded-[32px] bg-primary-500/10 border border-primary-500/20 flex items-center justify-center mx-auto mb-10 shadow-premium group-hover:scale-110 transition-transform duration-500 text-primary-500">
+                      <FiZap className="w-10 h-10" />
+                   </div>
+                   <div className="space-y-4">
+                      <h2 className="text-4xl font-black dark:text-white text-slate-900 tracking-tight">Générer un Export Complet</h2>
+                      <p className="text-slate-500 dark:text-slate-400 font-medium max-w-lg mx-auto leading-relaxed">
+                         Cette action consolide l'intégralité de votre portfolio (Projets, Médias, SEO, Parcours) dans un fichier JSON unique et cryptographique.
+                      </p>
+                   </div>
+
+                   {isCreatingBackup && (
+                     <div className="space-y-4">
+                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-primary-500">
+                           <span className="flex items-center gap-2"><FiLoader className="animate-spin" /> Compression en cours…</span>
+                           <span>{Math.round(backupProgress)}%</span>
+                        </div>
+                        <div className="h-2.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden p-0.5 border border-slate-100 dark:border-white/5">
+                           <motion.div initial={{ width: 0 }} animate={{ width: `${backupProgress}%` }} className="h-full bg-gradient-to-r from-primary-600 to-primary-400 rounded-full" />
+                        </div>
+                     </div>
+                   )}
+
+                   <button onClick={handleCreateBackup} disabled={isCreatingBackup} className="w-full bg-primary-500 text-white py-6 rounded-[32px] font-black uppercase tracking-[0.2em] text-sm shadow-xl shadow-primary-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-4 hover:bg-primary-600 disabled:opacity-50">
+                      {isCreatingBackup ? <FiLoader className="animate-spin" /> : <FiDownload className="w-5 h-5" />} Lancer le processus d'export
+                   </button>
+                   
+                   <div className="flex items-center justify-center gap-8 pt-4 border-t border-slate-100 dark:border-white/5">
+                      <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest"><FiServer className="text-primary-500"/> Local Storage</div>
+                      <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest"><FiLock className="text-emerald-500"/> Full Encrypted</div>
+                   </div>
+                </div>
+             </motion.div>
+           ) : (
+             <motion.div key="restore" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="bg-white dark:bg-background-card/40 border border-slate-200 dark:border-white/5 rounded-[40px] p-12 lg:p-20 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent pointer-events-none" />
+                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                   <div className="space-y-10">
+                      <div className="w-20 h-20 rounded-[24px] bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 shadow-premium"><FiUpload className="w-8 h-8" /></div>
+                      <div className="space-y-4">
+                         <h2 className="text-4xl font-black dark:text-white text-slate-900 tracking-tight">Restauration</h2>
+                         <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                            Réinjectez des données précédemment exportées. <span className="text-rose-500 font-bold">Attention :</span> l'état actuel de votre portfolio sera totalement remplacé par les données du fichier chargé.
+                         </p>
+                      </div>
+                      
+                      {selectedFile && (
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-emerald-500/5 border border-emerald-500/20 rounded-[32px] p-8 space-y-6 relative group overflow-hidden">
+                           <div className="flex items-center gap-5">
+                              <div className="w-14 h-14 rounded-2xl bg-white dark:bg-emerald-500/20 flex items-center justify-center text-emerald-500 shadow-sm grow-0 shrink-0"><FiFileText className="w-7 h-7" /></div>
+                              <div className="flex-1 overflow-hidden">
+                                 <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Fichier prêt</p>
+                                 <h4 className="text-base font-black dark:text-white text-slate-900 truncate">{selectedFile.name}</h4>
+                                 <p className="text-[10px] font-bold text-slate-500">{(selectedFile.size / 1024).toFixed(2)} KB · Hub JSON v2</p>
+                              </div>
+                              <button onClick={() => setSelectedFile(null)} className="w-10 h-10 bg-slate-100 dark:bg-white/10 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all"><FiTrash2 /></button>
+                           </div>
+
+                           <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-3">
+                              <FiAlertTriangle className="text-amber-500 shrink-0 mt-0.5" />
+                              <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed">Cette opération est irréversible. Toutes les données actuelles seront perdues.</p>
+                           </div>
+
+                           <button onClick={handleRestoreBackup} disabled={isRestoring} className="w-full bg-emerald-500 text-white py-5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-3">
+                              {isRestoring ? <FiLoader className="animate-spin" /> : <FiCheck className="w-5 h-5" />} Exécuter la restauration
+                           </button>
+                        </motion.div>
                       )}
-                      Lancer la restauration
-                    </button>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
+                   </div>
+
+                   <div onDragOver={e => { e.preventDefault(); setIsDragOver(true); }} onDragLeave={() => setIsDragOver(false)} onDrop={e => { e.preventDefault(); setIsDragOver(false); const f = e.dataTransfer.files[0]; if (f && f.name.endsWith('.json')) setSelectedFile(f); }} className={`border-3 border-dashed rounded-[40px] p-20 flex flex-col items-center justify-center text-center transition-all duration-500 gap-8 ${isDragOver ? 'border-primary-500 bg-primary-500/5 scale-105' : 'border-slate-200 dark:border-white/10 hover:border-primary-500/30'}`}>
+                      <input type="file" accept=".json" onChange={handleFileUpload} className="hidden" id="restore-input" />
+                      <label htmlFor="restore-input" className="cursor-pointer space-y-6">
+                         <div className="w-20 h-20 rounded-[32px] bg-slate-100 dark:bg-white/5 flex items-center justify-center mx-auto shadow-sm group-hover:scale-110 transition-transform"><FiPlus className="w-10 h-10 text-slate-400" /></div>
+                         <div>
+                            <p className="text-sm font-black dark:text-white text-slate-900 uppercase tracking-widest">Load hub data</p>
+                            <p className="text-[10px] font-medium text-slate-500 uppercase tracking-widest mt-2 italic">Drag and drop or browse files</p>
+                         </div>
+                      </label>
+                   </div>
+                </div>
+             </motion.div>
+           )}
         </AnimatePresence>
       </div>
     </AdminLayout>
