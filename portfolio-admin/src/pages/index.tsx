@@ -17,8 +17,12 @@ import {
 import { HiArrowDown } from 'react-icons/hi';
 import {
   FiExternalLink, FiGithub, FiX, FiDownload,
-  FiCode, FiSettings, FiStar, FiSend, FiChevronRight
+  FiCode, FiSettings, FiStar, FiSend, FiChevronRight,
+  FiLayers, FiFilm, FiCpu
 } from 'react-icons/fi';
+import {
+  SiNextdotjs, SiReact, SiNodedotjs, SiMongodb, SiTypescript
+} from 'react-icons/si';
 import parse from 'html-react-parser';
 import DOMPurify from 'isomorphic-dompurify';
 import SkillCategory from '@/models/SkillCategory';
@@ -252,7 +256,7 @@ export default function Home({
             </motion.div>
 
             {/* Social links */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex items-center justify-center gap-2">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex items-center justify-center gap-2 mb-10">
               {homeData.socialLinks.github && (
                 <a href={homeData.socialLinks.github} target="_blank" rel="noopener noreferrer" title="GitHub"
                   className="p-2 dark:text-zinc-600 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600 transition-colors duration-150"
@@ -279,6 +283,35 @@ export default function Home({
                 ><FaTelegram className="w-5 h-5" /></a>
               )}
             </motion.div>
+
+            {/* Tech badges strip */}
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.35 }}
+              className="flex flex-wrap items-center justify-center gap-2"
+            >
+              <span className="text-[10px] font-semibold dark:text-zinc-700 text-zinc-400 uppercase tracking-widest mr-1">Stack</span>
+              {[
+                { icon: SiNextdotjs, label: 'Next.js', color: 'currentColor' },
+                { icon: SiReact, label: 'React', color: '#61DAFB' },
+                { icon: SiNodedotjs, label: 'Node.js', color: '#339933' },
+                { icon: SiMongodb, label: 'MongoDB', color: '#47A248' },
+                { icon: SiTypescript, label: 'TypeScript', color: '#3178C6' },
+              ].map((t, i) => (
+                <div
+                  key={i}
+                  title={t.label}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 dark:bg-white/[0.04] bg-zinc-100 rounded-lg border dark:border-white/[0.06] border-zinc-200 hover:dark:border-white/[0.1] hover:border-zinc-300 transition-all duration-150 cursor-default group"
+                >
+                  <t.icon
+                    className="w-3.5 h-3.5 dark:opacity-60 opacity-50 group-hover:opacity-100 transition-opacity"
+                    style={{ color: t.color }}
+                  />
+                  <span className="text-[11px] font-medium dark:text-zinc-500 text-zinc-500 group-hover:dark:text-zinc-300 group-hover:text-zinc-700 transition-colors">{t.label}</span>
+                </div>
+              ))}
+            </motion.div>
           </div>
         </div>
       </section>
@@ -297,7 +330,8 @@ export default function Home({
                 title: "L'Architecte",
                 desc: 'Stack MERN, Next.js, systèmes complets et automatisation serveur.',
                 accent: 'indigo',
-                border: 'hover:border-indigo-500/30'
+                border: 'hover:border-indigo-500/30',
+                icon: FiLayers,
               },
               {
                 href: '/designer',
@@ -305,7 +339,8 @@ export default function Home({
                 title: "L'Artiste",
                 desc: 'Vidéo, montage, color grading, direction artistique et création de contenu.',
                 accent: 'rose',
-                border: 'hover:border-rose-500/30'
+                border: 'hover:border-rose-500/30',
+                icon: FiFilm,
               },
               {
                 href: '/maker',
@@ -313,7 +348,8 @@ export default function Home({
                 title: 'Le Builder',
                 desc: 'Diagnostic hardware, réparation smartphones, assemblage PC et IoT.',
                 accent: 'amber',
-                border: 'hover:border-amber-500/30'
+                border: 'hover:border-amber-500/30',
+                icon: FiCpu,
               },
             ].map((item, i) => (
               <motion.div
@@ -327,10 +363,22 @@ export default function Home({
                   href={item.href}
                   className={`group block p-6 rounded-2xl dark:bg-white/[0.02] bg-white border dark:border-white/[0.06] border-zinc-200 ${item.border} transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-black/40`}
                 >
-                  <div className={`text-[11px] font-semibold uppercase tracking-widest mb-3 ${
-                    item.accent === 'indigo' ? 'text-indigo-500' :
-                    item.accent === 'rose' ? 'text-rose-500' : 'text-amber-500'
-                  }`}>{item.label}</div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${
+                      item.accent === 'indigo' ? 'dark:bg-indigo-500/10 bg-indigo-50 dark:border-indigo-500/20 border-indigo-100' :
+                      item.accent === 'rose' ? 'dark:bg-rose-500/10 bg-rose-50 dark:border-rose-500/20 border-rose-100' :
+                      'dark:bg-amber-500/10 bg-amber-50 dark:border-amber-500/20 border-amber-100'
+                    }`}>
+                      <item.icon className={`w-4 h-4 ${
+                        item.accent === 'indigo' ? 'text-indigo-500' :
+                        item.accent === 'rose' ? 'text-rose-500' : 'text-amber-500'
+                      }`} />
+                    </div>
+                    <div className={`text-[11px] font-semibold uppercase tracking-widest ${
+                      item.accent === 'indigo' ? 'text-indigo-500' :
+                      item.accent === 'rose' ? 'text-rose-500' : 'text-amber-500'
+                    }`}>{item.label}</div>
+                  </div>
                   <h3 className="text-lg font-bold dark:text-white text-zinc-900 mb-2 tracking-tight">{item.title}</h3>
                   <p className="text-sm dark:text-zinc-500 text-zinc-500 leading-relaxed mb-4">{item.desc}</p>
                   <span className={`text-[12px] font-semibold flex items-center gap-1.5 group-hover:gap-2.5 transition-all duration-150 ${

@@ -2,15 +2,18 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiMenu, FiX, FiSun, FiMoon } from 'react-icons/fi';
+import {
+  FiMenu, FiX, FiSun, FiMoon,
+  FiHome, FiUser, FiGrid, FiBookOpen, FiBriefcase, FiMail
+} from 'react-icons/fi';
 import { useTheme } from '@/contexts/ThemeContext';
 
 const navItems = [
-  { name: 'Accueil', path: '/' },
-  { name: 'À propos', path: '/about' },
-  { name: 'Projets', path: '/projects' },
-  { name: 'Formations', path: '/formations' },
-  { name: 'Expériences', path: '/experiences' },
+  { name: 'Accueil',      path: '/',           icon: FiHome },
+  { name: 'À propos',     path: '/about',       icon: FiUser },
+  { name: 'Projets',      path: '/projects',    icon: FiGrid },
+  { name: 'Formations',   path: '/formations',  icon: FiBookOpen },
+  { name: 'Expériences',  path: '/experiences', icon: FiBriefcase },
 ];
 
 export default function Navbar() {
@@ -60,16 +63,18 @@ export default function Navbar() {
           <nav className="hidden md:flex items-center gap-0.5">
             {navItems.map((item) => {
               const isActive = router.pathname === item.path;
+              const Icon = item.icon;
               return (
                 <Link
                   key={item.path}
                   href={item.path}
-                  className={`relative px-3.5 py-2 rounded-lg text-[13px] font-medium transition-colors duration-150 ${
+                  className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium transition-colors duration-150 ${
                     isActive
                       ? 'dark:text-white text-zinc-900'
                       : 'dark:text-zinc-500 text-zinc-500 hover:dark:text-zinc-200 hover:text-zinc-800'
                   }`}
                 >
+                  <Icon className="w-3.5 h-3.5" />
                   {item.name}
                   {isActive && (
                     <motion.span
@@ -96,8 +101,9 @@ export default function Navbar() {
 
             <Link
               href="/contact"
-              className="hidden md:flex h-8 px-4 text-[12px] font-semibold dark:text-zinc-200 text-zinc-700 border dark:border-white/10 border-zinc-200 rounded-lg hover:dark:bg-white/[0.06] hover:bg-zinc-100 transition-all duration-150 items-center"
+              className="hidden md:flex items-center gap-1.5 h-8 px-4 text-[12px] font-semibold dark:text-zinc-200 text-zinc-700 border dark:border-white/10 border-zinc-200 rounded-lg hover:dark:bg-white/[0.06] hover:bg-zinc-100 transition-all duration-150"
             >
+              <FiMail className="w-3.5 h-3.5" />
               Contact
             </Link>
 
@@ -139,9 +145,10 @@ export default function Navbar() {
             </div>
 
             {/* Links */}
-            <nav className="flex flex-col px-6 pt-6 flex-1">
+            <nav className="flex flex-col px-6 pt-4 flex-1">
               {navItems.map((item, i) => {
                 const isActive = router.pathname === item.path;
+                const Icon = item.icon;
                 return (
                   <motion.div
                     key={item.path}
@@ -152,14 +159,21 @@ export default function Navbar() {
                     <Link
                       href={item.path}
                       onClick={() => setIsOpen(false)}
-                      className={`flex items-center justify-between py-4 border-b dark:border-white/[0.05] border-zinc-100 text-base font-medium transition-colors duration-150 ${
+                      className={`flex items-center gap-3 py-4 border-b dark:border-white/[0.05] border-zinc-100 text-base font-medium transition-colors duration-150 ${
                         isActive
                           ? 'text-indigo-500'
                           : 'dark:text-zinc-300 text-zinc-700'
                       }`}
                     >
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${
+                        isActive
+                          ? 'dark:bg-indigo-500/15 bg-indigo-50 text-indigo-500'
+                          : 'dark:bg-white/[0.04] bg-zinc-100 dark:text-zinc-500 text-zinc-400'
+                      }`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
                       {item.name}
-                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />}
+                      {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />}
                     </Link>
                   </motion.div>
                 );
@@ -171,8 +185,9 @@ export default function Navbar() {
               <Link
                 href="/contact"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center justify-center w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/20 transition-colors duration-150"
+                className="flex items-center justify-center gap-2 w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/20 transition-colors duration-150"
               >
+                <FiMail className="w-4 h-4" />
                 Me contacter
               </Link>
             </div>
