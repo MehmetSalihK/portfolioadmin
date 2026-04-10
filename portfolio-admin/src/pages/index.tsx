@@ -1,6 +1,8 @@
 import { motion, useScroll, AnimatePresence } from 'framer-motion';
 import Head from 'next/head';
 import { GetStaticProps } from 'next';
+import { useTranslation } from 'react-i18next';
+import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
 import Layout from '@/components/layout/Layout';
 import CVModal from '@/components/modals/CVModal';
 import { Analytics } from "@vercel/analytics/next";
@@ -31,6 +33,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import SkillsSection from '@/components/home/SkillsSection';
 import JSONLD, { schemas } from '@/components/layout/JSONLD';
+import { getLocalized, localizeList } from '@/utils/i18n-utils';
 
 // ─── Interfaces ────────────────────────────────────────────────────────────────
 interface Project {
@@ -100,6 +103,7 @@ const defaultHomeData = {
 export default function Home({
   projects, experiences, homeData = defaultHomeData, skillsByCategory, settings, seoData
 }: HomePageProps) {
+  const { t } = useTranslation('common');
   const { scrollYProgress } = useScroll();
   const mainRef = useRef<HTMLDivElement>(null);
   const [showBanner, setShowBanner] = useState(true);
@@ -155,8 +159,8 @@ export default function Home({
     <Layout>
       <JSONLD type="Person" data={schemas.me} />
       <Head>
-        <title>{seoData?.title || homeData.title || 'Portfolio - Accueil'}</title>
-        <meta name="description" content={seoData?.description || 'Portfolio professionnel - Développeur Full Stack'} />
+        <title>{seoData?.title || t('seo.home_title')}</title>
+        <meta name="description" content={seoData?.description || t('seo.home_description')} />
         {seoData?.keywords && seoData.keywords.length > 0 && (
           <meta name="keywords" content={seoData.keywords.join(', ')} />
         )}
@@ -208,7 +212,7 @@ export default function Home({
             >
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               <span className="text-[12px] font-medium dark:text-zinc-400 text-zinc-500">
-                Disponible pour de nouveaux projets
+                {t('hero.status')}
               </span>
             </motion.div>
 
@@ -219,8 +223,8 @@ export default function Home({
               transition={{ delay: 0.1, duration: 0.4, ease: [0.2, 0, 0, 1] }}
               className="text-5xl sm:text-6xl lg:text-7xl font-extrabold dark:text-white text-zinc-900 leading-[1.05] tracking-tight mb-6 text-balance"
             >
-              Codeur par&nbsp;<span className="text-indigo-500 italic">métier</span>,{' '}<br className="hidden sm:block" />
-              créatif par&nbsp;<span className="text-indigo-500 italic">nature</span>.
+              {t('hero.title_part1')}&nbsp;<span className="text-indigo-500 italic">{t('hero.title_part2')}</span>,{' '}<br className="hidden sm:block" />
+              {t('hero.title_part3')}&nbsp;<span className="text-indigo-500 italic">{t('hero.title_part4')}</span>.
             </motion.h1>
 
             {/* Subtitle */}
@@ -230,7 +234,7 @@ export default function Home({
               transition={{ delay: 0.18, duration: 0.4, ease: [0.2, 0, 0, 1] }}
               className="text-lg dark:text-zinc-300 text-zinc-600 mb-10 max-w-[540px] mx-auto leading-[1.8] font-normal"
             >
-              De l&apos;architecture logicielle au prototypage hardware — je conçois des produits numériques complets où la technique rencontre l&apos;esthétique.
+              {homeData.subtitle || t('hero.description')}
             </motion.p>
 
             {/* CTAs */}
@@ -244,14 +248,14 @@ export default function Home({
                 href="/projects"
                 className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_25px_rgba(79,70,229,0.5)] active:scale-95"
               >
-                Voir mes projets
+                {t('hero.cta')}
               </Link>
               <button
                 onClick={() => setIsCVModalOpen(true)}
                 className="h-12 px-8 dark:bg-white/[0.05] bg-white dark:hover:bg-white/[0.1] hover:bg-zinc-50 dark:text-zinc-100 text-zinc-800 dark:border-white/10 border-zinc-300 border rounded-xl text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
               >
                 <FiDownload className="w-4 h-4" />
-                Télécharger le CV
+                {t('hero.cv')}
               </button>
             </motion.div>
 
@@ -285,7 +289,7 @@ export default function Home({
               transition={{ delay: 0.5, duration: 0.35 }}
               className="flex flex-wrap items-center justify-center gap-3"
             >
-              <span className="text-[10px] font-bold dark:text-zinc-500 text-zinc-400 uppercase tracking-[0.2em] mr-2">Stack Active</span>
+              <span className="text-[10px] font-bold dark:text-zinc-500 text-zinc-400 uppercase tracking-[0.2em] mr-2">{t('hero.stack')}</span>
               {[
                 { icon: SiNextdotjs, label: 'Next.js', color: 'currentColor' },
                 { icon: SiReact, label: 'React', color: '#61DAFB' },
@@ -320,27 +324,27 @@ export default function Home({
             {[
               {
                 href: '/developpeur',
-                label: 'Développeur',
-                title: "L'Architecte",
-                desc: 'Stack MERN, Next.js, systèmes complets et automatisation serveur.',
+                label: t('home.univers.dev_label'),
+                title: t('home.univers.dev_title'),
+                desc: t('home.univers.dev_desc'),
                 accent: 'indigo',
                 border: 'hover:border-indigo-500/30',
                 icon: FiLayers,
               },
               {
                 href: '/designer',
-                label: 'Créatif',
-                title: "L'Artiste",
-                desc: 'Vidéo, montage, color grading, direction artistique et création de contenu.',
+                label: t('home.univers.creative_label'),
+                title: t('home.univers.creative_title'),
+                desc: t('home.univers.creative_desc'),
                 accent: 'rose',
                 border: 'hover:border-rose-500/30',
                 icon: FiFilm,
               },
               {
                 href: '/maker',
-                label: 'Maker',
-                title: 'Le Builder',
-                desc: 'Diagnostic hardware, réparation smartphones, assemblage PC et IoT.',
+                label: t('home.univers.maker_label'),
+                title: t('home.univers.maker_title'),
+                desc: t('home.univers.maker_desc'),
                 accent: 'amber',
                 border: 'hover:border-amber-500/30',
                 icon: FiCpu,
@@ -379,7 +383,7 @@ export default function Home({
                     item.accent === 'indigo' ? 'text-indigo-500' :
                     item.accent === 'rose' ? 'text-rose-500' : 'text-amber-500'
                   }`}>
-                    Découvrir <FiChevronRight className="w-3.5 h-3.5" />
+                    {t('common.discover')} <FiChevronRight className="w-3.5 h-3.5" />
                   </span>
                 </Link>
               </motion.div>
@@ -407,17 +411,17 @@ export default function Home({
               <div>
                 <div className="flex items-center gap-2 text-indigo-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-3">
                   <span className="w-8 h-[1px] bg-indigo-500" />
-                  Réalisations
+                  {t('projects.subtitle')}
                 </div>
                 <h2 className="text-4xl lg:text-5xl font-black dark:text-white text-zinc-900 tracking-tight">
-                  Projets en vedette
+                  {t('projects.title')}
                 </h2>
               </div>
               <Link
                 href="/projects"
                 className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest dark:text-zinc-500 text-zinc-500 dark:hover:text-white hover:text-zinc-900 transition-colors group"
               >
-                Voir tous les projets
+                {t('projects.view_all')}
                 <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
               </Link>
             </motion.div>
@@ -451,7 +455,7 @@ export default function Home({
                           onClick={() => project.demoUrl && handleDemoClick(project._id, project.demoUrl)}
                           whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                           className="p-3 bg-white rounded-xl text-zinc-900 shadow-lg"
-                          title="Voir la démo"
+                          title={t('projects.view_demo')}
                         ><FiExternalLink className="w-5 h-5" /></motion.button>
                       )}
                       {project.githubUrl && (
@@ -459,14 +463,14 @@ export default function Home({
                           onClick={() => project.githubUrl && handleGithubClick(project._id, project.githubUrl)}
                           whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                           className="p-3 bg-white rounded-xl text-zinc-900 shadow-lg"
-                          title="Voir le code"
+                          title={t('projects.view_code')}
                         ><FiGithub className="w-5 h-5" /></motion.button>
                       )}
                     </div>
                     {/* Featured badge */}
                     {project.featured && (
                       <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 bg-indigo-600/90 text-white text-[10px] font-black uppercase tracking-widest rounded-full backdrop-blur-sm">
-                        <FiStar className="w-3 h-3" />Featured
+                        <FiStar className="w-3 h-3" />{t('projects.featured')}
                       </div>
                     )}
                   </div>
@@ -481,7 +485,7 @@ export default function Home({
                         <>
                           {project.description.substring(0, 100)}…{' '}
                           <button onClick={() => openModal(project)} className="text-indigo-500 hover:text-indigo-400 font-bold underline transition-colors">
-                            lire plus
+                            {t('projects.read_more')}
                           </button>
                         </>
                       ) : project.description}
@@ -509,7 +513,7 @@ export default function Home({
                             onClick={() => project.demoUrl && handleDemoClick(project._id, project.demoUrl)}
                             className="flex items-center gap-1.5 text-indigo-500 hover:text-indigo-400 font-black text-[10px] uppercase tracking-widest transition-colors"
                           >
-                            <FiExternalLink className="w-3.5 h-3.5" />Demo
+                            <FiExternalLink className="w-3.5 h-3.5" />{t('projects.live_demo')}
                           </button>
                         )}
                         {project.githubUrl && (
@@ -517,7 +521,7 @@ export default function Home({
                             onClick={() => project.githubUrl && handleGithubClick(project._id, project.githubUrl)}
                             className="flex items-center gap-1.5 dark:text-zinc-500 text-zinc-400 dark:hover:text-white hover:text-zinc-900 font-black text-[10px] uppercase tracking-widest transition-colors"
                           >
-                            <FiGithub className="w-3.5 h-3.5" />Code
+                            <FiGithub className="w-3.5 h-3.5" />{t('projects.source_code')}
                           </button>
                         )}
                       </div>
@@ -534,8 +538,8 @@ export default function Home({
                 <div className="w-20 h-20 rounded-3xl dark:bg-indigo-500/10 bg-indigo-50 flex items-center justify-center mx-auto mb-6">
                   <FiCode className="w-10 h-10 text-indigo-500" />
                 </div>
-                <h3 className="text-xl font-black dark:text-white text-zinc-900 mb-3">Projets en cours de développement</h3>
-                <p className="dark:text-zinc-500 text-zinc-500 max-w-sm mx-auto font-medium">De nouveaux projets passionnants arrivent bientôt.</p>
+                <h3 className="text-xl font-black dark:text-white text-zinc-900 mb-3">{t('projects.empty')}</h3>
+                <p className="dark:text-zinc-500 text-zinc-500 max-w-sm mx-auto font-medium">{t('projects.empty_desc')}</p>
               </motion.div>
             )}
           </div>
@@ -561,13 +565,13 @@ export default function Home({
                     <Image src={selectedProject.imageUrl} alt={selectedProject.title} fill className="object-cover" sizes="800px" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-black dark:text-zinc-400 text-zinc-500 uppercase tracking-widest mb-3">Description</h3>
+                    <h3 className="text-xs font-black dark:text-zinc-400 text-zinc-500 uppercase tracking-widest mb-3">{t('projects.description_label')}</h3>
                     <div className="dark:text-zinc-300 text-zinc-700 leading-relaxed text-sm">
                       {parse(DOMPurify.sanitize(selectedProject.description))}
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-xs font-black dark:text-zinc-400 text-zinc-500 uppercase tracking-widest mb-3">Technologies</h3>
+                    <h3 className="text-xs font-black dark:text-zinc-400 text-zinc-500 uppercase tracking-widest mb-3">{t('projects.tech_label')}</h3>
                     <div className="flex flex-wrap gap-2">
                       {selectedProject.technologies.map((tech: string, i: number) => (
                         <span key={i} className="px-3 py-1.5 dark:bg-indigo-500/10 bg-indigo-50 dark:text-indigo-400 text-indigo-600 dark:border-indigo-500/20 border-indigo-200 border rounded-xl text-sm font-bold">
@@ -582,7 +586,7 @@ export default function Home({
                         onClick={() => handleDemoClick(selectedProject._id, selectedProject.demoUrl)}
                         className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20"
                       >
-                        <FiExternalLink className="w-4 h-4" />Voir la démo
+                        <FiExternalLink className="w-4 h-4" />{t('projects.live_demo')}
                       </a>
                     )}
                     {selectedProject.githubUrl && (
@@ -590,7 +594,7 @@ export default function Home({
                         onClick={() => handleGithubClick(selectedProject._id, selectedProject.githubUrl)}
                         className="flex items-center gap-2 px-5 py-2.5 dark:bg-white/10 bg-zinc-100 dark:hover:bg-white/20 hover:bg-zinc-200 dark:text-white text-zinc-900 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
                       >
-                        <FiGithub className="w-4 h-4" />Voir le code
+                        <FiGithub className="w-4 h-4" />{t('projects.source_code')}
                       </a>
                     )}
                   </div>
@@ -615,10 +619,10 @@ export default function Home({
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-14">
               <div className="flex items-center gap-2 text-indigo-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-3">
                 <span className="w-8 h-[1px] bg-indigo-500" />
-                Parcours
+                {t('experience.subtitle')}
               </div>
               <h2 className="text-4xl lg:text-5xl font-black dark:text-white text-zinc-900 tracking-tight">
-                Expériences professionnelles
+                {t('experience.title')}
               </h2>
             </motion.div>
 
@@ -650,11 +654,11 @@ export default function Home({
                             </div>
                           </div>
                           <span className="flex-shrink-0 px-3 py-1.5 dark:bg-indigo-500/10 bg-indigo-50 dark:text-indigo-400 text-indigo-600 dark:border-indigo-500/20 border-indigo-200 border rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
-                            {new Date(exp.startDate).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })}
+                            {new Date(exp.startDate).toLocaleDateString(t('common.date_locale'), { month: 'short', year: 'numeric' })}
                             {' — '}
                             {exp.endDate
-                              ? new Date(exp.endDate).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
-                              : 'Présent'}
+                              ? new Date(exp.endDate).toLocaleDateString(t('common.date_locale'), { month: 'short', year: 'numeric' })
+                              : t('experience.present')}
                           </span>
                         </div>
                         <p className="dark:text-zinc-500 text-zinc-600 leading-relaxed text-sm mb-5">{exp.description}</p>
@@ -677,8 +681,8 @@ export default function Home({
                 <div className="w-16 h-16 rounded-2xl dark:bg-indigo-500/10 bg-indigo-50 flex items-center justify-center mx-auto mb-4">
                   <FiSettings className="w-8 h-8 text-indigo-500" />
                 </div>
-                <h3 className="text-lg font-black dark:text-white text-zinc-900 mb-2">Expériences en cours d&apos;ajout</h3>
-                <p className="dark:text-zinc-500 text-zinc-500 text-sm font-medium">Mon parcours professionnel sera bientôt détaillé ici.</p>
+                <h3 className="text-lg font-black dark:text-white text-zinc-900 mb-2">{t('experience.empty')}</h3>
+                <p className="dark:text-zinc-500 text-zinc-500 text-sm font-medium">{t('experience.empty_desc')}</p>
               </div>
             )}
           </div>
@@ -694,14 +698,14 @@ export default function Home({
             <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
               <div className="flex items-center gap-2 text-indigo-500 font-bold text-[10px] uppercase tracking-[0.2em] justify-center mb-6">
                 <span className="w-8 h-[1px] bg-indigo-500" />
-                Prêt à collaborer ?
+                {t('contact.subtitle_small')}
                 <span className="w-8 h-[1px] bg-indigo-500" />
               </div>
               <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black dark:text-white text-zinc-900 tracking-tight mb-6">
-                Discutons de votre projet
+                {t('contact.title')}
               </h2>
               <p className="dark:text-zinc-400 text-zinc-600 text-lg font-medium mb-10 max-w-xl mx-auto">
-                Vous cherchez un développeur pour votre prochain projet ? Je suis disponible pour des missions freelance, CDD ou CDI.
+                {t('contact.description')}
               </p>
               <div className="flex flex-wrap gap-4 justify-center mb-10">
                 <Link
@@ -709,7 +713,7 @@ export default function Home({
                   className="h-16 px-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-indigo-600/20 transition-all active:scale-95 flex items-center justify-center gap-3"
                 >
                   <FiSend className="w-4 h-4" />
-                  Démarrer une Collaboration
+                  {t('contact.cta')}
                 </Link>
                 
                 <button
@@ -717,7 +721,7 @@ export default function Home({
                   className="h-16 px-10 dark:bg-white/5 bg-white dark:hover:bg-white/10 hover:bg-zinc-50 dark:text-white text-zinc-900 dark:border-white/5 border-zinc-200 border rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-3 shadow-sm"
                 >
                   <FiDownload className="w-4 h-4" />
-                  Consulter le Dossier CV
+                  {t('contact.cv_btn')}
                 </button>
               </div>
               
@@ -792,20 +796,60 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       { $limit: 6 }
     ]);
 
-    const experiences = await ExperienceModel.find({})
+    const rawExperiences = await ExperienceModel.find({})
       .sort({ startDate: -1 })
-      .select('title company location startDate endDate description technologies')
+      .select('title title_en title_tr company location startDate endDate description description_en description_tr technologies')
       .lean();
 
-    const experiencesWithTechnologies = experiences.map(exp => ({
+    // Localize Experiences
+    const experiences = rawExperiences.map((exp: any) => ({
       ...exp,
-      technologies: exp.technologies || []
+      title: getLocalized(exp, 'title', currentLocale),
+      description: getLocalized(exp, 'description', currentLocale),
+      _id: exp._id.toString(),
+      startDate: exp.startDate.toISOString(),
+      endDate: exp.endDate ? exp.endDate.toISOString() : null,
     }));
+
+    // Localize HomePage Data
+    const localizedHomeData = homeData ? {
+      ...homeData,
+      _id: (homeData as any)._id.toString(),
+      title: getLocalized(homeData, 'title', currentLocale),
+      subtitle: getLocalized(homeData, 'subtitle', currentLocale),
+      aboutTitle: getLocalized(homeData, 'aboutTitle', currentLocale),
+      aboutText: getLocalized(homeData, 'aboutText', currentLocale),
+    } : defaultHomeData;
+
+    // Localize Projects
+    const localizedProjects = projects.map((proj: any) => ({
+      ...proj,
+      title: getLocalized(proj, 'title', currentLocale),
+      description: getLocalized(proj, 'description', currentLocale),
+      _id: proj._id.toString(),
+    }));
+
+    // Localize Experiences
+    const localizedExperiences = rawExperiences.map((exp: any) => ({
+      ...exp,
+      title: getLocalized(exp, 'title', currentLocale),
+      description: getLocalized(exp, 'description', currentLocale),
+      _id: exp._id.toString(),
+      startDate: exp.startDate.toISOString(),
+      endDate: exp.endDate ? exp.endDate.toISOString() : null,
+    }));
+
+    // Localize SEO
+    const localizedSEO = seoData ? {
+      ...seoData,
+      title: getLocalized(seoData, 'title', currentLocale),
+      description: getLocalized(seoData, 'description', currentLocale),
+    } : null;
 
     const allCategories = await SkillCategory.find({ isVisible: true }).sort('displayOrder').lean();
 
-    const uniqueCategories = allCategories.reduce<typeof allCategories>((acc, current) => {
-      const exists = acc.find(cat => cat.name === current.name);
+    const uniqueCategories = allCategories.reduce<any[]>((acc, current) => {
+      const exists = acc.find((cat: any) => cat.name === current.name);
       if (!exists) acc.push(current);
       return acc;
     }, []);
@@ -814,30 +858,31 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       .populate('categoryId')
       .lean();
 
-    const skillsByCategory = uniqueCategories.map(category => ({
-      _id: category._id,
+    const skillsByCategory = uniqueCategories.map((category: any) => ({
+      _id: category._id.toString(),
       name: category.name,
       displayOrder: category.displayOrder,
-      skills: skills.filter(skill =>
+      skills: skills.filter((skill: any) =>
         skill.categoryId &&
         typeof skill.categoryId === 'object' &&
         'name' in skill.categoryId &&
-        (skill.categoryId as Category).name === category.name
-      ).sort((a, b) => a.displayOrder - b.displayOrder)
-    })).sort((a, b) => a.displayOrder - b.displayOrder);
+        skill.categoryId.name === category.name
+      ).sort((a: any, b: any) => a.displayOrder - b.displayOrder).map((s: any) => ({...s, _id: s._id.toString(), categoryId: s.categoryId._id.toString()}))
+    })).sort((a: any, b: any) => a.displayOrder - b.displayOrder);
 
     return {
       props: {
-        projects: JSON.parse(JSON.stringify(projects)),
-        experiences: JSON.parse(JSON.stringify(experiencesWithTechnologies)),
-        skills: JSON.parse(JSON.stringify(skills)),
-        homeData: JSON.parse(JSON.stringify(homeData)),
+        projects: JSON.parse(JSON.stringify(localizedProjects)),
+        experiences: JSON.parse(JSON.stringify(localizedExperiences)),
+        homeData: JSON.parse(JSON.stringify(localizedHomeData)),
         skillsByCategory: JSON.parse(JSON.stringify(skillsByCategory)),
         settings: JSON.parse(JSON.stringify(settings)),
-        seoData: seoData ? JSON.parse(JSON.stringify(seoData)) : null,
+        seoData: localizedSEO ? JSON.parse(JSON.stringify(localizedSEO)) : null,
+        ...(await serverSideTranslations(currentLocale, ['common'])),
       },
       revalidate: 1,
     };
+
   } catch (error) {
     console.error('Error in getStaticProps:', error);
     return {

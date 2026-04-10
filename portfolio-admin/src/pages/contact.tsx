@@ -8,6 +8,9 @@ import { GetStaticProps } from 'next';
 import connectDB from '@/lib/db';
 import Setting from '@/models/Setting';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
+import { useRouter } from 'next/router';
 
 interface ContactPageProps {
   settings: {
@@ -21,7 +24,8 @@ interface ContactPageProps {
 }
 
 export default function ContactPage({ settings = { email: '', github: '', linkedin: '', position: '' } }: ContactPageProps) {
-
+  const { locale } = useRouter();
+  const { t } = useTranslation('common');
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', company: '', phone: '',
     email: '', subject: '', message: ''
@@ -58,13 +62,13 @@ export default function ContactPage({ settings = { email: '', github: '', linked
         body: JSON.stringify(formData),
       });
       if (response.ok) {
-        toast.success('Message envoyé !');
+        toast.success(t('contact.toast.success'));
         setFormData({ firstName: '', lastName: '', company: '', phone: '', email: '', subject: '', message: '' });
       } else {
-        toast.error('Erreur lors de l\'envoi');
+        toast.error(t('contact.toast.error'));
       }
     } catch {
-      toast.error('Erreur lors de l\'envoi du message');
+      toast.error(t('contact.toast.error_general'));
     } finally {
       setIsSending(false);
     }
@@ -84,8 +88,8 @@ export default function ContactPage({ settings = { email: '', github: '', linked
   return (
     <Layout>
       <Head>
-        <title>Contact — Portfolio</title>
-        <meta name="description" content="Contactez-moi pour vos projets" />
+        <title>{t('nav.contact')} — Portfolio</title>
+        <meta name="description" content={t('contact.hero_description')} />
       </Head>
 
       <main className="min-h-screen dark:bg-[#0a0a0f] bg-[#fafafc] pt-14">
@@ -99,13 +103,13 @@ export default function ContactPage({ settings = { email: '', github: '', linked
             className="mb-16"
           >
             <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-5">
-              Contact
+              {t('contact.subtitle')}
             </div>
             <h1 className="text-5xl md:text-6xl font-extrabold dark:text-white text-zinc-900 tracking-tight mb-5 text-balance">
-              Lançons votre <span className="text-indigo-500 italic">projet</span>.
+              {t('contact.hero_title_part1')} <span className="text-indigo-500 italic">{t('contact.hero_title_part2')}</span>.
             </h1>
             <p className="dark:text-zinc-500 text-zinc-500 text-lg max-w-[520px] leading-[1.75]">
-              Une idée ? Un défi technique ? Mon canal de communication est ouvert.
+              {t('contact.hero_description')}
             </p>
           </motion.div>
 
@@ -127,33 +131,33 @@ export default function ContactPage({ settings = { email: '', github: '', linked
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className={labelCls}>Prénom</label>
+                      <label className={labelCls}>{t('contact.form.firstname')}</label>
                       <input type="text" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })}
-                        placeholder="Alexandre" className={inputCls} required />
+                        placeholder={t('contact.form.placeholder_firstname')} className={inputCls} required />
                     </div>
                     <div>
-                      <label className={labelCls}>Nom</label>
+                      <label className={labelCls}>{t('contact.form.lastname')}</label>
                       <input type="text" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })}
-                        placeholder="Dubois" className={inputCls} required />
+                        placeholder={t('contact.form.placeholder_lastname')} className={inputCls} required />
                     </div>
                   </div>
 
                   <div>
-                    <label className={labelCls}>Email</label>
+                    <label className={labelCls}>{t('contact.form.email')}</label>
                     <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="votre@email.com" className={inputCls} required />
+                      placeholder={t('contact.form.placeholder_email')} className={inputCls} required />
                   </div>
 
                   <div>
-                    <label className={labelCls}>Sujet</label>
+                    <label className={labelCls}>{t('contact.form.subject')}</label>
                     <input type="text" value={formData.subject} onChange={e => setFormData({ ...formData, subject: e.target.value })}
-                      placeholder="Projet freelance, collaboration..." className={inputCls} />
+                      placeholder={t('contact.form.placeholder_subject')} className={inputCls} />
                   </div>
 
                   <div>
-                    <label className={labelCls}>Message</label>
+                    <label className={labelCls}>{t('contact.form.message')}</label>
                     <textarea value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })}
-                      placeholder="Décrivez votre projet ou votre demande…" rows={5}
+                      placeholder={t('contact.form.placeholder_message')} rows={5}
                       className={`${inputCls} resize-none`} required />
                   </div>
 
@@ -166,7 +170,7 @@ export default function ContactPage({ settings = { email: '', github: '', linked
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
                       <>
-                        Envoyer le message
+                        {t('contact.form.send')}
                         <FiSend className="w-4 h-4" />
                       </>
                     )}
@@ -209,13 +213,13 @@ export default function ContactPage({ settings = { email: '', github: '', linked
                     <FiMapPin className="w-4 h-4 text-emerald-500" />
                   </div>
                   <div>
-                    <div className="text-[10px] font-semibold dark:text-zinc-600 text-zinc-400 uppercase tracking-widest mb-0.5">Localisation</div>
-                    <div className="text-sm font-semibold dark:text-white text-zinc-900">{cityName || 'France'}</div>
+                    <div className="text-[10px] font-semibold dark:text-zinc-600 text-zinc-400 uppercase tracking-widest mb-0.5">{t('contact.info.location')}</div>
+                    <div className="text-sm font-semibold dark:text-white text-zinc-900">{cityName || (locale === 'fr' ? 'France' : (locale === 'tr' ? 'Fransa' : 'France'))}</div>
                   </div>
                 </div>
                 <div className="p-3.5 rounded-lg dark:bg-emerald-500/[0.05] bg-emerald-50 border dark:border-emerald-500/20 border-emerald-100">
                   <p className="text-xs dark:text-emerald-400 text-emerald-700 leading-relaxed">
-                    Je réponds à chaque demande sous <strong>24h ouvrées</strong>.
+                    <span dangerouslySetInnerHTML={{ __html: t('contact.info.sla') }} />
                   </p>
                 </div>
               </div>
@@ -242,7 +246,8 @@ export default function ContactPage({ settings = { email: '', github: '', linked
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
+  const currentLocale = locale || 'fr';
   try {
     await connectDB();
     const settings = await Setting.findOne().lean() as any;
@@ -255,7 +260,8 @@ export const getStaticProps: GetStaticProps = async () => {
           position: settings?.position || '60180 Nogent-sur-Oise',
           whatsapp: settings?.whatsapp || '',
           telegram: settings?.telegram || '',
-        }
+        },
+        ...(await serverSideTranslations(currentLocale, ['common'])),
       },
       revalidate: 60
     };
@@ -269,7 +275,8 @@ export const getStaticProps: GetStaticProps = async () => {
           position: '60180 Nogent-sur-Oise',
           whatsapp: '',
           telegram: '',
-        }
+        },
+        ...(await serverSideTranslations(currentLocale, ['common'])),
       },
       revalidate: 60
     };

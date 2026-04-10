@@ -9,6 +9,10 @@ import Image from 'next/image';
 import { FiExternalLink, FiGithub, FiCode, FiStar, FiX } from 'react-icons/fi';
 import parse from 'html-react-parser';
 import DOMPurify from 'isomorphic-dompurify';
+import { useTranslation } from 'react-i18next';
+import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
+import { useRouter } from 'next/router';
+import { getLocalized } from '@/utils/i18n-utils';
 
 interface Project {
   _id: string;
@@ -26,6 +30,9 @@ interface ProjectsPageProps {
 }
 
 export default function Projects({ projects }: ProjectsPageProps) {
+  const { locale } = useRouter();
+  const { t } = useTranslation('common');
+
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -67,8 +74,8 @@ export default function Projects({ projects }: ProjectsPageProps) {
   return (
     <Layout>
       <Head>
-        <title>Portfolio - Mes Projets</title>
-        <meta name="description" content="Découvrez mes réalisations et projets en développement web." />
+        <title>{t('nav.projects')} — Portfolio</title>
+        <meta name="description" content={t('projects.description')} />
       </Head>
 
       <main className="min-h-screen dark:bg-[#0a0a0f] bg-[#fafafc] pt-14">
@@ -82,13 +89,13 @@ export default function Projects({ projects }: ProjectsPageProps) {
             className="mb-16"
           >
             <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-5">
-              Portfolio
+              {t('projects.hero_subtitle')}
             </div>
             <h1 className="text-5xl md:text-6xl font-extrabold dark:text-white text-zinc-900 tracking-tight mb-5 text-balance">
-              Sélection de <span className="text-indigo-500 italic">travaux</span>.
+              {t('projects.hero_title_part1')} <span className="text-indigo-500 italic">{t('projects.hero_title_part2')}</span>.
             </h1>
             <p className="dark:text-zinc-500 text-zinc-500 text-lg max-w-[520px] leading-[1.75]">
-              Applications, interfaces et solutions que j&apos;ai conçues.
+              {t('projects.description')}
             </p>
           </motion.div>
 
@@ -103,7 +110,7 @@ export default function Projects({ projects }: ProjectsPageProps) {
             >
               <div className="flex items-center gap-2 text-indigo-500 font-bold text-[10px] uppercase tracking-[0.3em] mb-8">
                 <FiStar className="w-3 h-3" />
-                Featured Spotlight
+                {t('projects.featured_spotlight')}
               </div>
               {(() => {
                 const featured = projects.find(p => p.featured)!;
@@ -208,8 +215,8 @@ export default function Projects({ projects }: ProjectsPageProps) {
               <div className="w-16 h-16 rounded-2xl dark:bg-indigo-500/10 bg-indigo-50 flex items-center justify-center mx-auto mb-6">
                 <FiCode className="w-7 h-7 text-indigo-500" />
               </div>
-              <h3 className="text-xl font-bold dark:text-white text-zinc-900 mb-2 tracking-tight">Aucun projet à afficher</h3>
-              <p className="dark:text-zinc-500 text-zinc-500 text-sm">Revenez bientôt pour de nouvelles réalisations.</p>
+              <h3 className="text-xl font-bold dark:text-white text-zinc-900 mb-2 tracking-tight">{t('projects.empty')}</h3>
+              <p className="dark:text-zinc-500 text-zinc-500 text-sm">{t('projects.empty_desc')}</p>
             </motion.div>
           )}
         </div>
@@ -238,7 +245,7 @@ export default function Projects({ projects }: ProjectsPageProps) {
                   
                   <div>
                     <h3 className="text-xs font-bold dark:text-indigo-400 text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                       <span className="w-4 h-[1px] bg-current opacity-40" /> Description
+                       <span className="w-4 h-[1px] bg-current opacity-40" /> {t('projects.description_label')}
                     </h3>
                     <div className="dark:text-zinc-300 text-zinc-700 leading-relaxed text-base prose prose-zinc dark:prose-invert max-w-none">
                       {parse(DOMPurify.sanitize(selectedProject.description))}
@@ -247,7 +254,7 @@ export default function Projects({ projects }: ProjectsPageProps) {
                   
                   <div>
                     <h3 className="text-xs font-bold dark:text-indigo-400 text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                       <span className="w-4 h-[1px] bg-current opacity-40" /> Technologies
+                       <span className="w-4 h-[1px] bg-current opacity-40" /> {t('projects.tech_label')}
                     </h3>
                     <div className="flex flex-wrap gap-2.5">
                       {selectedProject.technologies.map((tech, i) => (
@@ -266,7 +273,7 @@ export default function Projects({ projects }: ProjectsPageProps) {
                         onClick={() => selectedProject.demoUrl && handleDemoClick(selectedProject._id, selectedProject.demoUrl)}
                         className="flex items-center gap-2 px-7 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-indigo-600/20"
                       >
-                        <FiExternalLink className="w-4 h-4" />Voir la démo
+                        <FiExternalLink className="w-4 h-4" />{t('projects.view_demo')}
                       </motion.button>
                     )}
                     {selectedProject.githubUrl && (
@@ -276,7 +283,7 @@ export default function Projects({ projects }: ProjectsPageProps) {
                         onClick={() => selectedProject.githubUrl && handleGithubClick(selectedProject._id, selectedProject.githubUrl)}
                         className="flex items-center gap-2 px-7 py-3.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:text-white text-zinc-900 rounded-xl text-sm font-bold transition-all"
                       >
-                        <FiGithub className="w-4 h-4" />Voir le code
+                        <FiGithub className="w-4 h-4" />{t('projects.view_code')}
                       </motion.button>
                     )}
                   </div>
@@ -290,16 +297,26 @@ export default function Projects({ projects }: ProjectsPageProps) {
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
+  const currentLocale = locale || 'fr';
   try {
     await connectDB();
-    const projects = await ProjectModel.find({ 
+    const rawProjects = await ProjectModel.find({ 
       archived: { $ne: true }
     }).sort({ featured: -1, order: 1, createdAt: -1 }).lean();
+
+    // Map projects to active locale
+    const projects = rawProjects.map((p: any) => ({
+      ...p,
+      _id: p._id.toString(),
+      title: getLocalized(p, 'title', currentLocale),
+      description: getLocalized(p, 'description', currentLocale),
+    }));
 
     return {
       props: {
         projects: JSON.parse(JSON.stringify(projects)),
+        ...(await serverSideTranslations(currentLocale, ['common'])),
       },
       revalidate: 60,
     };
@@ -308,8 +325,10 @@ export const getStaticProps: GetStaticProps = async () => {
     return {
       props: {
         projects: [],
+        ...(await serverSideTranslations(currentLocale, ['common'])),
       },
       revalidate: 60,
     };
   }
 };
+

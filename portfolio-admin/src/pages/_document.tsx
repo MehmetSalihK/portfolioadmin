@@ -4,7 +4,7 @@ import Document from 'next/document';
 class MyDocument extends Document {
   render() {
     return (
-      <Html lang="fr">
+      <Html>
         <Head>
           <link rel="icon" href="/globe.svg" type="image/svg+xml" />
           <link rel="shortcut icon" href="/globe.svg" />

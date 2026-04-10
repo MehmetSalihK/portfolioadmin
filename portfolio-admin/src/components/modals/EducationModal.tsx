@@ -20,9 +20,14 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
     return `${year}-${month}`;
   };
 
+  const [activeLang, setActiveLang] = useState<'fr' | 'en' | 'tr'>('fr');
   const [formData, setFormData] = useState({
-    school: '', degree: '', field: '', startDate: '', endDate: '',
-    description: '', location: '', isCurrentlyStudying: false,
+    school: '', 
+    degree: '', degree_en: '', degree_tr: '',
+    field: '', field_en: '', field_tr: '',
+    startDate: '', endDate: '',
+    description: '', description_en: '', description_tr: '',
+    location: '', isCurrentlyStudying: false,
     isPaused: false, isDiplomaPassed: false, isDiplomaNotObtained: false,
     isVisible: true, diplomaFile: '', diplomaFileName: '', diplomaFilePath: ''
   });
@@ -36,10 +41,16 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
       setFormData({
         school: education.school || '',
         degree: education.degree || '',
+        degree_en: education.degree_en || '',
+        degree_tr: education.degree_tr || '',
         field: education.field || '',
+        field_en: education.field_en || '',
+        field_tr: education.field_tr || '',
         startDate: formatDateForInput(education.startDate) || '',
         endDate: formatDateForInput(education.endDate || '') || '',
         description: education.description || '',
+        description_en: education.description_en || '',
+        description_tr: education.description_tr || '',
         location: education.location || '',
         isCurrentlyStudying: education.isCurrentlyStudying || false,
         isPaused: education.isPaused || false,
@@ -52,12 +63,17 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
       });
     } else {
       setFormData({
-        school: '', degree: '', field: '', startDate: '', endDate: '',
-        description: '', location: '', isCurrentlyStudying: false,
+        school: '', 
+        degree: '', degree_en: '', degree_tr: '',
+        field: '', field_en: '', field_tr: '',
+        startDate: '', endDate: '',
+        description: '', description_en: '', description_tr: '',
+        location: '', isCurrentlyStudying: false,
         isPaused: false, isDiplomaPassed: false, isDiplomaNotObtained: false,
         isVisible: true, diplomaFile: '', diplomaFileName: '', diplomaFilePath: ''
       });
     }
+    setActiveLang('fr');
   }, [education, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -116,25 +132,63 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                  <button onClick={onClose} className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors"><FiX className="w-6 h-6"/></button>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                 <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Établissement</label>
-                    <div className="relative group">
-                       <FiBook className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                       <input required value={formData.school} onChange={e => setFormData({ ...formData, school: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-12 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: HEC Paris" />
-                    </div>
-                 </div>
+               <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Language Tabs */}
+                  <div className="flex items-center gap-2 p-1.5 bg-slate-100 dark:bg-white/5 rounded-2xl w-fit border border-slate-200 dark:border-white/10 mb-6">
+                    {(['fr', 'en', 'tr'] as const).map((lang) => (
+                      <button
+                        key={lang}
+                        type="button"
+                        onClick={() => setActiveLang(lang)}
+                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                          activeLang === lang
+                            ? 'bg-white dark:bg-white/10 text-primary-500 shadow-sm'
+                            : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                        }`}
+                      >
+                        {lang === 'fr' ? '🇫🇷 FR' : lang === 'en' ? '🇬🇧 EN' : '🇹🇷 TR'}
+                      </button>
+                    ))}
+                  </div>
 
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Diplôme</label>
-                       <input required value={formData.degree} onChange={e => setFormData({ ...formData, degree: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: Master II" />
-                    </div>
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Spécialisation</label>
-                       <input required value={formData.field} onChange={e => setFormData({ ...formData, field: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: Architecture logicielle" />
-                    </div>
-                 </div>
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Établissement</label>
+                     <div className="relative group">
+                        <FiBook className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input required value={formData.school} onChange={e => setFormData({ ...formData, school: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-12 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: HEC Paris" />
+                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">
+                          Diplôme {activeLang !== 'fr' && `(${activeLang.toUpperCase()})`}
+                        </label>
+                        {activeLang === 'fr' && (
+                          <input required value={formData.degree} onChange={e => setFormData({ ...formData, degree: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: Master II" />
+                        )}
+                        {activeLang === 'en' && (
+                          <input value={formData.degree_en} onChange={e => setFormData({ ...formData, degree_en: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: Master's Degree" />
+                        )}
+                        {activeLang === 'tr' && (
+                          <input value={formData.degree_tr} onChange={e => setFormData({ ...formData, degree_tr: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: Yüksek Lisans" />
+                        )}
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">
+                          Spécialisation {activeLang !== 'fr' && `(${activeLang.toUpperCase()})`}
+                        </label>
+                        {activeLang === 'fr' && (
+                          <input required value={formData.field} onChange={e => setFormData({ ...formData, field: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: Architecture logicielle" />
+                        )}
+                        {activeLang === 'en' && (
+                          <input value={formData.field_en} onChange={e => setFormData({ ...formData, field_en: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: Software Architecture" />
+                        )}
+                        {activeLang === 'tr' && (
+                          <input value={formData.field_tr} onChange={e => setFormData({ ...formData, field_tr: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: Yazılım Mimarisi" />
+                        )}
+                     </div>
+                  </div>
 
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
@@ -157,8 +211,18 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                  </div>
 
                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Description</label>
-                    <textarea rows={3} required value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none" placeholder="Décrivez votre cursus…" />
+                    <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">
+                      Description {activeLang !== 'fr' && `(${activeLang.toUpperCase()})`}
+                    </label>
+                    {activeLang === 'fr' && (
+                      <textarea rows={3} required value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none" placeholder="Décrivez votre cursus…" />
+                    )}
+                    {activeLang === 'en' && (
+                      <textarea rows={3} value={formData.description_en} onChange={e => setFormData({ ...formData, description_en: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none" placeholder="Describe your curriculum…" />
+                    )}
+                    {activeLang === 'tr' && (
+                      <textarea rows={3} value={formData.description_tr} onChange={e => setFormData({ ...formData, description_tr: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none" placeholder="Eğitiminizi açıklayın…" />
+                    )}
                  </div>
 
                  <div className="pt-6 border-t border-slate-100 dark:border-white/5 space-y-6">

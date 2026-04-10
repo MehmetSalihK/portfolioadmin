@@ -6,12 +6,15 @@ const categorySchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+  name_en: String,
+  name_tr: String,
   displayOrder: {
     type: Number,
     required: true,
     default: 0
   }
 });
+
 
 const Category = mongoose.models?.Category || mongoose.model('Category', categorySchema);
 

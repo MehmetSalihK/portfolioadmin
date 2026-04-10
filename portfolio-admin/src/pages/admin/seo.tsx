@@ -10,7 +10,11 @@ interface SEOData {
     _id?: string;
     page: string;
     title: string;
+    title_en?: string;
+    title_tr?: string;
     description: string;
+    description_en?: string;
+    description_tr?: string;
     keywords: string[];
     ogImage?: string;
     updatedAt?: string;
@@ -25,7 +29,8 @@ export default function SEOPage() {
     const [isFetching, setIsFetching] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [editingSeo, setEditingSeo] = useState<SEOData>({ page: '', title: '', description: '', keywords: [] });
+    const [activeLang, setActiveLang] = useState<'fr' | 'en' | 'tr'>('fr');
+    const [editingSeo, setEditingSeo] = useState<SEOData>({ page: '', title: '', title_en: '', title_tr: '', description: '', description_en: '', description_tr: '', keywords: [] });
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -162,24 +167,63 @@ export default function SEOPage() {
                {isModalOpen && (
                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-6" onClick={() => setIsModalOpen(false)}>
                     <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 30 }} className="bg-white dark:bg-[#0f0f15] border border-slate-200 dark:border-white/10 rounded-[40px] p-10 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
-                       <div className="flex items-center justify-between mb-10">
-                          <div>
-                             <span className="text-[10px] font-black text-primary-500 uppercase tracking-[0.3em]">Méta-Paramètres</span>
-                             <h2 className="text-3xl font-extrabold tracking-tight dark:text-white text-slate-900 capitalize">Page : {editingSeo.page}</h2>
-                          </div>
-                          <button onClick={() => setIsModalOpen(false)} className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors"><FiX className="w-6 h-6"/></button>
-                       </div>
+                        <div className="flex items-center justify-between mb-10">
+                           <div>
+                              <span className="text-[10px] font-black text-primary-500 uppercase tracking-[0.3em]">Méta-Paramètres</span>
+                              <h2 className="text-3xl font-extrabold tracking-tight dark:text-white text-slate-900 capitalize">Page : {editingSeo.page}</h2>
+                           </div>
+                           <button onClick={() => setIsModalOpen(false)} className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors"><FiX className="w-6 h-6"/></button>
+                        </div>
 
-                       <form onSubmit={handleSave} className="space-y-8">
-                          <div className="space-y-2">
-                             <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">Méta Titre (Google Search)</label>
-                             <input required value={editingSeo.title} onChange={e => setEditingSeo({ ...editingSeo, title: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm placeholder:text-slate-300" placeholder="Ex: Portfolio de Jean Dupont — Développeur Web" />
-                          </div>
+                        <div className="flex items-center gap-2 p-1.5 bg-slate-100 dark:bg-white/5 rounded-2xl w-fit border border-slate-200 dark:border-white/10 mb-8">
+                           {(['fr', 'en', 'tr'] as const).map((lang) => (
+                             <button
+                               key={lang}
+                               type="button"
+                               onClick={() => setActiveLang(lang)}
+                               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                 activeLang === lang
+                                   ? 'bg-white dark:bg-white/10 text-primary-500 shadow-sm'
+                                   : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                               }`}
+                             >
+                               {lang === 'fr' ? '🇫🇷 FR' : lang === 'en' ? '🇬🇧 EN' : '🇹🇷 TR'}
+                             </button>
+                           ))}
+                        </div>
 
-                          <div className="space-y-2">
-                             <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">Méta Description</label>
-                             <textarea rows={4} required value={editingSeo.description} onChange={e => setEditingSeo({ ...editingSeo, description: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none placeholder:text-slate-300" placeholder="Une brève description pour les moteurs de recherche…" />
-                          </div>
+                        <form onSubmit={handleSave} className="space-y-8">
+                           <div className="space-y-2">
+                              <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">
+                                Méta Titre {activeLang !== 'fr' && `(${activeLang.toUpperCase()})`}
+                              </label>
+                              
+                              {activeLang === 'fr' && (
+                                <input required value={editingSeo.title} onChange={e => setEditingSeo({ ...editingSeo, title: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm placeholder:text-slate-300" placeholder="Ex: Portfolio de Jean Dupont — Développeur Web" />
+                              )}
+                              {activeLang === 'en' && (
+                                <input value={editingSeo.title_en} onChange={e => setEditingSeo({ ...editingSeo, title_en: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm placeholder:text-slate-300" placeholder="Ex: Jean Dupont's Portfolio — Web Developer" />
+                              )}
+                              {activeLang === 'tr' && (
+                                <input value={editingSeo.title_tr} onChange={e => setEditingSeo({ ...editingSeo, title_tr: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm placeholder:text-slate-300" placeholder="Ex: Jean Dupont'un Portfolyosu — Web Geliştirici" />
+                              )}
+                           </div>
+
+                           <div className="space-y-2">
+                              <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">
+                                Méta Description {activeLang !== 'fr' && `(${activeLang.toUpperCase()})`}
+                              </label>
+                              
+                              {activeLang === 'fr' && (
+                                <textarea rows={4} required value={editingSeo.description} onChange={e => setEditingSeo({ ...editingSeo, description: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none placeholder:text-slate-300" placeholder="Une brève description pour les moteurs de recherche…" />
+                              )}
+                              {activeLang === 'en' && (
+                                <textarea rows={4} value={editingSeo.description_en} onChange={e => setEditingSeo({ ...editingSeo, description_en: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none placeholder:text-slate-300" placeholder="A brief description for search engines…" />
+                              )}
+                              {activeLang === 'tr' && (
+                                <textarea rows={4} value={editingSeo.description_tr} onChange={e => setEditingSeo({ ...editingSeo, description_tr: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none placeholder:text-slate-300" placeholder="Arama motorları için kısa bir açıklama…" />
+                              )}
+                           </div>
 
                           <div className="space-y-2">
                              <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">Mots-Clés (Séparés par virgules)</label>

@@ -7,13 +7,15 @@ import {
   FiHome, FiUser, FiGrid, FiBookOpen, FiBriefcase, FiMail
 } from 'react-icons/fi';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const navItems = [
-  { name: 'Accueil',      path: '/',           icon: FiHome },
-  { name: 'À propos',     path: '/about',       icon: FiUser },
-  { name: 'Projets',      path: '/projects',    icon: FiGrid },
-  { name: 'Formations',   path: '/formations',  icon: FiBookOpen },
-  { name: 'Expériences',  path: '/experiences', icon: FiBriefcase },
+  { name: 'home',      path: '/',           icon: FiHome },
+  { name: 'about',     path: '/about',       icon: FiUser },
+  { name: 'projects',      path: '/projects',    icon: FiGrid },
+  { name: 'education',   path: '/formations',  icon: FiBookOpen },
+  { name: 'experience',  path: '/experiences', icon: FiBriefcase },
 ];
 
 export default function Navbar() {
@@ -22,6 +24,7 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
+  const { t } = useTranslation('common');
 
   useEffect(() => {
     setMounted(true);
@@ -75,7 +78,7 @@ export default function Navbar() {
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
-                  {item.name}
+                  {t(`nav.${item.name}`)}
                   {isActive && (
                     <motion.span
                       layoutId="nav-dot"
@@ -99,12 +102,16 @@ export default function Navbar() {
               </button>
             )}
 
+            <div className="hidden md:block">
+              <LanguageSwitcher />
+            </div>
+
             <Link
               href="/contact"
               className="hidden md:flex items-center gap-1.5 h-8 px-4 text-[12px] font-semibold dark:text-zinc-200 text-zinc-700 border dark:border-white/10 border-zinc-200 rounded-lg hover:dark:bg-white/[0.06] hover:bg-zinc-100 transition-all duration-150"
             >
               <FiMail className="w-3.5 h-3.5" />
-              Contact
+              {t('nav.contact')}
             </Link>
 
             <button
@@ -172,7 +179,7 @@ export default function Navbar() {
                       }`}>
                         <Icon className="w-4 h-4" />
                       </div>
-                      {item.name}
+                      {t(`nav.${item.name}`)}
                       {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />}
                     </Link>
                   </motion.div>
@@ -182,14 +189,20 @@ export default function Navbar() {
 
             {/* CTA */}
             <div className="px-6 pb-10 shrink-0">
-              <Link
-                href="/contact"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center justify-center gap-2 w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/20 transition-colors duration-150"
-              >
-                <FiMail className="w-4 h-4" />
-                Me contacter
-              </Link>
+              <div className="flex flex-col gap-4">
+                <div className="flex justify-between items-center px-2">
+                   <span className="text-xs font-bold dark:text-zinc-500 text-zinc-400 uppercase tracking-widest">{t('nav.language')}</span>
+                   <LanguageSwitcher />
+                </div>
+                <Link
+                  href="/contact"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center justify-center gap-2 w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/20 transition-colors duration-150"
+                >
+                  <FiMail className="w-4 h-4" />
+                  {t('nav.contact')}
+                </Link>
+              </div>
             </div>
           </motion.div>
         )}

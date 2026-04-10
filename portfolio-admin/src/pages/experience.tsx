@@ -5,6 +5,9 @@ import connectDB from '@/lib/db';
 import Experience from '@/models/Experience';
 import { motion } from 'framer-motion';
 import { FiCalendar, FiMapPin, FiBriefcase } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
+import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
+import { useRouter } from 'next/router';
 
 interface ExperiencePageProps {
   experiences: Array<{
@@ -23,17 +26,20 @@ interface ExperiencePageProps {
 }
 
 export default function Experiences({ experiences = [] }: ExperiencePageProps) {
+  const router = useRouter();
+  const { locale } = router;
+  const { t } = useTranslation('common');
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+    return date.toLocaleDateString(locale === 'tr' ? 'tr-TR' : (locale === 'en' ? 'en-GB' : 'fr-FR'), { month: 'short', year: 'numeric' });
   };
 
   return (
     <Layout>
       <Head>
-        <title>Expériences — Portfolio</title>
-        <meta name="description" content="Découvrez mon parcours professionnel et mes expériences." />
+        <title>{t('nav.experience')} — Portfolio</title>
+        <meta name="description" content={t('experience.description')} />
       </Head>
 
       <main className="min-h-screen dark:bg-[#0a0a0f] bg-[#fafafc] pt-14">
@@ -47,13 +53,13 @@ export default function Experiences({ experiences = [] }: ExperiencePageProps) {
             className="mb-16"
           >
             <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-5">
-              Parcours professionnel
+              {t('experience.subtitle')}
             </div>
             <h1 className="text-5xl md:text-6xl font-extrabold dark:text-white text-zinc-900 tracking-tight mb-5 text-balance">
-              Mes <span className="text-indigo-500 italic">expériences</span>.
+              {t('experience.title_part1')} <span className="text-indigo-500 italic">{t('experience.title_part2')}</span>.
             </h1>
             <p className="dark:text-zinc-500 text-zinc-500 text-lg max-w-[520px] leading-[1.75]">
-              Mon évolution de carrière et les défis techniques que j&apos;ai relevés.
+              {t('experience.description')}
             </p>
           </motion.div>
 
@@ -108,7 +114,7 @@ export default function Experiences({ experiences = [] }: ExperiencePageProps) {
                         <div className="shrink-0">
                           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 dark:bg-indigo-500/10 bg-indigo-50 dark:border-indigo-500/20 border-indigo-100 border rounded-lg text-[11px] font-semibold dark:text-indigo-400 text-indigo-600 whitespace-nowrap">
                             <FiCalendar className="w-3 h-3" />
-                            {formatDate(exp.startDate)} — {exp.current ? 'Présent' : formatDate(exp.endDate!)}
+                            {formatDate(exp.startDate)} — {exp.current ? t('experience.present') : formatDate(exp.endDate!)}
                           </span>
                         </div>
                       </div>
@@ -124,7 +130,7 @@ export default function Experiences({ experiences = [] }: ExperiencePageProps) {
                       {exp.achievements?.length > 0 && (
                         <div className="mb-4">
                           <div className="text-[10px] font-semibold dark:text-zinc-600 text-zinc-400 uppercase tracking-widest mb-3">
-                            Réalisations clés
+                            {t('experience.achievements_title')}
                           </div>
                           <ul className="space-y-2">
                             {exp.achievements.map((a, idx) => (
@@ -163,8 +169,8 @@ export default function Experiences({ experiences = [] }: ExperiencePageProps) {
               <div className="w-14 h-14 rounded-2xl dark:bg-indigo-500/10 bg-indigo-50 flex items-center justify-center mx-auto mb-5">
                 <FiBriefcase className="w-6 h-6 text-indigo-500" />
               </div>
-              <h3 className="text-lg font-bold dark:text-white text-zinc-900 mb-2">Aucune expérience trouvée</h3>
-              <p className="dark:text-zinc-500 text-zinc-500 text-sm">Le parcours professionnel est en cours de mise à jour.</p>
+              <h3 className="text-lg font-bold dark:text-white text-zinc-900 mb-2">{t('experience.empty')}</h3>
+              <p className="dark:text-zinc-500 text-zinc-500 text-sm">{t('experience.empty_desc')}</p>
             </motion.div>
           )}
         </div>
@@ -173,15 +179,38 @@ export default function Experiences({ experiences = [] }: ExperiencePageProps) {
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
+  const currentLocale = locale || 'fr';
   try {
     await connectDB();
-    const experiences = await Experience.find({}).sort({ startDate: -1, order: -1 }).lean();
+    const rawExperiences = await Experience.find({}).sort({ startDate: -1, order: -1 }).lean();
+    
+    const experiences = rawExperiences.map((exp: any) => ({
+      ...exp,
+      title: currentLocale === 'en' && exp.title_en ? exp.title_en : (currentLocale === 'tr' && exp.title_tr ? exp.title_tr : exp.title),
+      description: currentLocale === 'en' && exp.description_en ? exp.description_en : (currentLocale === 'tr' && exp.description_tr ? exp.description_tr : exp.description),
+      achievements: currentLocale === 'en' && exp.achievements_en ? exp.achievements_en : (currentLocale === 'tr' && exp.achievements_tr ? exp.achievements_tr : exp.achievements),
+      _id: exp._id.toString(),
+      startDate: exp.startDate.toISOString(),
+      endDate: exp.endDate ? exp.endDate.toISOString() : null,
+    }));
+
     return {
-      props: { experiences: JSON.parse(JSON.stringify(experiences)) },
+      props: { 
+        experiences: JSON.parse(JSON.stringify(experiences)),
+        ...(await serverSideTranslations(currentLocale, ['common'])),
+      },
       revalidate: 60,
     };
-  } catch {
-    return { props: { experiences: [] }, revalidate: 60 };
+  } catch (error) {
+    console.error("Error in Experience getStaticProps:", error);
+    return { 
+      props: { 
+        experiences: [],
+        ...(await serverSideTranslations(currentLocale, ['common'])),
+      }, 
+      revalidate: 60 
+    };
   }
 };
+

@@ -1,3 +1,4 @@
+import { appWithTranslation } from 'next-i18next/pages';
 import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
 import { SessionProvider } from 'next-auth/react';
@@ -9,8 +10,6 @@ import useSecurity from '@/utils/hooks/useSecurity';
 import Navbar from '@/components/layout/Navbar';
 import AutoSync from '@/components/admin/AutoSync';
 import { ThemeProvider } from '@/contexts/ThemeContext';
-
-
 
 function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const router = useRouter();
@@ -24,7 +23,6 @@ function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
     <SessionProvider session={session}>
       <ThemeProvider>
-
         <AutoSync />
         <div className="min-h-screen">
           {!isAdminPage && !isMaintenancePage && <Navbar />}
@@ -61,4 +59,4 @@ function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   );
 }
 
-export default App;
+export default appWithTranslation(App);

@@ -77,10 +77,25 @@ const ProjectSchema = new mongoose.Schema({
     required: [true, 'Please provide a title for this project.'],
     maxlength: [60, 'Title cannot be more than 60 characters'],
   },
+  title_en: {
+    type: String,
+    maxlength: [60, 'Title cannot be more than 60 characters'],
+  },
+  title_tr: {
+    type: String,
+    maxlength: [60, 'Title cannot be more than 60 characters'],
+  },
   description: {
     type: String,
     required: [true, 'Please provide a description for this project.'],
   },
+  description_en: {
+    type: String,
+  },
+  description_tr: {
+    type: String,
+  },
+
   imageUrl: {
     type: String,
     required: [true, 'Please provide an image URL for this project.'],

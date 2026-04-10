@@ -35,7 +35,12 @@ export default async function handler(
 
     if (req.method === 'PUT') {
         try {
-            const { page, title, description, keywords, ogImage } = req.body;
+            const { 
+              page, 
+              title, title_en, title_tr, 
+              description, description_en, description_tr, 
+              keywords, ogImage 
+            } = req.body;
 
             if (!page || !title || !description) {
                 return res.status(400).json({ message: 'Missing required fields' });
@@ -45,7 +50,11 @@ export default async function handler(
                 { page },
                 {
                     title,
+                    title_en,
+                    title_tr,
                     description,
+                    description_en,
+                    description_tr,
                     keywords,
                     ogImage,
                     updatedAt: new Date()

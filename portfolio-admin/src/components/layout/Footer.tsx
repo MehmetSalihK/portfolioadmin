@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
 import { FiMail, FiCode } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface FooterSettings {
   github?: string;
@@ -11,18 +12,19 @@ interface FooterSettings {
   siteTitle?: string;
 }
 
-const navLinks = [
-  { name: 'Accueil', path: '/' },
-  { name: 'À propos', path: '/about' },
-  { name: 'Projets', path: '/projects' },
-  { name: 'Formations', path: '/formations' },
-  { name: 'Expériences', path: '/experiences' },
-  { name: 'Contact', path: '/contact' },
-];
-
 const Footer = () => {
+  const { t } = useTranslation('common');
   const currentYear = new Date().getFullYear();
   const [settings, setSettings] = useState<FooterSettings>({});
+
+  const navLinks = [
+    { name: t('nav.home'), path: '/' },
+    { name: t('nav.about'), path: '/about' },
+    { name: t('nav.projects'), path: '/projects' },
+    { name: t('nav.education'), path: '/formations' },
+    { name: t('nav.experience'), path: '/experiences' },
+    { name: t('nav.contact'), path: '/contact' },
+  ];
 
   useEffect(() => {
     const cached = localStorage.getItem('adminSettings');
@@ -57,13 +59,13 @@ const Footer = () => {
               </span>
             </div>
             <p className="dark:text-zinc-600 text-zinc-500 text-sm font-medium leading-relaxed">
-              Développeur Full Stack passionné par la création d&apos;applications web modernes et performantes.
+              {t('footer.description')}
             </p>
           </div>
 
           {/* Navigation */}
           <div>
-            <p className="text-[10px] font-black dark:text-zinc-600 text-zinc-500 uppercase tracking-widest mb-4">Navigation</p>
+            <p className="text-[10px] font-black dark:text-zinc-600 text-zinc-500 uppercase tracking-widest mb-4">{t('footer.navigation')}</p>
             <div className="grid grid-cols-2 gap-2">
               {navLinks.map(link => (
                 <Link
@@ -79,7 +81,7 @@ const Footer = () => {
 
           {/* Socials */}
           <div>
-            <p className="text-[10px] font-black dark:text-zinc-600 text-zinc-500 uppercase tracking-widest mb-4">Me retrouver</p>
+            <p className="text-[10px] font-black dark:text-zinc-600 text-zinc-500 uppercase tracking-widest mb-4">{t('footer.find_me')}</p>
             <div className="flex flex-wrap gap-3">
               {socialLinks.map(item => (
                 <Link
@@ -100,11 +102,11 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="pt-6 dark:border-white/5 border-zinc-200 border-t flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="dark:text-zinc-700 text-zinc-400 text-xs font-medium">
-            © {currentYear} Portfolio. Tous droits réservés.
+            © {currentYear} Portfolio. {t('footer.rights')}.
           </p>
           <div className="flex items-center gap-1.5 dark:text-zinc-700 text-zinc-400 text-xs font-medium">
             <FiCode className="w-3.5 h-3.5" />
-            Construit avec Next.js · TypeScript · MongoDB
+            {t('footer.built_with')} Next.js · TypeScript · MongoDB
           </div>
         </div>
       </div>

@@ -5,6 +5,9 @@ const experienceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  title_en: String,
+  title_tr: String,
+
   company: {
     type: String,
     required: true,
@@ -24,6 +27,9 @@ const experienceSchema = new mongoose.Schema({
     default: false,
   },
   description: String,
+  description_en: String,
+  description_tr: String,
+
   technologies: {
     type: [String],
     default: [],

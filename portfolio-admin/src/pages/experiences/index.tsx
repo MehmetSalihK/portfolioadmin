@@ -1,13 +1,17 @@
-import Head from 'next/head';
-import Layout from '@/components/layouts/Layout';
-import { FiBriefcase, FiMapPin, FiCalendar, FiLink, FiCheckCircle } from 'react-icons/fi';
-import { motion } from 'framer-motion';
-import { useTheme } from '@/contexts/ThemeContext';
-import { GetStaticProps } from 'next';
 import connectDB from '@/lib/db';
 import ExperienceModel from '@/models/Experience';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
+import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
+import { getLocalized } from '@/utils/i18n-utils';
+import { useRouter } from 'next/router';
+import { fr, enUS, tr } from 'date-fns/locale';
+import Head from 'next/head';
+import { motion } from 'framer-motion';
+import { FiMapPin, FiCalendar, FiCheckCircle, FiLink } from 'react-icons/fi';
+import { GetStaticProps } from 'next';
+import Layout from '@/components/layout/Layout';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface Experience {
   _id: string;
@@ -28,23 +32,31 @@ interface ExperiencesPageProps {
 
 export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
   const { theme } = useTheme();
+  const { t } = useTranslation('common');
+  const { locale } = useRouter();
+
+  const getDateLocale = () => {
+    if (locale === 'en') return enUS;
+    if (locale === 'tr') return tr;
+    return fr;
+  };
 
   const formatDate = (date: string) => {
     try {
       if (!date) return '';
       const d = new Date(date);
-      if (isNaN(d.getTime())) return 'Date invalide';
-      return format(d, 'MMMM yyyy', { locale: fr });
+      if (isNaN(d.getTime())) return t('common.invalid_date');
+      return format(d, 'MMMM yyyy', { locale: getDateLocale() });
     } catch (e) {
-      return 'Erreur date';
+      return t('common.date_error');
     }
   };
 
   return (
     <Layout>
       <Head>
-        <title>Expériences | Portfolio Professionnel</title>
-        <meta name="description" content="Mon parcours professionnel et mes missions" />
+        <title>{t('experience.title')} | Portfolio Professionnel</title>
+        <meta name="description" content={t('experience.subtitle')} />
       </Head>
 
       <div className="min-h-screen dark:bg-[#09090f] bg-white relative pb-32 overflow-hidden pt-40 transition-colors duration-500">
@@ -65,13 +77,13 @@ export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
           >
             <div className="flex items-center gap-2 text-indigo-500 font-bold text-[10px] uppercase tracking-[0.3em] mb-6">
               <span className="w-10 h-[1px] bg-indigo-500" />
-              Parcours Professionnel
+              {t('experience.subtitle')}
             </div>
             <h1 className="text-5xl lg:text-7xl font-black dark:text-white text-zinc-900 tracking-tight mb-8">
-              Expériences <span className="text-indigo-600 dark:text-indigo-500">concrètes</span>.
+              {t('experience.title')} <span className="text-indigo-600 dark:text-indigo-500">{t('common.concrete')}</span>.
             </h1>
             <p className="text-zinc-600 dark:text-zinc-500 text-xl max-w-2xl leading-relaxed font-medium">
-              Une rétrospective de mon évolution technique et des solutions complexes que j&apos;ai déployées en milieu professionnel.
+              {t('experience.description_full')}
             </p>
           </motion.div>
 
@@ -101,7 +113,7 @@ export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
                       <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-8 mb-10">
                         <div>
                            <div className="flex items-center gap-2 mb-3">
-                              <span className="px-3 py-1 bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest rounded-lg">Position Active</span>
+                              <span className="px-3 py-1 bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest rounded-lg">{t('experience.active_position')}</span>
                               <div className="w-1 h-1 rounded-full bg-indigo-500/30" />
                            </div>
                           <h2 className="text-3xl font-black dark:text-white text-zinc-900 tracking-tight mb-2 group-hover:text-indigo-500 transition-colors">
@@ -124,7 +136,7 @@ export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
                           {formatDate(experience.startDate)}
                           <span className="mx-2 text-zinc-700">→</span>
                           {experience.isCurrentPosition || !experience.endDate 
-                            ? <span className="text-emerald-500 font-black">Présent</span>
+                            ? <span className="text-emerald-500 font-black">{t('experience.present')}</span>
                             : formatDate(experience.endDate)
                           }
                         </div>
@@ -154,7 +166,7 @@ export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
                            <div className="w-10 h-10 rounded-2xl dark:bg-indigo-500/10 bg-indigo-50 flex items-center justify-center border dark:border-indigo-500/20 border-indigo-100">
                              <FiCheckCircle className="w-5 h-5 text-indigo-500" />
                            </div>
-                           <span className="text-[10px] font-black dark:text-zinc-600 text-zinc-400 uppercase tracking-widest">Impact Validé</span>
+                                                       <span className="text-[10px] font-black dark:text-zinc-600 text-zinc-400 uppercase tracking-widest">{t('experience.impact_validated')}</span>
                         </div>
                         
                         {experience.companyUrl && (
@@ -164,7 +176,7 @@ export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 text-indigo-500 hover:text-indigo-400 font-black text-[10px] uppercase tracking-[0.2em] transition-all group/link"
                           >
-                            Détails Entreprise
+                                                        {t('experience.company_details')}
                             <FiLink className="w-3.5 h-3.5 group-hover/link:translate-x-1 group-hover/link:-translate-y-1 transition-transform" />
                           </a>
                         )}
@@ -181,16 +193,27 @@ export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
+  const currentLocale = locale || 'fr';
   try {
     await connectDB();
-    const experiences = await ExperienceModel.find({ isVisible: { $ne: false } })
+    const rawExperiences = await ExperienceModel.find({ isVisible: { $ne: false } })
       .sort({ startDate: -1 })
       .lean();
 
+    const experiences = rawExperiences.map((exp: any) => ({
+      ...exp,
+      _id: exp._id.toString(),
+      title: getLocalized(exp, 'title', currentLocale),
+      description: getLocalized(exp, 'description', currentLocale),
+      startDate: exp.startDate instanceof Date ? exp.startDate.toISOString() : new Date(exp.startDate).toISOString(),
+      endDate: exp.endDate ? (exp.endDate instanceof Date ? exp.endDate.toISOString() : new Date(exp.endDate).toISOString()) : null,
+    }));
+
     return {
       props: {
-        experiences: JSON.parse(JSON.stringify(experiences))
+        experiences: JSON.parse(JSON.stringify(experiences)),
+        ...(await serverSideTranslations(currentLocale, ['common'])),
       },
       revalidate: 60
     };
@@ -198,7 +221,8 @@ export const getStaticProps: GetStaticProps = async () => {
     console.error('Erreur lors de la récupération des expériences:', error);
     return {
       props: {
-        experiences: []
+        experiences: [],
+        ...(await serverSideTranslations(currentLocale, ['common'])),
       },
       revalidate: 60
     };

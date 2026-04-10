@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { FiX, FiDownload, FiExternalLink } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 
 interface CVModalProps {
   isOpen: boolean;
@@ -8,6 +9,8 @@ interface CVModalProps {
 }
 
 export default function CVModal({ isOpen, onClose }: CVModalProps) {
+  const { t } = useTranslation('common');
+
   const handleDownload = () => {
     window.open('/cv', '_blank');
   };
@@ -46,24 +49,24 @@ export default function CVModal({ isOpen, onClose }: CVModalProps) {
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
                   <Dialog.Title className="text-xl font-semibold text-gray-900 dark:text-white">
-                    Mon CV
+                    {t('cv_modal.title')}
                   </Dialog.Title>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={handleDownload}
                       className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                      title="Télécharger le CV"
+                      title={t('cv_modal.download_tooltip')}
                     >
                       <FiDownload className="w-4 h-4 mr-2" />
-                      Télécharger
+                      {t('cv_modal.download')}
                     </button>
                     <button
                       onClick={handleExternalView}
                       className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                      title="Ouvrir dans un nouvel onglet"
+                      title={t('cv_modal.new_tab_tooltip')}
                     >
                       <FiExternalLink className="w-4 h-4 mr-2" />
-                      Nouvel onglet
+                      {t('cv_modal.new_tab')}
                     </button>
                     <button
                       onClick={onClose}
@@ -90,13 +93,13 @@ export default function CVModal({ isOpen, onClose }: CVModalProps) {
                 <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex justify-between items-center">
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Cliquez sur "Télécharger" pour sauvegarder le CV ou "Nouvel onglet" pour l'ouvrir dans une nouvelle fenêtre.
+                      {t('cv_modal.footer_text')}
                     </p>
                     <button
                       onClick={onClose}
                       className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                     >
-                      Fermer
+                      {t('cv_modal.close')}
                     </button>
                   </div>
                 </div>

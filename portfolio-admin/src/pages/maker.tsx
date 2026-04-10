@@ -14,6 +14,10 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import JSONLD, { schemas } from '@/components/layout/JSONLD';
+import { useTranslation } from 'react-i18next';
+import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
+import { useRouter } from 'next/router';
+import { getLocalized } from '@/utils/i18n-utils';
 
 interface Project {
   _id: string; title: string; description: string;
@@ -23,53 +27,56 @@ interface Project {
 
 interface MakerPageProps { projects: Project[]; }
 
-const services = [
-  {
-    title: "Diagnostic & Réparation Smartphones",
-    desc: "Analyse méthodique des pannes hardware — écran, batterie, charge, carte mère — et réparation à composant. Pas de remplacement par défaut.",
-    icon: FiActivity, accent: 'amber'
-  },
-  {
-    title: "Assemblage & Upgrade PC",
-    desc: "Montage de stations de travail sur mesure, upgrade RAM/stockage, gestion thermique et optimisation du bios pour des performances maximales.",
-    icon: FiCpu, accent: 'emerald'
-  },
-  {
-    title: "Prototypage IoT & Électronique",
-    desc: "Conception de systèmes embarqués avec Arduino, ESP32 ou Raspberry Pi. Du capteur à l'interface web, en passant par le firmware.",
-    icon: FiTool, accent: 'blue'
-  }
-];
-
-const competences = [
-  {
-    cat: 'Smartphones',
-    icon: FiSmartphone,
-    color: 'indigo',
-    items: ['Microsoudure', 'Remplacement écran', 'Réparation charge', 'Diagnostic carte mère']
-  },
-  {
-    cat: 'PC & Hardware',
-    icon: FiMonitor,
-    color: 'amber',
-    items: ['Assemblage PC', 'Overclock', 'Gestion thermique', 'BIOS / UEFI']
-  },
-  {
-    cat: 'IoT & Embarqué',
-    icon: SiArduino,
-    color: 'emerald',
-    items: ['Arduino / ESP32', 'Raspberry Pi', 'Capteurs & actionneurs', 'Firmware custom']
-  },
-  {
-    cat: 'Outils & Infra',
-    icon: SiLinux,
-    color: 'blue',
-    items: ['Linux (Ubuntu)', 'Docker', 'Réseaux LAN/WLAN', 'NAS / Homelab']
-  },
-];
-
 export default function MakerPage({ projects }: MakerPageProps) {
   const { scrollYProgress } = useScroll();
+  const { t } = useTranslation('common');
+  const { locale } = useRouter();
+
+  // Localized data
+  const services = [
+    {
+      title: t('maker_page.service1_title'),
+      desc: t('maker_page.service1_desc'),
+      icon: FiActivity, accent: 'amber'
+    },
+    {
+      title: t('maker_page.service2_title'),
+      desc: t('maker_page.service2_desc'),
+      icon: FiCpu, accent: 'emerald'
+    },
+    {
+      title: t('maker_page.service3_title'),
+      desc: t('maker_page.service3_desc'),
+      icon: FiTool, accent: 'blue'
+    }
+  ];
+
+  const competences = [
+    {
+      cat: t('maker_page.cat1'),
+      icon: FiSmartphone,
+      color: 'indigo',
+      items: t('maker_page.items1', { returnObjects: true }) as string[]
+    },
+    {
+      cat: t('maker_page.cat2'),
+      icon: FiMonitor,
+      color: 'amber',
+      items: t('maker_page.items2', { returnObjects: true }) as string[]
+    },
+    {
+      cat: t('maker_page.cat3'),
+      icon: SiArduino,
+      color: 'emerald',
+      items: t('maker_page.items3', { returnObjects: true }) as string[]
+    },
+    {
+      cat: t('maker_page.cat4'),
+      icon: SiLinux,
+      color: 'blue',
+      items: t('maker_page.items4', { returnObjects: true }) as string[]
+    },
+  ];
 
   const accentColor = (a: string) =>
     a === 'amber' ? 'text-amber-500' :
@@ -84,9 +91,8 @@ export default function MakerPage({ projects }: MakerPageProps) {
     <Layout>
       <JSONLD type="ProfessionalService" data={schemas.maker} />
       <Head>
-        <title>Le Builder | Hardware & Systèmes IoT</title>
-        <meta name="description" content="Expert en diagnostic hardware, systèmes embarqués et prototypage IoT." />
-        <meta name="keywords" content="Hardware, IoT, Arduino, Réparation smartphone, PC Building, Électronique" />
+        <title>{t('nav.maker')} — Portfolio</title>
+        <meta name="description" content={t('maker_page.hero_description')} />
       </Head>
 
       {/* Progress bar */}
@@ -106,7 +112,7 @@ export default function MakerPage({ projects }: MakerPageProps) {
               className="inline-flex items-center gap-2 px-3.5 py-1.5 dark:bg-amber-500/10 bg-amber-50 dark:border-amber-500/20 border-amber-100 border rounded-full mb-10"
             >
               <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-              <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-500 uppercase tracking-widest">Hardware & Embedded Division</span>
+              <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-500 uppercase tracking-widest">{t('maker_page.hero_subtitle')}</span>
             </motion.div>
 
             <motion.h1
@@ -115,8 +121,10 @@ export default function MakerPage({ projects }: MakerPageProps) {
               transition={{ delay: 0.1, duration: 0.4 }}
               className="text-5xl sm:text-6xl lg:text-7xl font-extrabold dark:text-white text-zinc-900 leading-[1.05] tracking-tight mb-6 text-balance"
             >
-              Je comprends la technologie{' '}
-              dans ses deux <span className="text-amber-500 italic">dimensions</span>.
+              {t('maker_page.hero_title_part1')}{' '}
+              {locale === 'tr' ? '' : t('maker_page.hero_title_part2')}{' '}
+              <span className="text-amber-500 italic">{locale === 'tr' ? t('maker_page.hero_title_part2') : ''}</span>
+              {locale === 'tr' ? ' ' + t('maker_page.hero_title_part3') : '.'}
             </motion.h1>
 
             <motion.p
@@ -125,7 +133,7 @@ export default function MakerPage({ projects }: MakerPageProps) {
               transition={{ delay: 0.18, duration: 0.4 }}
               className="text-lg dark:text-zinc-500 text-zinc-500 mb-10 max-w-[560px] leading-[1.75]"
             >
-              Le logiciel et le matériel. Là où beaucoup séparent les deux, je les vois comme une seule réalité. Un appareil qui ne fonctionne plus est un problème à diagnostiquer méthodiquement.
+              {t('maker_page.hero_description')}
             </motion.p>
 
             <motion.div
@@ -135,10 +143,10 @@ export default function MakerPage({ projects }: MakerPageProps) {
               className="flex flex-wrap gap-3"
             >
               <Link href="/contact" className="h-11 px-6 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-semibold transition-colors duration-150 flex items-center gap-2 shadow-lg shadow-amber-600/20">
-                Lancer un projet
+                {t('maker_page.cta_start')}
               </Link>
               <Link href="/projects" className="h-11 px-6 dark:bg-white/[0.04] bg-white dark:hover:bg-white/[0.08] hover:bg-zinc-100 dark:text-zinc-200 text-zinc-700 dark:border-white/[0.08] border-zinc-200 border rounded-lg text-sm font-semibold transition-all duration-150 flex items-center gap-2">
-                Voir mes projets
+                {t('maker_page.cta_projects')}
               </Link>
             </motion.div>
           </div>
@@ -148,7 +156,7 @@ export default function MakerPage({ projects }: MakerPageProps) {
       {/* ── SERVICES ── */}
       <section className="py-20 dark:bg-[#0a0a0f] bg-[#fafafc] border-t dark:border-white/[0.05] border-zinc-100">
         <div className="max-w-[1100px] mx-auto px-6">
-          <div className="text-[11px] font-semibold text-amber-500 uppercase tracking-widest mb-10">Services</div>
+          <div className="text-[11px] font-semibold text-amber-500 uppercase tracking-widest mb-10">{t('maker_page.services_subtitle')}</div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {services.map((s, i) => (
               <motion.div
@@ -173,7 +181,7 @@ export default function MakerPage({ projects }: MakerPageProps) {
       {/* ── COMPÉTENCES ── */}
       <section className="py-20 dark:bg-zinc-950 bg-zinc-900 text-white">
         <div className="max-w-[1100px] mx-auto px-6">
-          <div className="text-[11px] font-semibold text-amber-400 uppercase tracking-widest mb-10">Compétences techniques</div>
+          <div className="text-[11px] font-semibold text-amber-400 uppercase tracking-widest mb-10">{t('maker_page.competences_subtitle')}</div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {competences.map((cat, i) => {
               const iconColorClass =
@@ -203,7 +211,7 @@ export default function MakerPage({ projects }: MakerPageProps) {
 
           {/* Icônes marques */}
           <div className="mt-8 pt-8 border-t border-white/[0.06] flex flex-wrap items-center gap-6">
-            <div className="text-[10px] text-zinc-600 uppercase tracking-widest font-semibold">Outils clés</div>
+            <div className="text-[10px] text-zinc-600 uppercase tracking-widest font-semibold">{t('maker_page.tools_label')}</div>
             {[
               { icon: SiArduino, color: '#00979D', label: 'Arduino' },
               { icon: SiRaspberrypi, color: '#C51A4A', label: 'Raspberry Pi' },
@@ -225,11 +233,11 @@ export default function MakerPage({ projects }: MakerPageProps) {
           <div className="max-w-[1100px] mx-auto px-6">
             <div className="flex justify-between items-end mb-10">
               <div>
-                <div className="text-[11px] font-semibold text-amber-500 uppercase tracking-widest mb-3">Réalisations</div>
-                <h2 className="text-3xl font-extrabold dark:text-white text-zinc-900 tracking-tight">Projets hardware</h2>
+                <div className="text-[11px] font-semibold text-amber-500 uppercase tracking-widest mb-3">{t('maker_page.projects_subtitle')}</div>
+                <h2 className="text-3xl font-extrabold dark:text-white text-zinc-900 tracking-tight">{t('maker_page.projects_title')}</h2>
               </div>
               <Link href="/projects" className="text-[12px] font-semibold text-amber-500 flex items-center gap-1 hover:gap-2 transition-all duration-150">
-                Voir tout <FiChevronRight className="w-3.5 h-3.5" />
+                {t('projects.all')} <FiChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -273,17 +281,17 @@ export default function MakerPage({ projects }: MakerPageProps) {
         <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-700" />
         <div className="max-w-[1100px] mx-auto px-6 relative z-10 text-center text-white">
           <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6 text-balance">
-            Un appareil ou un projet à <span className="text-amber-200">ressusciter</span> ?
+            {t('maker_page.footer_cta_title_part1')} <span className="text-amber-200">{t('maker_page.footer_cta_title_part2')}</span> {locale === 'tr' ? t('maker_page.footer_cta_title_part3') : '?' }
           </h2>
           <p className="text-lg text-amber-100 mb-10 max-w-[480px] mx-auto leading-[1.75] opacity-90">
-            Hardware, IoT ou infrastructure — parlons de votre défi technique.
+            {t('maker_page.footer_cta_description')}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link href="/contact" className="h-11 px-6 bg-white text-amber-600 hover:bg-amber-50 rounded-lg text-sm font-semibold transition-colors duration-150 flex items-center gap-2 shadow-lg">
-              Lancer un projet
+              {t('maker_page.cta_start')}
             </Link>
             <Link href="/projects" className="h-11 px-6 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg text-sm font-semibold transition-all duration-150 flex items-center gap-2">
-              Voir mes réalisations
+              {t('projects.subtitle')}
             </Link>
           </div>
         </div>
@@ -292,17 +300,35 @@ export default function MakerPage({ projects }: MakerPageProps) {
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
+  const currentLocale = locale || 'fr';
   try {
     await connectDB();
-    const projects = await ProjectModel.find({
+    const rawProjects = await ProjectModel.find({
       archived: { $ne: true }
     }).sort({ featured: -1, order: 1 }).limit(4).lean();
+
+    const projects = rawProjects.map((p: any) => ({
+      ...p,
+      _id: p._id.toString(),
+      title: getLocalized(p, 'title', currentLocale),
+      description: getLocalized(p, 'description', currentLocale),
+    }));
+
     return {
-      props: { projects: JSON.parse(JSON.stringify(projects)) },
+      props: { 
+        projects: JSON.parse(JSON.stringify(projects)),
+        ...(await serverSideTranslations(currentLocale, ['common'])),
+      },
       revalidate: 60,
     };
   } catch {
-    return { props: { projects: [] } };
+    return { 
+      props: { 
+        projects: [],
+        ...(await serverSideTranslations(currentLocale, ['common'])),
+      } 
+    };
   }
 };
+

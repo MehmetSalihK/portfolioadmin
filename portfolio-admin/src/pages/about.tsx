@@ -4,11 +4,16 @@ import { motion } from 'framer-motion';
 import Layout from '@/components/layout/Layout';
 import { FaUser, FaCode, FaVideo, FaTools } from 'react-icons/fa';
 import { FiArrowRight } from 'react-icons/fi';
-import { useState, useEffect } from 'react';
 import DOMPurify from 'isomorphic-dompurify';
 import parse from 'html-react-parser';
 import Link from 'next/link';
 import { GetStaticProps } from 'next';
+import { useTranslation } from 'react-i18next';
+import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
+import { useRouter } from 'next/router';
+import connectDB from '@/lib/db';
+import Setting from '@/models/Setting';
+import { getLocalized } from '@/utils/i18n-utils';
 
 interface AboutSettings {
   aboutTitle?: string;
@@ -17,46 +22,40 @@ interface AboutSettings {
   siteTitle?: string;
 }
 
-const features = [
-  {
-    icon: <FaCode className="w-5 h-5" />,
-    title: 'Développement Web',
-    desc: 'Expertise complète sur la stack MERN & Next.js. De la conception UI Frontend à l\'architecture API Backend et la gestion de bases de données.',
-    accentCls: 'dark:bg-indigo-500/10 bg-indigo-50 dark:border-indigo-500/20 border-indigo-200 dark:text-indigo-400 text-indigo-600',
-  },
-  {
-    icon: <FaVideo className="w-5 h-5" />,
-    title: 'Vidéo & Design',
-    desc: 'Création de contenu multimédia impactant : montage vidéo (Premiere Pro, After Effects) et conception graphique de supports visuels.',
-    accentCls: 'dark:bg-violet-500/10 bg-violet-50 dark:border-violet-500/20 border-violet-200 dark:text-violet-400 text-violet-600',
-  },
-  {
-    icon: <FaTools className="w-5 h-5" />,
-    title: 'Hardware & Maintenance',
-    desc: 'Support technique polyvalent : diagnostic, réparation de smartphones et maintenance/montage de matériel informatique.',
-    accentCls: 'dark:bg-emerald-500/10 bg-emerald-50 dark:border-emerald-500/20 border-emerald-200 dark:text-emerald-400 text-emerald-600',
-  },
-];
+interface AboutPageProps {
+  settings: AboutSettings;
+}
 
-export default function About() {
-  const [settings, setSettings] = useState<AboutSettings>({
-    aboutTitle: 'Mon Parcours',
-    aboutBio: '',
-    aboutImage: '',
-  });
+export default function About({ settings }: AboutPageProps) {
+  const { locale } = useRouter();
+  const { t } = useTranslation('common');
 
-  useEffect(() => {
-    fetch('/api/admin/settings')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data) setSettings(data); })
-      .catch(() => {});
-  }, []);
+  const features = [
+    {
+      icon: <FaCode className="w-5 h-5" />,
+      title: t('about.expertise1_title'),
+      desc: t('about.expertise1_desc'),
+      accentCls: 'dark:bg-indigo-500/10 bg-indigo-50 dark:border-indigo-500/20 border-indigo-200 dark:text-indigo-400 text-indigo-600',
+    },
+    {
+      icon: <FaVideo className="w-5 h-5" />,
+      title: t('about.expertise2_title'),
+      desc: t('about.expertise2_desc'),
+      accentCls: 'dark:bg-violet-500/10 bg-violet-50 dark:border-violet-500/20 border-violet-200 dark:text-violet-400 text-violet-600',
+    },
+    {
+      icon: <FaTools className="w-5 h-5" />,
+      title: t('about.expertise3_title'),
+      desc: t('about.expertise3_desc'),
+      accentCls: 'dark:bg-emerald-500/10 bg-emerald-50 dark:border-emerald-500/20 border-emerald-200 dark:text-emerald-400 text-emerald-600',
+    },
+  ];
 
   return (
     <Layout>
       <Head>
-        <title>{settings.siteTitle ? `À Propos — ${settings.siteTitle}` : 'À Propos — Portfolio'}</title>
-        <meta name="description" content="En savoir plus sur mon parcours et mes compétences" />
+        <title>{settings.siteTitle ? `${t('about.hero_subtitle')} — ${settings.siteTitle}` : `${t('about.hero_subtitle')} — Portfolio`}</title>
+        <meta name="description" content={t('about.hero_description')} />
       </Head>
 
 
@@ -69,14 +68,14 @@ export default function About() {
             transition={{ duration: 0.35, ease: [0.2, 0, 0, 1] }}
           >
             <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-6">
-              À propos
+              {t('about.hero_subtitle')}
             </div>
             <h1 className="text-5xl lg:text-6xl font-extrabold dark:text-white text-zinc-900 leading-[1.1] tracking-tight mb-6 text-balance">
-              Codeur par <span className="text-indigo-500 italic">métier</span>,{' '}
-              créatif par <span className="text-indigo-500 italic">nature</span>.
+              {t('about.hero_title_part1')} <span className="text-indigo-500 italic">{t('about.hero_title_part2')}</span>,{' '}
+              {t('about.hero_title_part3')} <span className="text-indigo-500 italic">{t('about.hero_title_part4')}</span>.
             </h1>
             <p className="text-lg dark:text-zinc-500 text-zinc-500 max-w-[560px] leading-[1.75] font-normal">
-              Je fusionne la rigueur de l&apos;architecture logicielle avec une sensibilité esthétique pour créer des expériences numériques complètes.
+              {t('about.hero_description')}
             </p>
           </motion.div>
         </section>
@@ -84,7 +83,7 @@ export default function About() {
 
         {/* LES 3 IDENTITÉS */}
         <section className="mb-20">
-          <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-8">Les 3 expertises</div>
+          <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-8">{t('about.expertises_subtitle')}</div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {features.map((f, i) => (
               <motion.div
@@ -127,7 +126,7 @@ export default function About() {
                   </motion.div>
                 )}
                 <h2 className="text-2xl font-bold dark:text-white text-zinc-900 tracking-tight mb-4 text-balance">
-                  {settings.aboutTitle || 'Ma philosophie'}
+                  {settings.aboutTitle || t('about.philosophy_default_title')}
                 </h2>
                 <div className="w-12 h-1 bg-indigo-500 rounded-full" />
               </div>
@@ -136,7 +135,7 @@ export default function About() {
                   {settings.aboutBio ? (
                     parse(DOMPurify.sanitize(settings.aboutBio))
                   ) : (
-                    <p>Passionné par l&apos;innovation technique et la créativité visuelle, j&apos;évolue dans l&apos;univers du numérique avec une approche holistique.</p>
+                    <p>{t('about.philosophy_default_bio')}</p>
                   )}
                 </div>
                 <div className="mt-8 flex flex-wrap gap-4 items-center">
@@ -144,14 +143,14 @@ export default function About() {
                     href="/contact"
                     className="h-11 px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors duration-150 flex items-center gap-2 shadow-lg shadow-indigo-600/20"
                   >
-                    Lançons un projet
+                    {t('about.cta_project')}
                     <FiArrowRight className="w-4 h-4" />
                   </Link>
                   <Link
                     href="/projects"
                     className="text-sm font-medium text-indigo-500 hover:text-indigo-400 transition-colors duration-150 flex items-center gap-1"
                   >
-                    Explorer mes travaux →
+                    {t('about.cta_work')} →
                   </Link>
                 </div>
               </div>
@@ -163,9 +162,40 @@ export default function About() {
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
-  return {
-    props: {},
-    revalidate: 60,
-  };
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
+  const currentLocale = locale || 'fr';
+  try {
+    await connectDB();
+    const rawSettings = await Setting.findOne({}).lean();
+    
+    // Map settings to active locale
+    const settings = rawSettings ? {
+      ...rawSettings,
+      _id: (rawSettings as any)._id.toString(),
+      aboutTitle: getLocalized(rawSettings, 'aboutTitle', currentLocale),
+      aboutBio: getLocalized(rawSettings, 'aboutBio', currentLocale),
+    } : {
+      aboutTitle: 'Mon Parcours',
+      aboutBio: '',
+      aboutImage: '',
+    };
+
+    return {
+      props: { 
+        settings: JSON.parse(JSON.stringify(settings)),
+        ...(await serverSideTranslations(currentLocale, ['common'])),
+      },
+      revalidate: 60,
+    };
+  } catch (error) {
+    console.error("Error in About getStaticProps:", error);
+    return {
+      props: { 
+        settings: { aboutTitle: 'Mon Parcours', aboutBio: '' },
+        ...(await serverSideTranslations(currentLocale, ['common'])),
+      },
+      revalidate: 60,
+    };
+  }
 };
+

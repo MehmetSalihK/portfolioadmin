@@ -31,10 +31,14 @@ const EducationSchema = new Schema({
     type: String,
     required: true,
   },
+  degree_en: String,
+  degree_tr: String,
   field: {
     type: String,
     required: true,
   },
+  field_en: String,
+  field_tr: String,
   startDate: {
     type: Date,
     required: true,
@@ -46,10 +50,13 @@ const EducationSchema = new Schema({
     type: String,
     required: true,
   },
+  description_en: String,
+  description_tr: String,
   location: {
     type: String,
     required: true,
   },
+
   isCurrentlyStudying: {
     type: Boolean,
     default: false,

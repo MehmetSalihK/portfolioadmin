@@ -11,9 +11,13 @@ import {
   SiNextdotjs, SiReact, SiNodedotjs, SiMongodb,
   SiTypescript, SiTailwindcss, SiDocker, SiRedis
 } from 'react-icons/si';
-import Image from 'next/image';
-import Link from 'next/link';
 import JSONLD, { schemas } from '@/components/layout/JSONLD';
+import { useTranslation } from 'react-i18next';
+import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
+import { useRouter } from 'next/router';
+import { getLocalized } from '@/utils/i18n-utils';
+import Link from 'next/link';
+import Image from 'next/image';
 
 interface Project {
   _id: string; title: string; description: string;
@@ -23,48 +27,51 @@ interface Project {
 
 interface DeveloppeurPageProps { projects: Project[]; }
 
-const services = [
-  {
-    title: "Architecture Full Stack MERN",
-    desc: "MongoDB, Express, React, Node.js — et Next.js pour le rendu. Des architectures qui tiennent dans le temps et peuvent évoluer sans être refondues six mois après.",
-    icon: FiLayers, accent: 'indigo'
-  },
-  {
-    title: "Serveurs & Systèmes Automatisés",
-    desc: "Configuration VPS, mise en place d'environnement Linux, automatisation de tâches système. Je travaille sur Linux, macOS et Windows sans friction.",
-    icon: FiCpu, accent: 'violet'
-  },
-  {
-    title: "IA & Optimisation Workflow",
-    desc: "J'utilise l'IA comme levier d'efficacité. Savoir rédiger un prompt précis, interpréter une sortie de modèle, intégrer ces outils dans un workflow — c'est une compétence à part entière.",
-    icon: FiZap, accent: 'emerald'
-  }
-];
-
-const stack = {
-  core: [
-    { label: 'Next.js', icon: SiNextdotjs },
-    { label: 'React', icon: SiReact },
-    { label: 'Node.js', icon: SiNodedotjs },
-    { label: 'MongoDB', icon: SiMongodb },
-  ],
-  ecosystem: [
-    { label: 'TypeScript', icon: SiTypescript },
-    { label: 'Tailwind CSS', icon: SiTailwindcss },
-    { label: 'Docker', icon: SiDocker },
-    { label: 'Redis', icon: SiRedis },
-  ],
-};
-
-const process = [
-  { n: '01', t: 'Diagnostic', d: 'Audit des besoins métier et définition de la stack technologique idéale.' },
-  { n: '02', t: 'Schéma', d: 'Modélisation de la base de données et des flux logiques avant codage.' },
-  { n: '03', t: 'Sprint', d: 'Développement itératif avec déploiement continu et tests automatisés.' },
-  { n: '04', t: 'Monitoring', d: 'Mise en production sécurisée et surveillance active des performances.' },
-];
-
 export default function DeveloppeurPage({ projects }: DeveloppeurPageProps) {
   const { scrollYProgress } = useScroll();
+  const { t } = useTranslation('common');
+  const { locale } = useRouter();
+
+  // Localized data
+  const services = [
+    {
+      title: t('dev_page.service1_title'),
+      desc: t('dev_page.service1_desc'),
+      icon: FiLayers, accent: 'indigo'
+    },
+    {
+      title: t('dev_page.service2_title'),
+      desc: t('dev_page.service2_desc'),
+      icon: FiCpu, accent: 'violet'
+    },
+    {
+      title: t('dev_page.service3_title'),
+      desc: t('dev_page.service3_desc'),
+      icon: FiZap, accent: 'emerald'
+    }
+  ];
+
+  const process = [
+    { n: '01', t: t('dev_page.step1_title'), d: t('dev_page.step1_desc') },
+    { n: '02', t: t('dev_page.step2_title'), d: t('dev_page.step2_desc') },
+    { n: '03', t: t('dev_page.step3_title'), d: t('dev_page.step3_desc') },
+    { n: '04', t: t('dev_page.step4_title'), d: t('dev_page.step4_desc') },
+  ];
+
+  const stack = {
+    "Frontend": [
+      { label: "Next.js", icon: SiNextdotjs },
+      { label: "React", icon: SiReact },
+      { label: "Typescript", icon: SiTypescript },
+      { label: "Tailwind CSS", icon: SiTailwindcss }
+    ],
+    "Backend & Tools": [
+      { label: "Node.js", icon: SiNodedotjs },
+      { label: "MongoDB", icon: SiMongodb },
+      { label: "Docker", icon: SiDocker },
+      { label: "Redis", icon: SiRedis }
+    ]
+  };
 
   const accentColor = (a: string) =>
     a === 'indigo' ? 'text-indigo-500' :
@@ -79,9 +86,8 @@ export default function DeveloppeurPage({ projects }: DeveloppeurPageProps) {
     <Layout>
       <JSONLD type="ProfessionalService" data={schemas.developpeur} />
       <Head>
-        <title>L&apos;Architecte Digital | Expert Full Stack</title>
-        <meta name="description" content="Expert Next.js, Node.js et architectures scalables." />
-        <meta name="keywords" content="Développeur Next.js, Full Stack, Node.js, MongoDB" />
+        <title>{t('nav.developer')} — Portfolio</title>
+        <meta name="description" content={t('dev_page.hero_description')} />
       </Head>
 
       {/* Progress bar */}
@@ -101,7 +107,7 @@ export default function DeveloppeurPage({ projects }: DeveloppeurPageProps) {
               className="inline-flex items-center gap-2 px-3.5 py-1.5 dark:bg-indigo-500/10 bg-indigo-50 dark:border-indigo-500/20 border-indigo-100 border rounded-full mb-10"
             >
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-              <span className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest">Division Ingénierie & Architecture</span>
+              <span className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest">{t('dev_page.hero_subtitle')}</span>
             </motion.div>
 
             <motion.h1
@@ -110,8 +116,8 @@ export default function DeveloppeurPage({ projects }: DeveloppeurPageProps) {
               transition={{ delay: 0.1, duration: 0.4 }}
               className="text-5xl sm:text-6xl lg:text-7xl font-extrabold dark:text-white text-zinc-900 leading-[1.05] tracking-tight mb-6 text-balance"
             >
-              Je construis des <span className="text-indigo-500 italic">systèmes</span>,{' '}
-              pas des pages.
+              {t('dev_page.hero_title_part1')} <span className="text-indigo-500 italic">{t('dev_page.hero_title_part2')}</span>,{' '}
+              {t('dev_page.hero_title_part3')}
             </motion.h1>
 
             <motion.p
@@ -120,7 +126,7 @@ export default function DeveloppeurPage({ projects }: DeveloppeurPageProps) {
               transition={{ delay: 0.18, duration: 0.4 }}
               className="text-lg dark:text-zinc-500 text-zinc-500 mb-10 max-w-[560px] leading-[1.75]"
             >
-              Des architectures complètes qui fonctionnent, tiennent dans le temps et peuvent évoluer sans être refondues de zéro.
+              {t('dev_page.hero_description')}
             </motion.p>
 
             <motion.div
@@ -130,10 +136,10 @@ export default function DeveloppeurPage({ projects }: DeveloppeurPageProps) {
               className="flex flex-wrap gap-3"
             >
               <Link href="/contact" className="h-11 px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors duration-150 flex items-center gap-2 shadow-lg shadow-indigo-600/20">
-                Solliciter une expertise
+                {t('dev_page.cta_expertise')}
               </Link>
               <Link href="/projects" className="h-11 px-6 dark:bg-white/[0.04] bg-white dark:hover:bg-white/[0.08] hover:bg-zinc-100 dark:text-zinc-200 text-zinc-700 dark:border-white/[0.08] border-zinc-200 border rounded-lg text-sm font-semibold transition-all duration-150 flex items-center gap-2">
-                Voir mes projets
+                {t('dev_page.cta_projects')}
               </Link>
             </motion.div>
           </div>
@@ -143,7 +149,7 @@ export default function DeveloppeurPage({ projects }: DeveloppeurPageProps) {
       {/* ── SERVICES ── */}
       <section className="py-20 dark:bg-[#0a0a0f] bg-[#fafafc] border-t dark:border-white/[0.05] border-zinc-100">
         <div className="max-w-[1100px] mx-auto px-6">
-          <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-10">Services</div>
+          <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-10">{t('dev_page.services_subtitle')}</div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {services.map((s, i) => (
               <motion.div
@@ -170,12 +176,12 @@ export default function DeveloppeurPage({ projects }: DeveloppeurPageProps) {
         <div className="max-w-[1100px] mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <div className="text-[11px] font-semibold text-indigo-400 uppercase tracking-widest mb-6">Stack technologique</div>
+              <div className="text-[11px] font-semibold text-indigo-400 uppercase tracking-widest mb-6">{t('dev_page.stack_subtitle')}</div>
               <h2 className="text-4xl font-extrabold tracking-tight mb-6 text-balance">
-                L&apos;arsenal <span className="text-indigo-400 italic">technologique</span>.
+                {t('dev_page.stack_title_part1')} <span className="text-indigo-400 italic">{t('dev_page.stack_title_part2')}</span>.
               </h2>
               <p className="text-zinc-400 leading-relaxed text-[15px]">
-                Mes projets personnels constituent l&apos;essentiel de ma pratique. J&apos;ai appris en construisant des choses réelles, en les cassant, en les reconstruisant.
+                {t('dev_page.stack_description')}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-6">
@@ -205,11 +211,11 @@ export default function DeveloppeurPage({ projects }: DeveloppeurPageProps) {
           <div className="max-w-[1100px] mx-auto px-6">
             <div className="flex justify-between items-end mb-10">
               <div>
-                <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-3">Réalisations</div>
-                <h2 className="text-3xl font-extrabold dark:text-white text-zinc-900 tracking-tight">Projets techniques</h2>
+                <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-3">{t('dev_page.projects_subtitle')}</div>
+                <h2 className="text-3xl font-extrabold dark:text-white text-zinc-900 tracking-tight">{t('dev_page.projects_title')}</h2>
               </div>
               <Link href="/projects" className="text-[12px] font-semibold text-indigo-500 flex items-center gap-1 hover:gap-2 transition-all duration-150">
-                Voir tout <FiChevronRight className="w-3.5 h-3.5" />
+                {t('projects.all')} <FiChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -251,9 +257,9 @@ export default function DeveloppeurPage({ projects }: DeveloppeurPageProps) {
       {/* ── PROCESSUS ── */}
       <section className="py-20 dark:bg-white/[0.01] bg-zinc-50 border-t dark:border-white/[0.05] border-zinc-100">
         <div className="max-w-[1100px] mx-auto px-6">
-          <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-6">Méthodologie</div>
+          <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-6">{t('dev_page.methodology_subtitle')}</div>
           <h2 className="text-3xl font-extrabold dark:text-white text-zinc-900 tracking-tight mb-12 text-balance">
-            Comment je travaille
+            {t('dev_page.methodology_title')}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 relative">
             <div className="absolute top-5 left-0 right-0 h-px dark:bg-white/[0.05] bg-zinc-200 hidden md:block" />
@@ -275,17 +281,17 @@ export default function DeveloppeurPage({ projects }: DeveloppeurPageProps) {
         <div className="absolute inset-0 dark:bg-gradient-to-br from-indigo-600 to-violet-700" />
         <div className="max-w-[1100px] mx-auto px-6 relative z-10 text-center text-white">
           <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6 text-balance">
-            Besoin d&apos;une infrastructure sans <span className="text-indigo-200">compromis</span> ?
+            {t('dev_page.footer_cta_title_part1')} <span className="text-indigo-200">{t('dev_page.footer_cta_title_part2')}</span> {locale === 'tr' ? t('dev_page.footer_cta_title_part3') : '?' }
           </h2>
           <p className="text-lg text-indigo-100 mb-10 max-w-[480px] mx-auto leading-[1.75] opacity-90">
-            Discutons de vos enjeux techniques et construisons votre prochain avantage concurrentiel.
+            {t('dev_page.footer_cta_description')}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link href="/contact" className="h-11 px-6 bg-white text-indigo-600 hover:bg-indigo-50 rounded-lg text-sm font-semibold transition-colors duration-150 flex items-center gap-2 shadow-lg">
-              Analyser mon projet
+              {t('dev_page.footer_cta_btn1')}
             </Link>
             <Link href="/projects" className="h-11 px-6 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg text-sm font-semibold transition-all duration-150 flex items-center gap-2">
-              Voir mes travaux
+              {t('dev_page.footer_cta_btn2')}
             </Link>
           </div>
         </div>
@@ -294,18 +300,36 @@ export default function DeveloppeurPage({ projects }: DeveloppeurPageProps) {
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
+  const currentLocale = locale || 'fr';
   try {
     await connectDB();
-    const projects = await ProjectModel.find({
+    const rawProjects = await ProjectModel.find({
       category: { $in: ['web', 'api', 'library', 'tool'] },
       archived: { $ne: true }
     }).sort({ featured: -1, order: 1 }).limit(4).lean();
+
+    const projects = rawProjects.map((p: any) => ({
+      ...p,
+      _id: p._id.toString(),
+      title: getLocalized(p, 'title', currentLocale),
+      description: getLocalized(p, 'description', currentLocale),
+    }));
+
     return {
-      props: { projects: JSON.parse(JSON.stringify(projects)) },
+      props: { 
+        projects: JSON.parse(JSON.stringify(projects)),
+        ...(await serverSideTranslations(currentLocale, ['common'])),
+      },
       revalidate: 60,
     };
   } catch {
-    return { props: { projects: [] } };
+    return { 
+      props: { 
+        projects: [],
+        ...(await serverSideTranslations(currentLocale, ['common'])),
+      } 
+    };
   }
 };
+

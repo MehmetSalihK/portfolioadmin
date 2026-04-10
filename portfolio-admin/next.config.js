@@ -1,6 +1,9 @@
+const { i18n } = require('./next-i18next.config');
+
 /** @type {import('next').NextConfig} */
 // Optimized for Cloudflare Pages
 const nextConfig = {
+  i18n,
   reactStrictMode: true,
   productionBrowserSourceMaps: false,
   images: {

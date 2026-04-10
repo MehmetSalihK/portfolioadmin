@@ -12,11 +12,15 @@ import toast from 'react-hot-toast';
 interface Experience {
   _id: string;
   title: string;
+  title_en? : string;
+  title_tr? : string;
   company: string;
   location: string;
   startDate: string;
   endDate?: string;
   description: string;
+  description_en?: string;
+  description_tr?: string;
   companyUrl?: string;
 }
 
@@ -29,9 +33,12 @@ export default function ExperiencePage() {
   const [isFetching, setIsFetching] = useState(true);
   const [editingExperience, setEditingExperience] = useState<Experience | null>(null);
   
+  const [activeLang, setActiveLang] = useState<'fr' | 'en' | 'tr'>('fr');
   const [formData, setFormData] = useState({
-    title: '', company: '', location: '', startDate: '', endDate: '',
-    description: '', companyUrl: '', currentPosition: false
+    title: '', title_en: '', title_tr: '',
+    company: '', location: '', startDate: '', endDate: '',
+    description: '', description_en: '', description_tr: '',
+    companyUrl: '', currentPosition: false
   });
 
   useEffect(() => {
@@ -98,23 +105,31 @@ export default function ExperiencePage() {
   const startEdit = (exp: Experience) => {
     setEditingExperience(exp);
     setFormData({
-      title: exp.title,
-      company: exp.company,
-      location: exp.location,
-      startDate: exp.startDate.split('T')[0],
+      title: exp.title || '',
+      title_en: exp.title_en || '',
+      title_tr: exp.title_tr || '',
+      company: exp.company || '',
+      location: exp.location || '',
+      startDate: exp.startDate ? exp.startDate.split('T')[0] : '',
       endDate: exp.endDate ? exp.endDate.split('T')[0] : '',
-      description: exp.description,
+      description: exp.description || '',
+      description_en: exp.description_en || '',
+      description_tr: exp.description_tr || '',
       companyUrl: exp.companyUrl || '',
       currentPosition: !exp.endDate
     });
+    setActiveLang('fr');
     setIsModalOpen(true);
   };
 
   const resetForm = () => {
     setFormData({
-      title: '', company: '', location: '', startDate: '', endDate: '',
-      description: '', companyUrl: '', currentPosition: false
+      title: '', title_en: '', title_tr: '',
+      company: '', location: '', startDate: '', endDate: '',
+      description: '', description_en: '', description_tr: '',
+      companyUrl: '', currentPosition: false
     });
+    setActiveLang('fr');
   };
 
   return (
@@ -218,10 +233,38 @@ export default function ExperiencePage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                   {/* Language Tabs */}
+                   <div className="flex items-center gap-2 p-1.5 bg-slate-100 dark:bg-white/5 rounded-2xl w-fit border border-slate-200 dark:border-white/10 mb-6">
+                      {(['fr', 'en', 'tr'] as const).map((lang) => (
+                        <button
+                          key={lang}
+                          type="button"
+                          onClick={() => setActiveLang(lang)}
+                          className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                            activeLang === lang
+                              ? 'bg-white dark:bg-white/10 text-primary-500 shadow-sm'
+                              : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                          }`}
+                        >
+                          {lang === 'fr' ? '🇫🇷 FR' : lang === 'en' ? '🇬🇧 EN' : '🇹🇷 TR'}
+                        </button>
+                      ))}
+                   </div>
+
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                         <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Poste</label>
-                         <input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: Lead Engineer" />
+                         <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">
+                           Poste {activeLang !== 'fr' && `(${activeLang.toUpperCase()})`}
+                         </label>
+                         {activeLang === 'fr' && (
+                           <input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: Lead Engineer" />
+                         )}
+                         {activeLang === 'en' && (
+                           <input value={formData.title_en} onChange={e => setFormData({ ...formData, title_en: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: Lead Engineer" />
+                         )}
+                         {activeLang === 'tr' && (
+                           <input value={formData.title_tr} onChange={e => setFormData({ ...formData, title_tr: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: Kidemli Mühendis" />
+                         )}
                       </div>
                       <div className="space-y-2">
                          <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Entreprise</label>
@@ -246,8 +289,18 @@ export default function ExperiencePage() {
                    </div>
 
                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Description</label>
-                      <textarea rows={4} required value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none" placeholder="Décrivez vos accomplissements…" />
+                      <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">
+                        Description {activeLang !== 'fr' && `(${activeLang.toUpperCase()})`}
+                      </label>
+                      {activeLang === 'fr' && (
+                        <textarea rows={4} required value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none" placeholder="Décrivez vos accomplissements…" />
+                      )}
+                      {activeLang === 'en' && (
+                        <textarea rows={4} value={formData.description_en} onChange={e => setFormData({ ...formData, description_en: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none" placeholder="Describe your achievements…" />
+                      )}
+                      {activeLang === 'tr' && (
+                        <textarea rows={4} value={formData.description_tr} onChange={e => setFormData({ ...formData, description_tr: e.target.value })} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none" placeholder="Başarılarınızı açıklayın…" />
+                      )}
                    </div>
 
                    <div className="flex gap-4 pt-6">

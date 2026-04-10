@@ -14,9 +14,17 @@ import { FaWhatsapp, FaTelegram } from 'react-icons/fa';
 interface HomePageData {
   _id?: string;
   title: string;
+  title_en?: string;
+  title_tr?: string;
   subtitle: string;
+  subtitle_en?: string;
+  subtitle_tr?: string;
   aboutTitle: string;
+  aboutTitle_en?: string;
+  aboutTitle_tr?: string;
   aboutText: string;
+  aboutText_en?: string;
+  aboutText_tr?: string;
   socialLinks: {
     github: string;
     linkedin: string;
@@ -28,9 +36,17 @@ interface HomePageData {
 
 const defaultData: HomePageData = {
   title: 'Portfolio Professionnel',
+  title_en: '',
+  title_tr: '',
   subtitle: 'Développeur Full Stack passionné par la création d\'applications web modernes et performantes.',
+  subtitle_en: '',
+  subtitle_tr: '',
   aboutTitle: 'À propos',
+  aboutTitle_en: '',
+  aboutTitle_tr: '',
   aboutText: 'Je suis un développeur Full Stack passionné…',
+  aboutText_en: '',
+  aboutText_tr: '',
   socialLinks: { github: '', linkedin: '', twitter: '', whatsapp: '', telegram: '' }
 };
 
@@ -39,6 +55,7 @@ export default function HomePageAdmin() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [activeLang, setActiveLang] = useState<'fr' | 'en' | 'tr'>('fr');
   const [data, setData] = useState<HomePageData>(defaultData);
   const [showPreview, setShowPreview] = useState(false);
   const { notifyChange, isConnected } = usePreviewSync();
@@ -109,7 +126,7 @@ export default function HomePageAdmin() {
       <div className="space-y-12">
         {/* Superior Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8">
-           <div className="space-y-2">
+           <div className="space-y-4">
              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-primary-500/10 flex items-center justify-center text-primary-500 border border-primary-500/20">
                    <FiHome className="w-5 h-5" />
@@ -117,7 +134,24 @@ export default function HomePageAdmin() {
                 <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-500">Point d'Entrée</span>
              </div>
              <h1 className="text-4xl font-extrabold tracking-tight dark:text-white text-slate-900">Accueil & Hero</h1>
-             <p className="text-slate-500 font-medium max-w-lg">Gérez la première impression que vos visiteurs auront en arrivant sur votre portfolio.</p>
+             
+             {/* Global Language Tabs */}
+             <div className="flex items-center gap-2 p-1.5 bg-slate-100 dark:bg-white/5 rounded-2xl w-fit border border-slate-200 dark:border-white/10">
+                {(['fr', 'en', 'tr'] as const).map((lang) => (
+                  <button
+                    key={lang}
+                    type="button"
+                    onClick={() => setActiveLang(lang)}
+                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                      activeLang === lang
+                        ? 'bg-white dark:bg-white/10 text-primary-500 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    {lang === 'fr' ? '🇫🇷 FR' : lang === 'en' ? '🇬🇧 EN' : '🇹🇷 TR'}
+                  </button>
+                ))}
+             </div>
            </div>
 
            <div className="flex items-center gap-4">
@@ -153,12 +187,29 @@ export default function HomePageAdmin() {
 
               <div className="space-y-8">
                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">Titre d'impact</label>
-                    <input name="title" value={data.title} onChange={handleChange} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: Développeur Fullstack" />
+                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">
+                      Titre d'impact {activeLang !== 'fr' && `(${activeLang.toUpperCase()})`}
+                    </label>
+                    <input 
+                      name={activeLang === 'fr' ? 'title' : `title_${activeLang}`} 
+                      value={activeLang === 'fr' ? data.title : (activeLang === 'en' ? data.title_en : data.title_tr) || ''} 
+                      onChange={handleChange} 
+                      className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" 
+                      placeholder="Ex: Développeur Fullstack" 
+                    />
                  </div>
                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">Paragraphe d'appui</label>
-                    <textarea name="subtitle" value={data.subtitle} onChange={handleChange} rows={4} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none" placeholder="Décrivez votre valeur ajoutée…" />
+                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">
+                      Paragraphe d'appui {activeLang !== 'fr' && `(${activeLang.toUpperCase()})`}
+                    </label>
+                    <textarea 
+                      name={activeLang === 'fr' ? 'subtitle' : `subtitle_${activeLang}`} 
+                      value={activeLang === 'fr' ? data.subtitle : (activeLang === 'en' ? data.subtitle_en : data.subtitle_tr) || ''} 
+                      onChange={handleChange} 
+                      rows={4} 
+                      className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none" 
+                      placeholder="Décrivez votre valeur ajoutée…" 
+                    />
                  </div>
               </div>
            </div>
@@ -208,15 +259,28 @@ export default function HomePageAdmin() {
 
               <div className="space-y-8">
                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">Titre de présentation</label>
-                    <input name="aboutTitle" value={data.aboutTitle} onChange={handleChange} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: Qui je suis ?" />
+                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">
+                      Titre de présentation {activeLang !== 'fr' && `(${activeLang.toUpperCase()})`}
+                    </label>
+                    <input 
+                      name={activeLang === 'fr' ? 'aboutTitle' : `aboutTitle_${activeLang}`} 
+                      value={activeLang === 'fr' ? data.aboutTitle : (activeLang === 'en' ? data.aboutTitle_en : data.aboutTitle_tr) || ''} 
+                      onChange={handleChange} 
+                      className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-sm" 
+                      placeholder="Ex: Qui je suis ?" 
+                    />
                  </div>
                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">Corps de texte (Riche)</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">
+                      Corps de texte {activeLang !== 'fr' && `(${activeLang.toUpperCase()})`}
+                    </label>
                     <div className="rounded-3xl overflow-hidden border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/[0.02]">
                        <RichTextEditor
-                          content={data.aboutText}
-                          onChange={(content) => setData(prev => ({ ...prev, aboutText: content }))}
+                          content={activeLang === 'fr' ? data.aboutText : (activeLang === 'en' ? data.aboutText_en : data.aboutText_tr) || ''}
+                          onChange={(content) => {
+                            const field = activeLang === 'fr' ? 'aboutText' : `aboutText_${activeLang}`;
+                            setData(prev => ({ ...prev, [field]: content }));
+                          }}
                        />
                     </div>
                  </div>

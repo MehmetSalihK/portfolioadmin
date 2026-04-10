@@ -1,4 +1,6 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
 import { useDevToolsProtection } from '@/hooks/useDevToolsProtection';
 import Footer from '@/components/layout/Footer';
 
@@ -8,9 +10,14 @@ interface LayoutProps {
 
 const Layout = ({ children }: LayoutProps) => {
   useDevToolsProtection();
+  const router = useRouter();
+  const { asPath, locale, locales } = router;
 
-  // Maintenance check (Client-side with session caching)
-  if (typeof window !== 'undefined') {
+  // Base URL for canonical/hreflang (should be the production domain)
+  const baseUrl = 'https://mehmetsalihk.fr';
+  const cleanPath = asPath.split('?')[0].split('#')[0];
+
+  useEffect(() => {
     const checkMaintenance = async () => {
       // Ignore if on maintenance page or admin
       if (window.location.pathname === '/maintenance' || window.location.pathname.startsWith('/admin')) {
@@ -38,15 +45,30 @@ const Layout = ({ children }: LayoutProps) => {
     };
 
     checkMaintenance();
-  }
+  }, [router.pathname]);
 
   return (
-    <div className="min-h-screen flex flex-col dark:bg-[#0a0a0f] bg-[#fafafc]">
-      <main className="flex-1">
-        {children}
-      </main>
-      <Footer />
-    </div>
+    <>
+      <Head>
+        <link rel="canonical" href={`${baseUrl}${locale === 'fr' ? '' : `/${locale}`}${cleanPath === '/' ? '' : cleanPath}`} />
+        {locales?.map((loc) => (
+          <link
+            key={loc}
+            rel="alternate"
+            hrefLang={loc === 'fr' ? 'fr' : (loc === 'en' ? 'en' : 'tr')}
+            href={`${baseUrl}${loc === 'fr' ? '' : `/${loc}`}${cleanPath === '/' ? '' : cleanPath}`}
+          />
+        ))}
+        {/* x-default points to French as it is the primary language */}
+        <link rel="alternate" hrefLang="x-default" href={`${baseUrl}${cleanPath === '/' ? '' : cleanPath}`} />
+      </Head>
+      <div className="min-h-screen flex flex-col dark:bg-[#0a0a0f] bg-[#fafafc]">
+        <main className="flex-1">
+          {children}
+        </main>
+        <Footer />
+      </div>
+    </>
   );
 };
 

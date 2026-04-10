@@ -6,6 +6,11 @@ import Education from '@/models/Education';
 import { FiBookOpen, FiCalendar, FiMapPin, FiAward, FiExternalLink } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
+import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
+
+import { useRouter } from 'next/router';
+import { getLocalized } from '@/utils/i18n-utils';
 
 interface FormationsPageProps {
   educations: {
@@ -27,16 +32,20 @@ interface FormationsPageProps {
 
 export default function FormationsPage({ educations = [] }: FormationsPageProps) {
 
+  const router = useRouter();
+  const { locale } = useRouter();
+  const { t } = useTranslation('common');
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short' });
+    return date.toLocaleDateString(locale === 'tr' ? 'tr-TR' : (locale === 'en' ? 'en-GB' : 'fr-FR'), { year: 'numeric', month: 'short' });
   };
 
   return (
     <Layout>
       <Head>
-        <title>Formations — Portfolio</title>
-        <meta name="description" content="Découvrez mon parcours académique et mes diplômes." />
+        <title>{t('nav.education')} — Portfolio</title>
+        <meta name="description" content={t('education.description')} />
       </Head>
 
       <main className="min-h-screen dark:bg-[#0a0a0f] bg-[#fafafc] pt-14">
@@ -50,13 +59,13 @@ export default function FormationsPage({ educations = [] }: FormationsPageProps)
             className="mb-16"
           >
             <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-5">
-              Cursus académique
+              {t('education.subtitle')}
             </div>
             <h1 className="text-5xl md:text-6xl font-extrabold dark:text-white text-zinc-900 tracking-tight mb-5 text-balance">
-              Mes <span className="text-indigo-500 italic">formations</span>.
+              {t('education.title_part1')} <span className="text-indigo-500 italic">{t('education.title_part2')}</span>.
             </h1>
             <p className="dark:text-zinc-500 text-zinc-500 text-lg max-w-[520px] leading-[1.75]">
-              Les fondations de mes connaissances théoriques et certifications académiques.
+              {t('education.description')}
             </p>
           </motion.div>
 
@@ -103,7 +112,7 @@ export default function FormationsPage({ educations = [] }: FormationsPageProps)
                         {edu.isDiplomaPassed && (
                           <div className="flex items-center gap-1.5 px-3 py-1 dark:bg-emerald-500/10 bg-emerald-50 rounded-full border dark:border-emerald-500/20 border-emerald-200 shrink-0">
                             <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                            <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Diplômé</span>
+                            <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">{t('education.graduated')}</span>
                           </div>
                         )}
                       </div>
@@ -116,7 +125,7 @@ export default function FormationsPage({ educations = [] }: FormationsPageProps)
                         </span>
                         <span className="flex items-center gap-1.5 text-xs dark:text-zinc-500 text-zinc-500">
                           <FiCalendar className="w-3.5 h-3.5 text-indigo-500" />
-                          {formatDate(edu.startDate)} — {edu.isCurrentlyStudying ? 'En cours' : formatDate(edu.endDate!)}
+                          {formatDate(edu.startDate)} — {edu.isCurrentlyStudying ? t('education.studying') : formatDate(edu.endDate!)}
                         </span>
                         {edu.location && (
                           <span className="flex items-center gap-1.5 text-xs dark:text-zinc-500 text-zinc-500">
@@ -139,7 +148,7 @@ export default function FormationsPage({ educations = [] }: FormationsPageProps)
                             target="_blank"
                             className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-500 hover:text-indigo-400 transition-colors"
                           >
-                            Consulter le diplôme
+                            {t('education.view_diploma')}
                             <FiExternalLink className="w-3.5 h-3.5" />
                           </Link>
                         </div>
@@ -158,8 +167,8 @@ export default function FormationsPage({ educations = [] }: FormationsPageProps)
               <div className="w-14 h-14 rounded-2xl dark:bg-indigo-500/10 bg-indigo-50 flex items-center justify-center mx-auto mb-5">
                 <FiBookOpen className="w-6 h-6 text-indigo-500" />
               </div>
-              <h3 className="text-lg font-bold dark:text-white text-zinc-900 mb-2">Aucune formation répertoriée</h3>
-              <p className="dark:text-zinc-500 text-zinc-500 text-sm">Le cursus académique sera bientôt affiché.</p>
+              <h3 className="text-lg font-bold dark:text-white text-zinc-900 mb-2">{t('education.empty')}</h3>
+              <p className="dark:text-zinc-500 text-zinc-500 text-sm">{t('education.empty_desc')}</p>
             </motion.div>
           )}
         </div>
@@ -168,15 +177,37 @@ export default function FormationsPage({ educations = [] }: FormationsPageProps)
   );
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
+  const currentLocale = locale || 'fr';
   try {
     await connectDB();
-    const educations = await Education.find({ isVisible: true }).sort({ startDate: -1 }).lean();
+    const rawEducations = await Education.find({ isVisible: true }).sort({ startDate: -1 }).lean();
+    
+    const educations = rawEducations.map((edu: any) => ({
+      ...edu,
+      degree: getLocalized(edu, 'degree', currentLocale),
+      field: getLocalized(edu, 'field', currentLocale),
+      description: getLocalized(edu, 'description', currentLocale),
+      _id: edu._id.toString(),
+      startDate: edu.startDate.toISOString(),
+      endDate: edu.endDate ? edu.endDate.toISOString() : null,
+    }));
+
     return {
-      props: { educations: JSON.parse(JSON.stringify(educations)) },
+      props: { 
+        educations: JSON.parse(JSON.stringify(educations)),
+        ...(await serverSideTranslations(currentLocale, ['common'])),
+      },
       revalidate: 60,
     };
   } catch {
-    return { props: { educations: [] }, revalidate: 60 };
+    return { 
+      props: { 
+        educations: [],
+        ...(await serverSideTranslations(currentLocale, ['common'])),
+      }, 
+      revalidate: 60 
+    };
   }
 };
+
