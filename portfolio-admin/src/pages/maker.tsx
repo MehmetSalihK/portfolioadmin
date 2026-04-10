@@ -16,6 +16,7 @@ import Link from 'next/link';
 import JSONLD, { schemas } from '@/components/layout/JSONLD';
 import { useTranslation } from 'react-i18next';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
+import nextI18NextConfig from '../../next-i18next.config.js';
 import { useRouter } from 'next/router';
 import { getLocalized } from '@/utils/i18n-utils';
 
@@ -56,25 +57,25 @@ export default function MakerPage({ projects }: MakerPageProps) {
       cat: t('maker_page.cat1'),
       icon: FiSmartphone,
       color: 'indigo',
-      items: t('maker_page.items1', { returnObjects: true }) as string[]
+      items: (t('maker_page.items1', { returnObjects: true }) || []) as string[]
     },
     {
       cat: t('maker_page.cat2'),
       icon: FiMonitor,
       color: 'amber',
-      items: t('maker_page.items2', { returnObjects: true }) as string[]
+      items: (t('maker_page.items2', { returnObjects: true }) || []) as string[]
     },
     {
       cat: t('maker_page.cat3'),
       icon: SiArduino,
       color: 'emerald',
-      items: t('maker_page.items3', { returnObjects: true }) as string[]
+      items: (t('maker_page.items3', { returnObjects: true }) || []) as string[]
     },
     {
       cat: t('maker_page.cat4'),
       icon: SiLinux,
       color: 'blue',
-      items: t('maker_page.items4', { returnObjects: true }) as string[]
+      items: (t('maker_page.items4', { returnObjects: true }) || []) as string[]
     },
   ];
 
@@ -196,8 +197,8 @@ export default function MakerPage({ projects }: MakerPageProps) {
                     <CatIcon className="w-4 h-4" />
                   </div>
                   <div className="text-[10px] font-semibold uppercase tracking-widest mb-4 text-amber-400">{cat.cat}</div>
-                  <ul className="space-y-2.5">
-                    {cat.items.map((item, idx) => (
+                   <ul className="space-y-2.5">
+                    {Array.isArray(cat.items) && cat.items.map((item, idx) => (
                       <li key={idx} className="flex items-center gap-2 text-sm font-medium text-zinc-300">
                         <span className="w-1 h-1 rounded-full bg-amber-500 shrink-0" />
                         {item}
@@ -318,7 +319,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     return {
       props: { 
         projects: JSON.parse(JSON.stringify(projects)),
-        ...(await serverSideTranslations(currentLocale, ['common'])),
+        ...(await serverSideTranslations(currentLocale, ['common'], nextI18NextConfig)),
       },
       revalidate: 60,
     };
@@ -326,7 +327,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     return { 
       props: { 
         projects: [],
-        ...(await serverSideTranslations(currentLocale, ['common'])),
+        ...(await serverSideTranslations(currentLocale, ['common'], nextI18NextConfig)),
       } 
     };
   }

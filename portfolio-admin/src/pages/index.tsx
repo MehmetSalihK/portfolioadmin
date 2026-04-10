@@ -4,6 +4,7 @@ import { GetStaticProps } from 'next';
 import { useTranslation } from 'react-i18next';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
 import Layout from '@/components/layout/Layout';
+import nextI18NextConfig from '../../next-i18next.config.js';
 import CVModal from '@/components/modals/CVModal';
 import { Analytics } from "@vercel/analytics/next";
 import connectDB from '@/lib/db';
@@ -12,6 +13,7 @@ import ExperienceModel from '@/models/Experience';
 import SkillModel from '@/models/Skill';
 import HomePageModel from '@/models/HomePage';
 import SettingModel from '@/models/Setting';
+import { useRouter } from 'next/router';
 import { useRef, useEffect, useState } from 'react';
 import {
   FaGithub, FaLinkedin, FaTwitter, FaWhatsapp, FaTelegram,
@@ -104,6 +106,7 @@ export default function Home({
   projects, experiences, homeData = defaultHomeData, skillsByCategory, settings, seoData
 }: HomePageProps) {
   const { t } = useTranslation('common');
+  const { locale } = useRouter();
   const { scrollYProgress } = useScroll();
   const mainRef = useRef<HTMLDivElement>(null);
   const [showBanner, setShowBanner] = useState(true);
@@ -234,7 +237,7 @@ export default function Home({
               transition={{ delay: 0.18, duration: 0.4, ease: [0.2, 0, 0, 1] }}
               className="text-lg dark:text-zinc-300 text-zinc-600 mb-10 max-w-[540px] mx-auto leading-[1.8] font-normal"
             >
-              {homeData.subtitle || t('hero.description')}
+              {homeData?.subtitle || t('hero.description')}
             </motion.p>
 
             {/* CTAs */}
@@ -654,15 +657,15 @@ export default function Home({
                             </div>
                           </div>
                           <span className="flex-shrink-0 px-3 py-1.5 dark:bg-indigo-500/10 bg-indigo-50 dark:text-indigo-400 text-indigo-600 dark:border-indigo-500/20 border-indigo-200 border rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
-                            {new Date(exp.startDate).toLocaleDateString(t('common.date_locale'), { month: 'short', year: 'numeric' })}
+                            {new Date(exp.startDate).toLocaleDateString(locale === 'tr' ? 'tr-TR' : (locale === 'en' ? 'en-US' : 'fr-FR'), { month: 'short', year: 'numeric' })}
                             {' — '}
                             {exp.endDate
-                              ? new Date(exp.endDate).toLocaleDateString(t('common.date_locale'), { month: 'short', year: 'numeric' })
+                              ? new Date(exp.endDate).toLocaleDateString(locale === 'tr' ? 'tr-TR' : (locale === 'en' ? 'en-US' : 'fr-FR'), { month: 'short', year: 'numeric' })
                               : t('experience.present')}
                           </span>
                         </div>
                         <p className="dark:text-zinc-500 text-zinc-600 leading-relaxed text-sm mb-5">{exp.description}</p>
-                        {exp.technologies.length > 0 && (
+                        {exp.technologies?.length > 0 && (
                           <div className="flex flex-wrap gap-1.5">
                             {exp.technologies.map((tech, ti) => (
                               <span key={ti} className="px-2.5 py-1 dark:bg-white/5 bg-zinc-100 dark:text-zinc-400 text-zinc-600 dark:border-white/10 border-zinc-200 border rounded-lg text-[10px] font-bold">
@@ -878,7 +881,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
         skillsByCategory: JSON.parse(JSON.stringify(skillsByCategory)),
         settings: JSON.parse(JSON.stringify(settings)),
         seoData: localizedSEO ? JSON.parse(JSON.stringify(localizedSEO)) : null,
-        ...(await serverSideTranslations(currentLocale, ['common'])),
+        ...(await serverSideTranslations(currentLocale, ['common'], nextI18NextConfig)),
       },
       revalidate: 1,
     };

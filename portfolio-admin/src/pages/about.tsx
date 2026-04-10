@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { GetStaticProps } from 'next';
 import { useTranslation } from 'react-i18next';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
+import nextI18NextConfig from '../../next-i18next.config.js';
 import { useRouter } from 'next/router';
 import connectDB from '@/lib/db';
 import Setting from '@/models/Setting';
@@ -183,7 +184,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     return {
       props: { 
         settings: JSON.parse(JSON.stringify(settings)),
-        ...(await serverSideTranslations(currentLocale, ['common'])),
+        ...(await serverSideTranslations(currentLocale, ['common'], nextI18NextConfig)),
       },
       revalidate: 60,
     };
@@ -192,7 +193,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     return {
       props: { 
         settings: { aboutTitle: 'Mon Parcours', aboutBio: '' },
-        ...(await serverSideTranslations(currentLocale, ['common'])),
+        ...(await serverSideTranslations(currentLocale, ['common'], nextI18NextConfig)),
       },
       revalidate: 60,
     };
