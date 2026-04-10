@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import Modal from '@/components/admin/Modal';
-import { FiTrendingUp, FiUsers, FiEye, FiClock, FiBarChart2, FiMonitor, FiSmartphone, FiTablet, FiSettings, FiActivity, FiShield, FiAlertCircle, FiLoader, FiCheck, FiSave, FiX, FiCalendar } from 'react-icons/fi';
+import { FiTrendingUp, FiUsers, FiEye, FiClock, FiBarChart2, FiMonitor, FiSmartphone, FiTablet, FiSettings, FiActivity, FiShield, FiAlertCircle, FiLoader, FiCheck, FiSave, FiX, FiCalendar, FiGlobe } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface AnalyticsStats {

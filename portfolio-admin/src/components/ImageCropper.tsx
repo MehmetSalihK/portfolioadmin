@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiX, FiRotateCw, FiZoomIn, FiZoomOut, FiSave, FiRefreshCw, FiCrop, FiLayers, FiMaximize, FiSettings, FiCheck } from 'react-icons/fi';
+import { FiX, FiRotateCw, FiZoomIn, FiZoomOut, FiSave, FiRefreshCw, FiCrop, FiLayers, FiMaximize, FiSettings, FiCheck, FiLoader } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 
 interface CropArea {

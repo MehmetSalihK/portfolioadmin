@@ -3,7 +3,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import GitHubSync from '@/components/admin/github/GitHubSync';
-import { FiGithub, FiInfo, FiSettings, FiRefreshCw, FiCheck, FiX, FiZap, FiLoader, FiGlobe, FiCloudZen, FiArrowUpRight, FiSearch } from 'react-icons/fi';
+import { FiGithub, FiInfo, FiSettings, FiRefreshCw, FiCheck, FiX, FiZap, FiLoader, FiGlobe, FiFilter, FiArrowUpRight, FiSearch } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 

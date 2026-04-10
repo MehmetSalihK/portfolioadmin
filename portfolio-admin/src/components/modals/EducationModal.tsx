@@ -78,6 +78,16 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
     if (!file) return;
     if (file.size > 50 * 1024 * 1024) return toast.error('Fichier trop volumineux (50MB max)');
     setPendingFile(file);
+    if (file.type.startsWith('image/')) {
+      setShowBlurPreview(true);
+    }
+  };
+
+  const handleBlurConfirm = (zones: any[]) => {
+    setShowBlurPreview(false);
+    if (pendingFile) {
+      uploadFile(pendingFile, zones);
+    }
   };
 
   const uploadFile = async (file: File, blurZones?: any[]) => {

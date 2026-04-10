@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { 
-  FiClock, FiUser, FiRotateCcw, FiTrash2, FiEye, FiGitBranch, FiDownload, FiUpload, FiRefreshCw, FiFilter, FiSearch, FiChevronDown, FiChevronRight, FiAlertTriangle, FiCheck, FiX, FiActivity, FiZap, FiDatabase, FiServer, FiLayers, FiLoader, FiHistory
+  FiClock, FiUser, FiRotateCcw, FiTrash2, FiEye, FiGitBranch, FiDownload, FiUpload, FiRefreshCw, FiFilter, FiSearch, FiChevronDown, FiChevronRight, FiAlertTriangle, FiCheck, FiX, FiActivity, FiZap, FiDatabase, FiServer, FiLayers, FiLoader
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
@@ -98,7 +98,7 @@ const VersionsPage: React.FC = () => {
            <div className="space-y-2">
              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-primary-500/10 flex items-center justify-center text-primary-500 border border-primary-500/20 shadow-sm">
-                   <FiHistory className="w-5 h-5" />
+                   <FiClock className="w-5 h-5" />
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-500">Versioning & Snapshots</span>
              </div>

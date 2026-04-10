@@ -1,7 +1,4 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Particles } from "react-tsparticles";
-import { loadFull } from "tsparticles";
-import type { Engine } from 'tsparticles-engine';
 import { useTheme } from 'next-themes';
 
 export default function ParticlesBackground() {

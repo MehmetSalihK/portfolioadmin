@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiGithub, FiRefreshCw, FiCheck, FiAlertTriangle, FiInfo, FiLayers, FiActivity, FiBriefcase } from 'react-icons/fi';
+import { FiGithub, FiRefreshCw, FiCheck, FiAlertTriangle, FiInfo, FiLayers, FiActivity, FiBriefcase, FiPlus } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 
 interface SyncStats {

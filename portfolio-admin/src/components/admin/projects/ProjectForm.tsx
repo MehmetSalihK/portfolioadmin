@@ -42,8 +42,8 @@ export default function ProjectForm({
       if (initialData) {
         reset({
           ...initialData,
-          technologies: Array.isArray(initialData.technologies) 
-            ? initialData.technologies.join(', ') : initialData.technologies
+          technologies: (Array.isArray(initialData.technologies) 
+            ? initialData.technologies.join(', ') : initialData.technologies) as any
         });
       } else {
         reset({ title: '', description: '', image: '', gallery: [], demoUrl: '', githubUrl: '', technologies: '' } as any);
