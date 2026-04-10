@@ -1,6 +1,5 @@
 import { ReactNode } from 'react';
 import { useDevToolsProtection } from '@/hooks/useDevToolsProtection';
-import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 
 interface LayoutProps {
@@ -43,7 +42,6 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="min-h-screen flex flex-col dark:bg-[#0a0a0f] bg-[#fafafc]">
-      <Navbar />
       <main className="flex-1">
         {children}
       </main>
