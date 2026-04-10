@@ -228,7 +228,7 @@ export default function Home({
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.18, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-              className="text-lg dark:text-zinc-500 text-zinc-500 mb-10 max-w-[520px] mx-auto leading-[1.75] font-normal"
+              className="text-lg dark:text-zinc-300 text-zinc-600 mb-10 max-w-[540px] mx-auto leading-[1.8] font-normal"
             >
               De l&apos;architecture logicielle au prototypage hardware — je conçois des produits numériques complets où la technique rencontre l&apos;esthétique.
             </motion.p>
@@ -238,60 +238,54 @@ export default function Home({
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25, duration: 0.35 }}
-              className="flex flex-wrap items-center justify-center gap-3 mb-14"
+              className="flex flex-wrap items-center justify-center gap-4 mb-14"
             >
               <Link
                 href="/projects"
-                className="h-11 px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors duration-150 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
+                className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_25px_rgba(79,70,229,0.5)] active:scale-95"
               >
                 Voir mes projets
               </Link>
               <button
                 onClick={() => setIsCVModalOpen(true)}
-                className="h-11 px-6 dark:bg-white/[0.04] bg-white dark:hover:bg-white/[0.08] hover:bg-zinc-50 dark:text-zinc-200 text-zinc-700 dark:border-white/[0.08] border-zinc-200 border rounded-lg text-sm font-semibold transition-all duration-150 flex items-center justify-center gap-2"
+                className="h-12 px-8 dark:bg-white/[0.05] bg-white dark:hover:bg-white/[0.1] hover:bg-zinc-50 dark:text-zinc-100 text-zinc-800 dark:border-white/10 border-zinc-300 border rounded-xl text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
               >
                 <FiDownload className="w-4 h-4" />
                 Télécharger le CV
               </button>
             </motion.div>
 
-            {/* Social links */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex items-center justify-center gap-2 mb-10">
-              {homeData.socialLinks.github && (
-                <a href={homeData.socialLinks.github} target="_blank" rel="noopener noreferrer" title="GitHub"
-                  className="p-2 dark:text-zinc-600 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600 transition-colors duration-150"
-                ><FaGithub className="w-5 h-5" /></a>
-              )}
-              {homeData.socialLinks.linkedin && (
-                <a href={homeData.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" title="LinkedIn"
-                  className="p-2 dark:text-zinc-600 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600 transition-colors duration-150"
-                ><FaLinkedin className="w-5 h-5" /></a>
-              )}
-              {homeData.socialLinks.twitter && (
-                <a href={homeData.socialLinks.twitter} target="_blank" rel="noopener noreferrer" title="Twitter"
-                  className="p-2 dark:text-zinc-600 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600 transition-colors duration-150"
-                ><FaTwitter className="w-5 h-5" /></a>
-              )}
-              {homeData.socialLinks.whatsapp && (
-                <a href={homeData.socialLinks.whatsapp} target="_blank" rel="noopener noreferrer" title="WhatsApp"
-                  className="p-2 dark:text-zinc-600 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600 transition-colors duration-150"
-                ><FaWhatsapp className="w-5 h-5" /></a>
-              )}
-              {homeData.socialLinks.telegram && (
-                <a href={homeData.socialLinks.telegram} target="_blank" rel="noopener noreferrer" title="Telegram"
-                  className="p-2 dark:text-zinc-600 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600 transition-colors duration-150"
-                ><FaTelegram className="w-5 h-5" /></a>
-              )}
+            {/* Social links - Enhanced Visibility */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex items-center justify-center gap-4 mb-12">
+              {[
+                { icon: FaGithub, href: homeData.socialLinks.github, title: 'GitHub' },
+                { icon: FaLinkedin, href: homeData.socialLinks.linkedin, title: 'LinkedIn' },
+                { icon: FaTwitter, href: homeData.socialLinks.twitter, title: 'Twitter' },
+                { icon: FaWhatsapp, href: homeData.socialLinks.whatsapp, title: 'WhatsApp' },
+                { icon: FaTelegram, href: homeData.socialLinks.telegram, title: 'Telegram' },
+              ].map((social, i) => social.href && (
+                <motion.a
+                  key={i}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={social.title}
+                  whileHover={{ y: -4, scale: 1.1 }}
+                  className="w-11 h-11 dark:bg-white/[0.03] bg-zinc-100 dark:border-white/5 border-zinc-200 border rounded-xl flex items-center justify-center dark:text-zinc-300 text-zinc-500 dark:hover:text-white hover:text-indigo-600 hover:dark:bg-white/[0.08] hover:bg-white transition-all duration-200 shadow-sm"
+                >
+                  <social.icon className="w-5 h-5" />
+                </motion.a>
+              ))}
             </motion.div>
 
-            {/* Tech badges strip */}
+            {/* Tech badges strip - Improved Readability */}
             <motion.div
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.35 }}
-              className="flex flex-wrap items-center justify-center gap-2"
+              className="flex flex-wrap items-center justify-center gap-3"
             >
-              <span className="text-[10px] font-semibold dark:text-zinc-700 text-zinc-400 uppercase tracking-widest mr-1">Stack</span>
+              <span className="text-[10px] font-bold dark:text-zinc-500 text-zinc-400 uppercase tracking-[0.2em] mr-2">Stack Active</span>
               {[
                 { icon: SiNextdotjs, label: 'Next.js', color: 'currentColor' },
                 { icon: SiReact, label: 'React', color: '#61DAFB' },
@@ -302,13 +296,13 @@ export default function Home({
                 <div
                   key={i}
                   title={t.label}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 dark:bg-white/[0.04] bg-zinc-100 rounded-lg border dark:border-white/[0.06] border-zinc-200 hover:dark:border-white/[0.1] hover:border-zinc-300 transition-all duration-150 cursor-default group"
+                  className="flex items-center gap-2 px-3 py-2 dark:bg-white/[0.05] bg-white rounded-xl border dark:border-white/[0.08] border-zinc-200 hover:dark:border-white/[0.15] hover:border-indigo-300 transition-all duration-200 cursor-default group shadow-sm"
                 >
                   <t.icon
-                    className="w-3.5 h-3.5 dark:opacity-60 opacity-50 group-hover:opacity-100 transition-opacity"
+                    className="w-4 h-4 dark:opacity-80 opacity-70 group-hover:opacity-100 transition-opacity"
                     style={{ color: t.color }}
                   />
-                  <span className="text-[11px] font-medium dark:text-zinc-500 text-zinc-500 group-hover:dark:text-zinc-300 group-hover:text-zinc-700 transition-colors">{t.label}</span>
+                  <span className="text-[12px] font-bold dark:text-zinc-200 text-zinc-700 group-hover:text-black dark:group-hover:text-white transition-colors tracking-tight">{t.label}</span>
                 </div>
               ))}
             </motion.div>
