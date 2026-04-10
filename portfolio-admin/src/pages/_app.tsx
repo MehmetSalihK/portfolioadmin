@@ -4,6 +4,7 @@ import { SessionProvider } from 'next-auth/react';
 import { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import useSecurity from '@/utils/hooks/useSecurity';
 import Navbar from '@/components/layout/Navbar';
 import AutoSync from '@/components/admin/AutoSync';
@@ -54,6 +55,7 @@ function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
           }}
         />
         <Analytics />
+        <SpeedInsights />
       </ThemeProvider>
     </SessionProvider>
   );
