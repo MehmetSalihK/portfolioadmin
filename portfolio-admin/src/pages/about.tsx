@@ -110,10 +110,26 @@ export default function About() {
           <div className="dark:bg-white/[0.02] bg-white rounded-2xl p-8 md:p-12 dark:border-white/[0.06] border-zinc-200 border">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
               <div className="lg:col-span-4">
-                <h2 className="text-2xl font-bold dark:text-white text-zinc-900 tracking-tight mb-4">
+                {settings.aboutImage && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    className="relative aspect-square rounded-[2rem] overflow-hidden mb-8 border-4 dark:border-white/5 border-zinc-100 shadow-2xl group"
+                  >
+                    <Image
+                      src={settings.aboutImage}
+                      alt={settings.aboutTitle || 'Profile'}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  </motion.div>
+                )}
+                <h2 className="text-2xl font-bold dark:text-white text-zinc-900 tracking-tight mb-4 text-balance">
                   {settings.aboutTitle || 'Ma philosophie'}
                 </h2>
-                <div className="w-8 h-0.5 bg-indigo-500 rounded-full" />
+                <div className="w-12 h-1 bg-indigo-500 rounded-full" />
               </div>
               <div className="lg:col-span-8">
                 <div className="dark:text-zinc-400 text-zinc-600 text-base leading-[1.8] space-y-4">
