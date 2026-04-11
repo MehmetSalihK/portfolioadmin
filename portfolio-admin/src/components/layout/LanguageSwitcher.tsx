@@ -10,7 +10,11 @@ const languages = [
   { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
 ];
 
-const LanguageSwitcher = () => {
+interface LanguageSwitcherProps {
+  direction?: 'up' | 'down';
+}
+
+const LanguageSwitcher = ({ direction = 'down' }: LanguageSwitcherProps) => {
   const router = useRouter();
   const { locale, asPath } = router;
   const [isOpen, setIsOpen] = useState(false);
@@ -46,11 +50,11 @@ const LanguageSwitcher = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            initial={{ opacity: 0, y: direction === 'up' ? -10 : 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            exit={{ opacity: 0, y: direction === 'up' ? -10 : 10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
-            className="absolute right-0 mt-3 w-40 rounded-2xl dark:bg-[#12121a]/80 bg-white/80 backdrop-blur-xl border dark:border-white/10 border-zinc-200 shadow-2xl z-[100] overflow-hidden"
+            className={`absolute right-0 ${direction === 'up' ? 'bottom-full mb-3' : 'mt-3'} w-40 rounded-2xl dark:bg-[#12121a]/80 bg-white/80 backdrop-blur-xl border dark:border-white/10 border-zinc-200 shadow-2xl z-[100] overflow-hidden`}
           >
             <div className="py-2">
               {languages.map((lang) => (

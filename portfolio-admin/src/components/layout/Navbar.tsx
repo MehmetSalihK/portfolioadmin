@@ -192,7 +192,7 @@ export default function Navbar() {
               <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center px-2">
                    <span className="text-xs font-bold dark:text-zinc-500 text-zinc-400 uppercase tracking-widest">{t('nav.language')}</span>
-                   <LanguageSwitcher />
+                   <LanguageSwitcher direction="up" />
                 </div>
                 <Link
                   href="/contact"
