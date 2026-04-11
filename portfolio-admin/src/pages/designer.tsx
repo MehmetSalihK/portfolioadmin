@@ -95,12 +95,65 @@ export default function DesignerPage({ projects }: DesignerPageProps) {
       <motion.div className="fixed top-0 left-0 right-0 h-[2px] bg-rose-500 origin-left z-50" style={{ scaleX: scrollYProgress }} />
 
       {/* ── HERO ── */}
-      <section className="min-h-[85vh] flex items-center dark:bg-[#0a0a0f] bg-[#fafafc] pt-14 relative overflow-hidden">
+      <section className="min-h-[92vh] flex items-center dark:bg-[#0a0a0f] bg-[#fafafc] pt-14 relative overflow-hidden">
+
+        {/* ── Background images collage (right side) ── */}
         <div className="absolute inset-0 pointer-events-none">
+          {/* Ambient glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] dark:bg-rose-600/6 bg-rose-100/30 rounded-full blur-[120px]" />
+
+          {/* Photo 1 — montage.jpg (top right, tilted) */}
+          <motion.div
+            initial={{ opacity: 0, x: 60, rotate: 4 }}
+            animate={{ opacity: 1, x: 0, rotate: 4 }}
+            transition={{ delay: 0.3, duration: 0.8, ease: [0.2, 0, 0, 1] }}
+            className="absolute hidden lg:block right-[-60px] top-[80px] w-[420px] h-[260px] rounded-2xl overflow-hidden shadow-2xl shadow-black/40 border dark:border-white/[0.08] border-zinc-200/60"
+          >
+            <Image
+              src="/images/designer/montage.jpg"
+              alt="Montage vidéo"
+              fill
+              className="object-cover"
+              priority
+            />
+            {/* Gradient overlay on image */}
+            <div className="absolute inset-0 bg-gradient-to-l dark:from-[#0a0a0f]/10 from-[#fafafc]/5 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t dark:from-[#0a0a0f]/70 from-zinc-100/60 to-transparent" />
+            {/* Label */}
+            <div className="absolute bottom-3 left-4 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+              <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Adobe Premiere Pro</span>
+            </div>
+          </motion.div>
+
+          {/* Photo 2 — camera.jpg (bottom right, opposite tilt) */}
+          <motion.div
+            initial={{ opacity: 0, x: 80, rotate: -3 }}
+            animate={{ opacity: 1, x: 0, rotate: -3 }}
+            transition={{ delay: 0.5, duration: 0.8, ease: [0.2, 0, 0, 1] }}
+            className="absolute hidden lg:block right-[60px] top-[310px] w-[360px] h-[220px] rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border dark:border-white/[0.08] border-zinc-200/60"
+          >
+            <Image
+              src="/images/designer/camera.jpg"
+              alt="Prise de vue caméra"
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-l dark:from-[#0a0a0f]/5 from-[#fafafc]/5 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t dark:from-[#0a0a0f]/70 from-zinc-100/60 to-transparent" />
+            <div className="absolute bottom-3 left-4 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Production vidéo</span>
+            </div>
+          </motion.div>
+
+          {/* Right edge fade so images blend into background */}
+          <div className="absolute right-0 top-0 bottom-0 w-[200px] bg-gradient-to-l dark:from-[#0a0a0f] from-[#fafafc] to-transparent hidden lg:block" />
         </div>
+
         <div className="max-w-[1100px] mx-auto px-6 w-full relative z-10">
-          <div className="max-w-[760px]">
+          <div className="max-w-[600px]">
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
