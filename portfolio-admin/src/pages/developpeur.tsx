@@ -95,12 +95,64 @@ export default function DeveloppeurPage({ projects }: DeveloppeurPageProps) {
       <motion.div className="fixed top-0 left-0 right-0 h-[2px] bg-indigo-500 origin-left z-50" style={{ scaleX: scrollYProgress }} />
 
       {/* ── HERO ── */}
-      <section className="min-h-[85vh] flex items-center dark:bg-[#0a0a0f] bg-[#fafafc] pt-14 relative overflow-hidden">
+      <section className="min-h-[92vh] flex items-center dark:bg-[#0a0a0f] bg-[#fafafc] pt-14 relative overflow-hidden">
+
+        {/* ── Background images collage (right side) ── */}
         <div className="absolute inset-0 pointer-events-none">
+          {/* Ambient glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] dark:bg-indigo-600/6 bg-indigo-100/30 rounded-full blur-[120px]" />
+
+          {/* Photo 1 — codage.jpg (top right, tilted) */}
+          <motion.div
+            initial={{ opacity: 0, x: 60, rotate: 3 }}
+            animate={{ opacity: 1, x: 0, rotate: 3 }}
+            transition={{ delay: 0.3, duration: 0.8, ease: [0.2, 0, 0, 1] }}
+            className="absolute hidden lg:block right-[-50px] top-[70px] w-[420px] h-[260px] rounded-2xl overflow-hidden shadow-2xl shadow-black/40 border dark:border-white/[0.08] border-zinc-200/60"
+          >
+            <Image
+              src="/images/developpeur/codage.jpg"
+              alt="Code en cours"
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-l dark:from-[#0a0a0f]/10 from-[#fafafc]/5 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t dark:from-[#0a0a0f]/70 from-zinc-100/60 to-transparent" />
+            <div className="absolute bottom-3 left-4 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+              <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Full Stack Development</span>
+            </div>
+          </motion.div>
+
+          {/* Photo 2 — Trends_05_Security.jpg (bottom right, opposite tilt) */}
+          <motion.div
+            initial={{ opacity: 0, x: 80, rotate: -2 }}
+            animate={{ opacity: 1, x: 0, rotate: -2 }}
+            transition={{ delay: 0.5, duration: 0.8, ease: [0.2, 0, 0, 1] }}
+            className="absolute hidden lg:block right-[70px] top-[300px] w-[360px] h-[220px] rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border dark:border-white/[0.08] border-zinc-200/60"
+          >
+            <Image
+              src="/images/developpeur/Trends_05_Security.jpg"
+              alt="Sécurité & Architecture"
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-l dark:from-[#0a0a0f]/5 from-[#fafafc]/5 to-transparent" />
+            <div className="absolute inset-0 bg-violet-900/10" />
+            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t dark:from-[#0a0a0f]/70 from-zinc-100/60 to-transparent" />
+            <div className="absolute bottom-3 left-4 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+              <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Sécurité & Architecture</span>
+            </div>
+          </motion.div>
+
+          {/* Right edge fade so images blend into background */}
+          <div className="absolute right-0 top-0 bottom-0 w-[200px] bg-gradient-to-l dark:from-[#0a0a0f] from-[#fafafc] to-transparent hidden lg:block" />
         </div>
+
         <div className="max-w-[1100px] mx-auto px-6 w-full relative z-10">
-          <div className="max-w-[760px]">
+          <div className="max-w-[600px]">
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
