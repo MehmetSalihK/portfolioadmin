@@ -45,7 +45,7 @@ export default async function handler(
       await connectDB();
       console.log("Received data:", req.body);
 
-      // Créer ou mettre à jour les settings dans le modèle Setting (utilisé par la page contact)
+      // Créer ou mettre à jour les settings dans le modèle Setting (utilisé par la page contact et about)
       await Setting.findOneAndUpdate(
         {},
         {
@@ -54,6 +54,16 @@ export default async function handler(
           whatsapp: req.body.whatsapp || "",
           telegram: req.body.telegram || "",
           position: req.body.position || "",
+          position_en: req.body.position_en || "",
+          position_tr: req.body.position_tr || "",
+          aboutTitle: req.body.aboutTitle || "",
+          aboutTitle_en: req.body.aboutTitle_en || "",
+          aboutTitle_tr: req.body.aboutTitle_tr || "",
+          aboutBio: req.body.aboutBio || "",
+          aboutBio_en: req.body.aboutBio_en || "",
+          aboutBio_tr: req.body.aboutBio_tr || "",
+          siteDescription_en: req.body.siteDescription_en || "",
+          siteDescription_tr: req.body.siteDescription_tr || "",
         },
         { upsert: true, new: true },
       );
@@ -76,7 +86,17 @@ export default async function handler(
         {},
         {
           title: req.body.siteTitle,
-          siteDescription: req.body.siteDescription,
+          title_en: req.body.siteTitle_en, // Added for completeness if ever used
+          title_tr: req.body.siteTitle_tr,
+          subtitle: req.body.siteDescription,
+          subtitle_en: req.body.siteDescription_en,
+          subtitle_tr: req.body.siteDescription_tr,
+          aboutTitle: req.body.aboutTitle,
+          aboutTitle_en: req.body.aboutTitle_en,
+          aboutTitle_tr: req.body.aboutTitle_tr,
+          aboutText: req.body.aboutBio,
+          aboutText_en: req.body.aboutBio_en,
+          aboutText_tr: req.body.aboutBio_tr,
           email: req.body.email,
           phone: req.body.phone,
           socialLinks: {

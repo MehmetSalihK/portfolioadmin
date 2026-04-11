@@ -17,23 +17,39 @@ const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 interface Settings {
   siteTitle: string;
   siteDescription: string;
+  siteDescription_en: string;
+  siteDescription_tr: string;
   email: string;
   phone: string;
   position: string;
+  position_en: string;
+  position_tr: string;
   github: string;
   linkedin: string;
   twitter: string;
   whatsapp: string;
   telegram: string;
   aboutTitle: string;
+  aboutTitle_en: string;
+  aboutTitle_tr: string;
   aboutBio: string;
+  aboutBio_en: string;
+  aboutBio_tr: string;
   aboutImage: string;
 }
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [settings, setSettings] = useState<Settings>({ siteTitle: '', siteDescription: '', email: '', phone: '', position: '', github: '', linkedin: '', twitter: '', whatsapp: '', telegram: '', aboutTitle: '', aboutBio: '', aboutImage: '' });
+  const [activeLang, setActiveLang] = useState<'fr' | 'en' | 'tr'>('fr');
+  const [settings, setSettings] = useState<Settings>({ 
+    siteTitle: '', siteDescription: '', siteDescription_en: '', siteDescription_tr: '',
+    email: '', phone: '', position: '', position_en: '', position_tr: '',
+    github: '', linkedin: '', twitter: '', whatsapp: '', telegram: '', 
+    aboutTitle: '', aboutTitle_en: '', aboutTitle_tr: '',
+    aboutBio: '', aboutBio_en: '', aboutBio_tr: '',
+    aboutImage: '' 
+  });
   const [isSaving, setIsSaving] = useState(false);
   const [positionSuggestions, setPositionSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -55,7 +71,23 @@ export default function SettingsPage() {
   useEffect(() => { if (status === 'unauthenticated') { router.push('/admin/login'); } else if (status === 'authenticated') { fetchSettings(); fetchCurrentCV(); } }, [status, router]);
 
   const fetchSettings = async () => {
-    try { const res = await fetch('/api/admin/settings'); if (res.ok) { const d = await res.json(); setSettings(d); } } catch (e) { console.error(e); }
+    try { 
+      const res = await fetch('/api/admin/settings'); 
+      if (res.ok) { 
+        const d = await res.json(); 
+        setSettings({
+          ...d,
+          siteDescription_en: d.siteDescription_en || '',
+          siteDescription_tr: d.siteDescription_tr || '',
+          position_en: d.position_en || '',
+          position_tr: d.position_tr || '',
+          aboutTitle_en: d.aboutTitle_en || '',
+          aboutTitle_tr: d.aboutTitle_tr || '',
+          aboutBio_en: d.aboutBio_en || '',
+          aboutBio_tr: d.aboutBio_tr || '',
+        }); 
+      } 
+    } catch (e) { console.error(e); }
   };
 
   const fetchCurrentCV = async () => {
@@ -84,6 +116,8 @@ export default function SettingsPage() {
 
   const [isPositionFocused, setIsPositionFocused] = useState(false);
   useEffect(() => {
+    // Only fetch suggestions for French position
+    if (activeLang !== 'fr') return;
     const query = settings.position.trim();
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     if (!isPositionFocused || query.length < 2) { setPositionSuggestions([]); setShowSuggestions(false); return; }
@@ -96,7 +130,7 @@ export default function SettingsPage() {
         setPositionSuggestions(s); setShowSuggestions(s.length > 0);
       } catch (e) { console.error(e); } finally { setIsLoadingSuggestions(false); }
     }, 300);
-  }, [settings.position, isPositionFocused]);
+  }, [settings.position, isPositionFocused, activeLang]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,6 +184,25 @@ export default function SettingsPage() {
         <form onSubmit={handleSubmit} className="grid grid-cols-1 xl:grid-cols-12 gap-10">
            {/* Left Column: Profile & Info */}
            <div className="xl:col-span-8 space-y-10">
+              {/* Language Selector */}
+              <div className="flex items-center gap-2 p-1.5 bg-white dark:bg-white/5 rounded-2xl w-fit border border-slate-200 dark:border-white/10 shadow-sm">
+                 {(['fr', 'en', 'tr'] as const).map((lang) => (
+                    <button
+                       key={lang}
+                       type="button"
+                       onClick={() => setActiveLang(lang)}
+                       className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                          activeLang === lang
+                             ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25'
+                             : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                       }`}
+                    >
+                       <span>{lang === 'fr' ? '🇫🇷' : lang === 'en' ? '🇬🇧' : '🇹🇷'}</span>
+                       {lang.toUpperCase()}
+                    </button>
+                 ))}
+              </div>
+
               {/* Profile Box */}
               <div className="bg-white dark:bg-background-card/40 border border-slate-200 dark:border-white/5 rounded-[40px] p-10 group hover:shadow-premium-lg transition-all duration-500 relative overflow-hidden">
                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 blur-3xl -mr-16 -mt-16" />
@@ -178,14 +231,43 @@ export default function SettingsPage() {
 
               {/* Bio Detail */}
               <div className="bg-white dark:bg-background-card/40 border border-slate-200 dark:border-white/5 rounded-[40px] p-10 space-y-8">
-                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 shadow-sm"><FiFileText className="w-6 h-6" /></div>
-                    <h3 className="text-xl font-black dark:text-white text-slate-900 tracking-tight uppercase">Parcours & Narrative</h3>
+                 <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                       <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 shadow-sm"><FiFileText className="w-6 h-6" /></div>
+                       <h3 className="text-xl font-black dark:text-white text-slate-900 tracking-tight uppercase">Parcours & Narrative</h3>
+                    </div>
+                    <div className="px-3 py-1 rounded-lg bg-indigo-500/10 text-indigo-500 text-[10px] font-bold uppercase tracking-widest">
+                       {activeLang.toUpperCase()} CONTENT
+                    </div>
                  </div>
-                 <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">Biographie Complète</label>
-                    <div className="rounded-3xl overflow-hidden border border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]">
-                       <ReactQuill theme="snow" value={settings.aboutBio} onChange={v => setSettings({ ...settings, aboutBio: v })} className="min-h-[300px] text-slate-300" />
+
+                 <div className="space-y-4">
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">Titre de la section ({activeLang})</label>
+                       {activeLang === 'fr' && (
+                          <input name="aboutTitle" value={settings.aboutTitle} onChange={handleChange} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-3 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: Mon Parcours Professionnel" />
+                       )}
+                       {activeLang === 'en' && (
+                          <input name="aboutTitle_en" value={settings.aboutTitle_en} onChange={handleChange} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-3 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: My Professional Journey" />
+                       )}
+                       {activeLang === 'tr' && (
+                          <input name="aboutTitle_tr" value={settings.aboutTitle_tr} onChange={handleChange} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-3 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 font-bold dark:text-white text-slate-900 text-sm" placeholder="Ex: Profesyonel Yolculuğum" />
+                       )}
+                    </div>
+
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">Biographie Complète ({activeLang})</label>
+                       <div className="rounded-3xl overflow-hidden border border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02]">
+                          {activeLang === 'fr' && (
+                             <ReactQuill theme="snow" value={settings.aboutBio} onChange={v => setSettings({ ...settings, aboutBio: v })} className="min-h-[300px] text-slate-300" />
+                          )}
+                          {activeLang === 'en' && (
+                             <ReactQuill theme="snow" value={settings.aboutBio_en} onChange={v => setSettings({ ...settings, aboutBio_en: v })} className="min-h-[300px] text-slate-300" placeholder="English biography..." />
+                          )}
+                          {activeLang === 'tr' && (
+                             <ReactQuill theme="snow" value={settings.aboutBio_tr} onChange={v => setSettings({ ...settings, aboutBio_tr: v })} className="min-h-[300px] text-slate-300" placeholder="Türkçe biyografi..." />
+                          )}
+                       </div>
                     </div>
                  </div>
               </div>
@@ -197,8 +279,16 @@ export default function SettingsPage() {
                     <h3 className="text-xl font-black dark:text-white text-slate-900 tracking-tight uppercase">Indexation & SEO</h3>
                  </div>
                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">Méta Description Globale</label>
-                    <textarea name="siteDescription" value={settings.siteDescription} onChange={handleChange} rows={3} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-rose-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none" placeholder="Apparaît sous votre nom dans Google…" />
+                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">Méta Description Globale ({activeLang})</label>
+                    {activeLang === 'fr' && (
+                       <textarea name="siteDescription" value={settings.siteDescription} onChange={handleChange} rows={3} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-rose-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none" placeholder="Apparaît sous votre nom dans Google…" />
+                    )}
+                    {activeLang === 'en' && (
+                       <textarea name="siteDescription_en" value={settings.siteDescription_en} onChange={handleChange} rows={3} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-rose-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none" placeholder="Appears under your name in Google (EN)..." />
+                    )}
+                    {activeLang === 'tr' && (
+                       <textarea name="siteDescription_tr" value={settings.siteDescription_tr} onChange={handleChange} rows={3} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl outline-none focus:ring-4 focus:ring-rose-500/10 font-bold dark:text-white text-slate-900 text-sm resize-none" placeholder="Google'da isminizin altında görünür (TR)..." />
+                    )}
                  </div>
               </div>
            </div>
@@ -212,9 +302,17 @@ export default function SettingsPage() {
                     <h3 className="font-extrabold dark:text-white text-slate-900 tracking-tight text-lg uppercase">Localisation</h3>
                  </div>
                  <div className="relative">
-                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">Ville (France)</label>
-                    <input ref={positionInputRef} type="text" name="position" value={settings.position} onChange={handleChange} onFocus={() => setIsPositionFocused(true)} onBlur={() => setTimeout(() => { setIsPositionFocused(false); setShowSuggestions(false); }, 200)} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-5 py-3 rounded-xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-xs mt-2" placeholder="Ex: Paris 75010…" />
-                    {showSuggestions && (
+                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">Ville ({activeLang})</label>
+                    {activeLang === 'fr' && (
+                       <input ref={positionInputRef} type="text" name="position" value={settings.position} onChange={handleChange} onFocus={() => setIsPositionFocused(true)} onBlur={() => setTimeout(() => { setIsPositionFocused(false); setShowSuggestions(false); }, 200)} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-5 py-3 rounded-xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-xs mt-2" placeholder="Ex: Paris 75010…" />
+                    )}
+                    {activeLang === 'en' && (
+                       <input type="text" name="position_en" value={settings.position_en} onChange={handleChange} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-5 py-3 rounded-xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-xs mt-2" placeholder="Ex: London, UK..." />
+                    )}
+                    {activeLang === 'tr' && (
+                       <input type="text" name="position_tr" value={settings.position_tr} onChange={handleChange} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-5 py-3 rounded-xl outline-none focus:ring-4 focus:ring-primary-500/10 font-bold dark:text-white text-slate-900 text-xs mt-2" placeholder="Ex: İstanbul, Türkiye..." />
+                    )}
+                    {activeLang === 'fr' && showSuggestions && (
                        <div className="absolute z-50 w-full mt-2 bg-white dark:bg-[#0d0d12] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden py-2" ref={suggestionsRef}>
                           {positionSuggestions.map((s, i) => (
                              <div key={i} onClick={() => { setSettings({ ...settings, position: s }); setShowSuggestions(false); }} className="px-4 py-2.5 text-xs font-bold text-slate-500 dark:text-slate-400 hover:bg-primary-500/10 hover:text-primary-500 cursor-pointer transition-colors flex items-center gap-3">

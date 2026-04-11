@@ -873,13 +873,20 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       ).sort((a: any, b: any) => a.displayOrder - b.displayOrder).map((s: any) => ({...s, _id: s._id.toString(), categoryId: s.categoryId._id.toString()}))
     })).sort((a: any, b: any) => a.displayOrder - b.displayOrder);
 
+    // Localize Settings
+    const localizedSettings = settings ? {
+      ...settings,
+      position: getLocalized(settings, 'position', currentLocale),
+      siteDescription: getLocalized(settings, 'siteDescription', currentLocale),
+    } : settings;
+
     return {
       props: {
         projects: JSON.parse(JSON.stringify(localizedProjects)),
         experiences: JSON.parse(JSON.stringify(localizedExperiences)),
         homeData: JSON.parse(JSON.stringify(localizedHomeData)),
         skillsByCategory: JSON.parse(JSON.stringify(skillsByCategory)),
-        settings: JSON.parse(JSON.stringify(settings)),
+        settings: JSON.parse(JSON.stringify(localizedSettings)),
         seoData: localizedSEO ? JSON.parse(JSON.stringify(localizedSEO)) : null,
         ...(await serverSideTranslations(currentLocale, ['common'], nextI18NextConfig)),
       },
