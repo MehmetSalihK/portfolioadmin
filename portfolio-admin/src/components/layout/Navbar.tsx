@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -54,9 +55,13 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-            <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs font-black shadow-md shadow-indigo-600/30">
-              S
-            </div>
+            <Image
+              src="/favicon.png"
+              alt="Logo"
+              width={28}
+              height={28}
+              className="rounded-lg shadow-md shadow-indigo-600/30"
+            />
             <span className="text-sm font-bold dark:text-white text-zinc-900 tracking-tight group-hover:text-indigo-500 transition-colors duration-150">
               Portfolio
             </span>
@@ -138,9 +143,13 @@ export default function Navbar() {
             {/* Top bar */}
             <div className="h-14 flex items-center justify-between px-6 border-b dark:border-white/[0.06] border-zinc-100 shrink-0">
               <Link href="/" className="flex items-center gap-2.5" onClick={() => setIsOpen(false)}>
-                <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs font-black">
-                  S
-                </div>
+                <Image
+                  src="/favicon.png"
+                  alt="Logo"
+                  width={28}
+                  height={28}
+                  className="rounded-lg shadow-md shadow-indigo-600/30"
+                />
                 <span className="text-sm font-bold dark:text-white text-zinc-900">Portfolio</span>
               </Link>
               <button
