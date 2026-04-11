@@ -6,8 +6,10 @@ class MyDocument extends Document {
     return (
       <Html>
         <Head>
-          <link rel="icon" href="/globe.svg" type="image/svg+xml" />
-          <link rel="shortcut icon" href="/globe.svg" />
+        <link rel="icon" href="/favicon.png" type="image/png" />
+          <link rel="shortcut icon" href="/favicon.png" />
+          <link rel="apple-touch-icon" href="/favicon.png" />
+          <meta name="theme-color" content="#0a0a0f" />
           <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
         </Head>
         <body>
