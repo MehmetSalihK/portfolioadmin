@@ -100,12 +100,87 @@ export default function MakerPage({ projects }: MakerPageProps) {
       <motion.div className="fixed top-0 left-0 right-0 h-[2px] bg-amber-500 origin-left z-50" style={{ scaleX: scrollYProgress }} />
 
       {/* ── HERO ── */}
-      <section className="min-h-[85vh] flex items-center dark:bg-[#0a0a0f] bg-[#fafafc] pt-14 relative overflow-hidden">
+      <section className="min-h-[95vh] flex items-center dark:bg-[#0a0a0f] bg-[#fafafc] pt-14 relative overflow-hidden">
+
+        {/* ── Background images cascade (right side) ── */}
         <div className="absolute inset-0 pointer-events-none">
+          {/* Ambient glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] dark:bg-amber-600/5 bg-amber-100/20 rounded-full blur-[120px]" />
+
+          {/* Photo 1 — Assemblage PC (top, slightly tilted right) */}
+          <motion.div
+            initial={{ opacity: 0, x: 70, rotate: 3 }}
+            animate={{ opacity: 1, x: 0, rotate: 3 }}
+            transition={{ delay: 0.25, duration: 0.8, ease: [0.2, 0, 0, 1] }}
+            className="absolute hidden lg:block right-[-40px] top-[55px] w-[380px] h-[220px] rounded-2xl overflow-hidden shadow-2xl shadow-black/40 border dark:border-white/[0.08] border-zinc-200/60"
+          >
+            <Image
+              src="/images/maker/Assemblage & Upgrade PC.jpg"
+              alt="Assemblage PC"
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-l dark:from-[#0a0a0f]/10 from-[#fafafc]/5 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t dark:from-[#0a0a0f]/80 from-zinc-100/70 to-transparent" />
+            <div className="absolute bottom-3 left-4 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Assemblage & Upgrade PC</span>
+            </div>
+          </motion.div>
+
+          {/* Photo 2 — Smartphones (middle, tilted left) */}
+          <motion.div
+            initial={{ opacity: 0, x: 90, rotate: -2 }}
+            animate={{ opacity: 1, x: 0, rotate: -2 }}
+            transition={{ delay: 0.42, duration: 0.8, ease: [0.2, 0, 0, 1] }}
+            className="absolute hidden lg:block right-[80px] top-[255px] w-[340px] h-[200px] rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border dark:border-white/[0.08] border-zinc-200/60"
+          >
+            <Image
+              src="/images/maker/Diagnostic & Réparation Smartphones.jpg"
+              alt="Réparation Smartphones"
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-emerald-900/10" />
+            <div className="absolute inset-0 bg-gradient-to-l dark:from-[#0a0a0f]/5 from-[#fafafc]/5 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t dark:from-[#0a0a0f]/80 from-zinc-100/70 to-transparent" />
+            <div className="absolute bottom-3 left-4 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Diagnostic Smartphones</span>
+            </div>
+          </motion.div>
+
+          {/* Photo 3 — IoT (bottom, tilted right again) */}
+          <motion.div
+            initial={{ opacity: 0, x: 60, rotate: 2 }}
+            animate={{ opacity: 1, x: 0, rotate: 2 }}
+            transition={{ delay: 0.6, duration: 0.8, ease: [0.2, 0, 0, 1] }}
+            className="absolute hidden lg:block right-[-20px] top-[435px] w-[310px] h-[185px] rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border dark:border-white/[0.08] border-zinc-200/60"
+          >
+            <Image
+              src="/images/maker/Prototypage IoT & Électronique.jpg"
+              alt="Prototypage IoT"
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-orange-900/10" />
+            <div className="absolute inset-0 bg-gradient-to-l dark:from-[#0a0a0f]/5 from-[#fafafc]/5 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t dark:from-[#0a0a0f]/80 from-zinc-100/70 to-transparent" />
+            <div className="absolute bottom-3 left-4 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
+              <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Prototypage IoT</span>
+            </div>
+          </motion.div>
+
+          {/* Right edge fade */}
+          <div className="absolute right-0 top-0 bottom-0 w-[220px] bg-gradient-to-l dark:from-[#0a0a0f] from-[#fafafc] to-transparent hidden lg:block" />
         </div>
+
         <div className="max-w-[1100px] mx-auto px-6 w-full relative z-10">
-          <div className="max-w-[760px]">
+          <div className="max-w-[560px]">
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
