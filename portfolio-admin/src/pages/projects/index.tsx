@@ -9,7 +9,7 @@ import Image from 'next/image';
 import { FiExternalLink, FiGithub, FiCode, FiStar, FiX } from 'react-icons/fi';
 import parse from 'html-react-parser';
 import DOMPurify from 'isomorphic-dompurify';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next/pages';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
 import { useRouter } from 'next/router';
 import { getLocalized } from '@/utils/i18n-utils';

@@ -8,7 +8,7 @@ import {
   FiHome, FiUser, FiGrid, FiBookOpen, FiBriefcase, FiMail
 } from 'react-icons/fi';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next/pages';
 import LanguageSwitcher from './LanguageSwitcher';
 
 const navItems = [

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
 import { FiMail, FiCode } from 'react-icons/fi';
 import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next/pages';
 
 interface FooterSettings {
   github?: string;

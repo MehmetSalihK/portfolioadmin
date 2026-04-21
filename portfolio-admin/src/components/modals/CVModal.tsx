@@ -1,7 +1,7 @@
 import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { FiX, FiDownload, FiExternalLink } from 'react-icons/fi';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next/pages';
 
 interface CVModalProps {
   isOpen: boolean;

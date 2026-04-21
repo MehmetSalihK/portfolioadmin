@@ -8,7 +8,7 @@ import { GetStaticProps } from 'next';
 import connectDB from '@/lib/db';
 import Setting from '@/models/Setting';
 import { motion } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next/pages';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
 import { useRouter } from 'next/router';
 

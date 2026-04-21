@@ -1,7 +1,7 @@
 import connectDB from '@/lib/db';
 import ExperienceModel from '@/models/Experience';
 import { format } from 'date-fns';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next/pages';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
 import { getLocalized } from '@/utils/i18n-utils';
 import { useRouter } from 'next/router';

@@ -14,9 +14,9 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import JSONLD, { schemas } from '@/components/layout/JSONLD';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next/pages';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
-import nextI18NextConfig from '../../next-i18next.config.js';
+
 import { useRouter } from 'next/router';
 import { getLocalized } from '@/utils/i18n-utils';
 
@@ -394,7 +394,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     return {
       props: { 
         projects: JSON.parse(JSON.stringify(projects)),
-        ...(await serverSideTranslations(currentLocale, ['common'], nextI18NextConfig)),
+        ...(await serverSideTranslations(currentLocale, ['common'])),
       },
       revalidate: 60,
     };
@@ -402,7 +402,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     return { 
       props: { 
         projects: [],
-        ...(await serverSideTranslations(currentLocale, ['common'], nextI18NextConfig)),
+        ...(await serverSideTranslations(currentLocale, ['common'])),
       } 
     };
   }

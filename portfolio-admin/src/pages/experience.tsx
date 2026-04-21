@@ -5,7 +5,7 @@ import connectDB from '@/lib/db';
 import Experience from '@/models/Experience';
 import { motion } from 'framer-motion';
 import { FiCalendar, FiMapPin, FiBriefcase } from 'react-icons/fi';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next/pages';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
 import { useRouter } from 'next/router';
 

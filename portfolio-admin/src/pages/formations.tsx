@@ -6,7 +6,7 @@ import Education from '@/models/Education';
 import { FiBookOpen, FiCalendar, FiMapPin, FiAward, FiExternalLink } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next/pages';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
 
 import { useRouter } from 'next/router';
@@ -37,7 +37,9 @@ export default function FormationsPage({ educations = [] }: FormationsPageProps)
   const { t } = useTranslation('common');
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
     return date.toLocaleDateString(locale === 'tr' ? 'tr-TR' : (locale === 'en' ? 'en-GB' : 'fr-FR'), { year: 'numeric', month: 'short' });
   };
 
@@ -125,7 +127,11 @@ export default function FormationsPage({ educations = [] }: FormationsPageProps)
                         </span>
                         <span className="flex items-center gap-1.5 text-xs dark:text-zinc-500 text-zinc-500">
                           <FiCalendar className="w-3.5 h-3.5 text-indigo-500" />
-                          {formatDate(edu.startDate)} — {edu.isCurrentlyStudying ? t('education.studying') : formatDate(edu.endDate!)}
+                          {formatDate(edu.startDate)} — {
+                            edu.isCurrentlyStudying ? t('education.studying') : 
+                            edu.isPaused ? t('education.paused') : 
+                            formatDate(edu.endDate!)
+                          }
                         </span>
                         {edu.location && (
                           <span className="flex items-center gap-1.5 text-xs dark:text-zinc-500 text-zinc-500">

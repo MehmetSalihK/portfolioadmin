@@ -1,10 +1,10 @@
 import { motion, useScroll, AnimatePresence } from 'framer-motion';
 import Head from 'next/head';
 import { GetStaticProps } from 'next';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next/pages';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
 import Layout from '@/components/layout/Layout';
-import nextI18NextConfig from '../../next-i18next.config.js';
+
 import CVModal from '@/components/modals/CVModal';
 import { Analytics } from "@vercel/analytics/next";
 import connectDB from '@/lib/db';
@@ -888,7 +888,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
         skillsByCategory: JSON.parse(JSON.stringify(skillsByCategory)),
         settings: JSON.parse(JSON.stringify(localizedSettings)),
         seoData: localizedSEO ? JSON.parse(JSON.stringify(localizedSEO)) : null,
-        ...(await serverSideTranslations(currentLocale, ['common'], nextI18NextConfig)),
+        ...(await serverSideTranslations(currentLocale, ['common'])),
       },
       revalidate: 1,
     };

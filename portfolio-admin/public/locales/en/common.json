@@ -208,6 +208,9 @@
     "hero_title_part1": "Let's launch your",
     "hero_title_part2": "project",
     "hero_description": "An idea? A technical challenge? My communication channel is open.",
+    "description": "Have a project in mind or a technical question? Feel free to reach out, I would be happy to discuss it with you.",
+    "cta": "Contact Me",
+    "cv_btn": "My CV",
     "form": {
       "firstname": "First Name",
       "lastname": "Last Name",
@@ -240,6 +243,7 @@
     "description": "The foundations of my theoretical knowledge and academic certifications.",
     "graduated": "Graduated",
     "studying": "Ongoing",
+    "paused": "On pause",
     "view_diploma": "View diploma",
     "empty": "No education listed",
     "empty_desc": "Academic background will be displayed soon."

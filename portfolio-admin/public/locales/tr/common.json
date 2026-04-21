@@ -205,6 +205,9 @@
     "hero_title_part1": "Projenizi",
     "hero_title_part2": "başlatalım",
     "hero_description": "Bir fikir mi var? Teknik bir zorluk mu? İletişim kanalım her zaman açık.",
+    "description": "Aklınızda bir proje mi var yoksa teknik bir sorunuz mu? Benimle iletişime geçmekten çekinmeyin, sizinle görüşmekten mutluluk duyarım.",
+    "cta": "İletişime Geç",
+    "cv_btn": "Özgeçmişim",
     "form": {
       "firstname": "İsim",
       "lastname": "Soyisim",
@@ -237,6 +240,7 @@
     "description": "Teorik bilgilerimin ve akademik sertifikalarımın temelleri.",
     "graduated": "Mezun",
     "studying": "Devam ediyor",
+    "paused": "Ara verildi",
     "view_diploma": "Diplomayı görüntüle",
     "empty": "Eğitim bilgisi bulunamadı",
     "empty_desc": "Akademik geçmiş yakında burada sergilenecektir."

@@ -1,4 +1,5 @@
 import { appWithTranslation } from 'next-i18next/pages';
+import i18nConfig from '../../next-i18next.config.js';
 import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
 import { SessionProvider } from 'next-auth/react';
@@ -59,4 +60,4 @@ function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   );
 }
 
-export default appWithTranslation(App);
+export default appWithTranslation(App, i18nConfig);
