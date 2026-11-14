@@ -481,10 +481,10 @@ SOFTWARE.
 ---
 
 <div align="center">
-  <p><strong>Developed with ❤️ by <a href="https://github.com/mehmetsalihkuscu">Mehmet Salih Kuscu</a></strong></p>
+  <p><strong>Developed with ❤️ by <a href="https://github.com/mehmetsalihk">Mehmet Salih Kuscu</a></strong></p>
   <p><em>For efficient no-code portfolio management</em></p>
   
-  [![GitHub](https://img.shields.io/badge/GitHub-mehmetsalihkuscu-black?logo=github)](https://github.com/mehmetsalihkuscu)
+  [![GitHub](https://img.shields.io/badge/GitHub-mehmetsalihk-black?logo=github)](https://github.com/mehmetsalihk)
   [![LinkedIn](https://img.shields.io/badge/LinkedIn-Mehmet%20Salih%20Kuscu-blue?logo=linkedin)](https://linkedin.com/in/mehmetsalihkuscu)
   [![Email](https://img.shields.io/badge/Email-contact@mehmetsalihk.fr-red?logo=gmail)](mailto:contact@mehmetsalihk.fr)
 </div>
