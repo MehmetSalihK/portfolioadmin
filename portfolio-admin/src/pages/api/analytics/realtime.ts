@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import dbConnect from '../../../../lib/db';
+import dbConnect from '@/lib/db';
 import Analytics from '../../../models/Analytics';
+import { requireAdmin } from '@/lib/auth-guard';
 
 export default async function handler(
   req: NextApiRequest,
@@ -9,6 +10,11 @@ export default async function handler(
   if (req.method !== 'GET') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
+
+  // Données de fréquentation en temps réel → réservées à l'admin
+  // (avant : public, sans aucune authentification).
+  const guard = await requireAdmin(req, res);
+  if (!guard) return;
 
   try {
     await dbConnect();

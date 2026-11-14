@@ -5,7 +5,8 @@ import Link from 'next/link';
 import {
   FiHome, FiBriefcase, FiCode, FiFolder, FiLogOut, FiMenu, FiMail,
   FiSettings, FiBarChart2, FiBookOpen, FiActivity, FiSun, FiMoon,
-  FiImage, FiShield, FiX, FiSearch, FiBell, FiChevronRight, FiGrid, FiCommand, FiTerminal, FiZap
+  FiImage, FiShield, FiX, FiSearch, FiChevronRight, FiGrid, FiCommand, FiTerminal, FiZap,
+  FiGlobe, FiGithub, FiLayers, FiClock
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
@@ -40,6 +41,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         { href: '/admin/experience', label: 'Expériences', icon: FiBriefcase },
         { href: '/admin/education', label: 'Formation', icon: FiBookOpen },
         { href: '/admin/media', label: 'Médias', icon: FiImage },
+        { href: '/admin/home', label: 'Accueil', icon: FiHome },
+        { href: '/admin/seo', label: 'SEO', icon: FiGlobe },
       ]
     },
     {
@@ -49,6 +52,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         { href: '/admin/backup', label: 'Sauvegardes', icon: FiShield },
         { href: '/admin/messages', label: 'Messages', icon: FiMail },
         { href: '/admin/settings', label: 'Paramètres', icon: FiSettings },
+        { href: '/admin/github-sync', label: 'GitHub Sync', icon: FiGithub },
+        { href: '/admin/skill-categories', label: 'Catégories', icon: FiLayers },
+        { href: '/admin/versions', label: 'Versions', icon: FiClock },
+        { href: '/admin/verify-2fa', label: 'Sécurité 2FA', icon: FiShield },
       ]
     }
   ];
@@ -205,14 +212,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                  </AnimatePresence>
                </button>
 
-               <button 
-                 className="w-11 h-11 rounded-[16px] dark:bg-zinc-900/50 bg-white border dark:border-white/5 border-slate-200 flex items-center justify-center text-slate-500 relative hover:text-indigo-500 transition-all shadow-sm"
-                 aria-label="Voir les notifications"
-                 title="Notifications"
-               >
-                 <FiBell className="w-5 h-5" />
-                 <span className="absolute top-3 right-3 w-2 h-2 bg-rose-500 rounded-full border-2 dark:border-[#09090c] border-white" />
-               </button>
+               
             </div>
 
             <div className="h-10 w-[1px] bg-slate-200 dark:bg-white/10 mx-2" />

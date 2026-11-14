@@ -45,59 +45,63 @@ export default function CVModal({ isOpen, onClose }: CVModalProps) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-4xl transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-2xl transition-all">
+              {/* Bloc d'encre carré, filets 1px — langage TRACÉ.
+                  Header/footer en wrap : à 390px les actions passent
+                  sur une seconde ligne au lieu de se comprimer. */}
+              <Dialog.Panel className="w-full max-w-4xl transform overflow-hidden bg-[rgb(var(--background-start-rgb))] border border-[rgb(var(--foreground-rgb))]/20 shadow-lift transition-all">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                  <Dialog.Title className="text-xl font-semibold text-gray-900 dark:text-white">
+                <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-6 border-b border-[rgb(var(--foreground-rgb))]/15">
+                  <Dialog.Title className="font-mono text-[11px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/60 m-0">
                     {t('cv_modal.title')}
                   </Dialog.Title>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={handleDownload}
-                      className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      className="btn btn-outline !h-11 !px-4 text-[11px]"
                       title={t('cv_modal.download_tooltip')}
                     >
-                      <FiDownload className="w-4 h-4 mr-2" />
+                      <FiDownload className="w-4 h-4" />
                       {t('cv_modal.download')}
                     </button>
                     <button
                       onClick={handleExternalView}
-                      className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      className="btn btn-outline !h-11 !px-4 text-[11px]"
                       title={t('cv_modal.new_tab_tooltip')}
                     >
-                      <FiExternalLink className="w-4 h-4 mr-2" />
+                      <FiExternalLink className="w-4 h-4" />
                       {t('cv_modal.new_tab')}
                     </button>
                     <button
                       onClick={onClose}
-                      className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                      aria-label={t('cv_modal.close')}
+                      className="w-11 h-11 flex items-center justify-center border border-[rgb(var(--foreground-rgb))]/25 text-[rgb(var(--foreground-rgb))]/60 hover:bg-[var(--accent)] hover:border-[var(--accent)] hover:text-[#14130f] transition-all duration-300"
                     >
-                      <FiX className="w-6 h-6" />
+                      <FiX className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
 
                 {/* PDF Viewer */}
-                <div className="p-6">
-                  <div className="w-full h-[70vh] bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+                <div className="p-4 sm:p-6">
+                  <div className="w-full h-[65vh] sm:h-[70vh] border border-[rgb(var(--foreground-rgb))]/12 overflow-hidden bg-[var(--color-surface)]">
                     <iframe
                       src="/cv"
                       className="w-full h-full border-0"
-                      title="CV Preview"
+                      title={t('cv_modal.title')}
                       loading="lazy"
                     />
                   </div>
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex justify-between items-center">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                <div className="px-4 sm:px-6 py-4 border-t border-[rgb(var(--foreground-rgb))]/15">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[rgb(var(--foreground-rgb))]/60 m-0">
                       {t('cv_modal.footer_text')}
                     </p>
                     <button
                       onClick={onClose}
-                      className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                      className="btn btn-dark !h-11 !px-5 text-[11px]"
                     >
                       {t('cv_modal.close')}
                     </button>

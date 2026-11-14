@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import { existsSync } from 'fs';
 import Media from '@/models/Media';
 import connectDB from '@/lib/db';
+import { resolveSafePath } from '@/utils/pathSafety';
 
 // API pour servir les images avec optimisation automatique selon le navigateur
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -18,8 +19,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Chemin de fichier invalide' });
     }
 
-    const fullPath = filePath.join('/');
-    
     // Vérifier si c'est un ID de média ou un chemin de fichier
     const isMediaId = filePath.length === 1 && filePath[0].match(/^[0-9a-fA-F]{24}$/);
     
@@ -63,10 +62,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Servir directement le fichier
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'media');
-    const requestedFile = path.join(uploadsDir, fullPath);
-    
-    // Vérification de sécurité
-    if (!requestedFile.startsWith(uploadsDir)) {
+    // Résolution sûre : chaque segment est validé puis le chemin résolu est
+    // contraint à uploadsDir (le simple startsWith acceptait un dossier
+    // voisin de nom préfixé, ex. public/uploads/media-old/...).
+    const requestedFile = resolveSafePath(uploadsDir, ...filePath);
+
+    if (!requestedFile) {
       return res.status(403).json({ error: 'Accès interdit' });
     }
 
@@ -101,6 +102,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Headers de cache optimisés
     const maxAge = 31536000; // 1 an
     res.setHeader('Content-Type', mimeType);
+    // Un SVG servi depuis l'origine exécuterait du JavaScript : on impose
+    // un bac à sable (les uploads bloquent déjà le SVG, ceci protège les
+    // fichiers éventuellement présents depuis l'ancienne version).
+    if (ext === '.svg') {
+      res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; sandbox");
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+    }
     res.setHeader('Content-Length', stats.size);
     res.setHeader('Cache-Control', `public, max-age=${maxAge}, immutable`);
     res.setHeader('ETag', `"${stats.mtime.getTime()}-${stats.size}"`);

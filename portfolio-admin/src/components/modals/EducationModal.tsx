@@ -129,7 +129,7 @@ export default function EducationModal({ isOpen, onClose, onSubmit, education }:
                     <span className="text-[10px] font-black text-primary-500 uppercase tracking-[0.3em]">{education ? 'Édition' : 'Ajout'}</span>
                     <h2 className="text-3xl font-extrabold tracking-tight dark:text-white text-slate-900">Formation</h2>
                  </div>
-                 <button onClick={onClose} className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors"><FiX className="w-6 h-6"/></button>
+                 <button onClick={onClose} aria-label="Fermer" className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors"><FiX className="w-6 h-6"/></button>
               </div>
 
                <form onSubmit={handleSubmit} className="space-y-6">

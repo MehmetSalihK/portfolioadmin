@@ -1,10 +1,17 @@
 import { Resend } from 'resend';
+import crypto from 'crypto';
 
 if (!process.env.RESEND_API_KEY) {
   throw new Error('RESEND_API_KEY is not defined in environment variables');
 }
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Expéditeur configurable (domaine vérifié en production). En dev/test on
+// retombe sur l'expéditeur de test de Resend, qui n'accepte que des
+// destinataires vérifiés — voir RESEND_FROM_EMAIL dans .env.
+const from2FA = process.env.RESEND_FROM_EMAIL || 'Portfolio Admin <onboarding@resend.dev>';
+const fromContact = process.env.RESEND_CONTACT_FROM || 'Portfolio Contact <contact@resend.dev>';
 
 interface Send2FACodeParams {
   userEmail: string;
@@ -21,7 +28,7 @@ interface ContactEmailParams {
 export const sendContactEmail = async ({ name, email, subject, message }: ContactEmailParams) => {
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Portfolio Contact <contact@resend.dev>',
+      from: fromContact,
       to: ['salihketur60@gmail.com'],
       replyTo: email, // Permet de répondre directement à l'expéditeur
       subject: `[Portfolio] Nouveau message : ${subject}`,
@@ -89,8 +96,8 @@ Envoyé depuis votre portfolio
 export const send2FACode = async ({ userEmail, code }: Send2FACodeParams) => {
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Portfolio Admin <onboarding@resend.dev>',
-      to: ['salihketur60@gmail.com'], // Email vérifié pour Resend en mode test
+      from: from2FA,
+      to: [userEmail],
       subject: 'Code de vérification 2FA - Portfolio Admin',
       html: `
         <!DOCTYPE html>
@@ -294,7 +301,7 @@ Envoyé automatiquement par le système de sécurité.
 };
 
 export const generate2FACode = (): string => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return crypto.randomInt(100000, 1000000).toString();
 };
 
 const emailService = { send2FACode, generate2FACode, sendContactEmail };

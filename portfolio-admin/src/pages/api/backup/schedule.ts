@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
 import dbConnect from '../../../lib/db';
 import { Backup } from '../../../models/Backup';
 import { createFullBackup, createIncrementalBackup } from './index';
@@ -187,10 +186,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await dbConnect();
     
-    const session = await getServerSession(req, res, authOptions);
-    if (!session?.user?.email) {
-      return res.status(401).json({ message: 'Non authentifié' });
-    }
+    const guard = await requireAdmin(req, res);
+    if (!guard) return;
 
     if (req.method === 'GET') {
       const { action } = req.query;

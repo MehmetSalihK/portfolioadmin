@@ -7,9 +7,5 @@
       "maxDuration": 60,
       "memory": 1024
     }
-  },
-  "env": {
-    "ADMIN_EMAIL": "sketur60@admin.msk",
-    "ADMIN_PASSWORD": "EdaMirray.1302/&"
   }
 }

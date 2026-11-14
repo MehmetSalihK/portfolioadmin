@@ -2,6 +2,8 @@ import mongoose, { Document } from 'mongoose';
 
 export interface ISetting extends Document {
   siteTitle: string;
+  siteTitle_en: string;
+  siteTitle_tr: string;
   siteDescription: string;
   siteDescription_en: string;
   siteDescription_tr: string;
@@ -29,6 +31,14 @@ const settingSchema = new mongoose.Schema({
   siteTitle: {
     type: String,
     default: 'Portfolio'
+  },
+  siteTitle_en: {
+    type: String,
+    default: ''
+  },
+  siteTitle_tr: {
+    type: String,
+    default: ''
   },
   siteDescription: {
     type: String,

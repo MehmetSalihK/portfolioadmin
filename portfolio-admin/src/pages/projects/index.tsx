@@ -1,18 +1,27 @@
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import Layout from '@/components/layout/Layout';
+import JSONLD from '@/components/layout/JSONLD';
 import connectDB from '@/lib/db';
 import ProjectModel from '@/models/Project';
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
-import { FiExternalLink, FiGithub, FiCode, FiStar, FiX } from 'react-icons/fi';
-import parse from 'html-react-parser';
-import DOMPurify from 'isomorphic-dompurify';
+import { FiArrowUpRight, FiChevronRight } from 'react-icons/fi';
 import { useTranslation } from 'next-i18next/pages';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
 import { useRouter } from 'next/router';
 import { getLocalized } from '@/utils/i18n-utils';
+import type { ModalProject } from '@/components/projects/ProjectModal';
+import ProjectFacts from '@/components/projects/ProjectFacts';
+import { SectionMark, CropMarks } from '@/components/identity/Marks';
+import { Reveal, EASE } from '@/components/motion/Reveal';
+import { hasRealDescription } from '@/utils/project-display';
+import { playSfx } from '@/utils/sound';
+
+/* Modale en chunk séparé : DOMPurify + html-react-parser hors bundle initial */
+const ProjectModal = dynamic(() => import('@/components/projects/ProjectModal'), { ssr: false });
 
 interface Project {
   _id: string;
@@ -23,276 +32,486 @@ interface Project {
   demoUrl?: string;
   githubUrl?: string;
   featured?: boolean;
+  gallery?: string[];
+  category?: string;
+  githubData?: { language?: string | null; stars?: number; forks?: number; lastUpdated?: string | null };
 }
 
 interface ProjectsPageProps {
   projects: Project[];
 }
 
-export default function Projects({ projects }: ProjectsPageProps) {
-  const { locale } = useRouter();
+const track = async (projectId: string, type: 'demo' | 'github' | 'view') => {
+  try {
+    await fetch('/api/projects/stats', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectId, type }),
+    });
+  } catch {}
+};
+
+/** Nombre de technologies affichées avant dépliement */
+const TECH_VISIBLE = 14;
+
+export default function ProjectsPage({ projects = [] }: ProjectsPageProps) {
   const { t } = useTranslation('common');
+  const { locale } = useRouter();
 
+  const [selectedProject, setSelectedProject] = useState<ModalProject | null>(null);
+  const [filter, setFilter] = useState<string>('all');
+  const [tech, setTech] = useState<string | null>(null);
+  const [view, setView] = useState<'planche' | 'index'>('planche');
+  const [allTechs, setAllTechs] = useState(false);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  /* Filtres déduits des catégories réelles — jamais inventés */
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    projects.forEach(p => p.category && set.add(p.category));
+    return Array.from(set);
+  }, [projects]);
 
-  const openModal = (project: Project) => {
-    setSelectedProject(project);
-    setIsModalOpen(true);
-    document.body.style.overflow = 'hidden';
+  /* Explorateur : fréquence réelle de chaque technologie dans l'index */
+  const techIndex = useMemo(() => {
+    const counts = new Map<string, number>();
+    projects.forEach(p => (p.technologies || []).forEach(tech => counts.set(tech, (counts.get(tech) || 0) + 1)));
+    return Array.from(counts, ([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  }, [projects]);
+
+  const visible = useMemo(
+    () => projects.filter(p =>
+      (filter === 'all' || p.category === filter) &&
+      (!tech || (p.technologies || []).includes(tech))
+    ),
+    [projects, filter, tech]
+  );
+
+  /* Le projet « vedette » devient la planche d'ouverture (vue index) */
+  const [lead, ...rest] = visible;
+
+  const openProject = (p: Project) => {
+    track(p._id, 'view');
+    playSfx('gate');
+    setSelectedProject(p);
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
+  /* Navigation de laboratoire : avance circulaire dans la sélection courante */
+  const modalIndex = selectedProject ? visible.findIndex(p => p._id === selectedProject._id) : -1;
+  const navigate = (dir: -1 | 1) => {
+    if (modalIndex < 0 || visible.length < 2) return;
+    const next = (modalIndex + dir + visible.length) % visible.length;
+    track(visible[next]._id, 'view');
+    setSelectedProject(visible[next]);
+  };
+
+  const applyCategory = (value: string) => { setFilter(value); playSfx('tick'); };
+  const applyTech = (value: string) => { setTech(prev => (prev === value ? null : value)); playSfx('tick'); };
+  const applyView = (value: 'planche' | 'index') => { setView(value); playSfx('tick'); };
+
+  /* Clic sur une technologie de la modale : refermer et filtrer l'index */
+  const selectTechFromModal = (value: string) => {
+    setFilter('all');
+    setTech(value);
     setSelectedProject(null);
-    document.body.style.overflow = 'unset';
+    playSfx('tick');
+    /* Respect de prefers-reduced-motion : sans lissage si l'utilisateur réduit les animations */
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.getElementById('index-complet')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
   };
 
-  const trackClick = async (projectId: string, type: 'demo' | 'github' | 'view') => {
-    try {
-      await fetch('/api/projects/stats', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectId, type }),
-      });
-    } catch {}
+  const dateFmt = locale === 'tr' ? 'tr-TR' : locale === 'en' ? 'en-US' : 'fr-FR';
+
+  const techsToShow = allTechs ? techIndex : techIndex.slice(0, TECH_VISIBLE);
+
+  const openOnKey = (p: Project) => (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openProject(p);
+    }
   };
-
-  const handleDemoClick = async (projectId: string, url: string) => {
-    await trackClick(projectId, 'demo');
-    window.open(url, '_blank');
-  };
-
-  const handleGithubClick = async (projectId: string, url: string) => {
-    await trackClick(projectId, 'github');
-    window.open(url, '_blank');
-  };
-
-
 
   return (
     <Layout>
+      <JSONLD
+        type="CollectionPage"
+        data={{
+          name: t('seo.projects_title'),
+          description: t('seo.projects_description'),
+          url: 'https://mehmetsalihk.fr/projects',
+          isPartOf: { '@type': 'WebSite', name: 'MSK — Portfolio', url: 'https://mehmetsalihk.fr' },
+        }}
+      />
       <Head>
-        <title>{t('nav.projects')} — Portfolio</title>
-        <meta name="description" content={t('projects.description')} />
+        <title>{t('seo.projects_title')}</title>
+        <meta name="description" content={t('seo.projects_description')} />
+        <meta property="og:title" content={t('seo.projects_title')} />
+        <meta property="og:description" content={t('seo.projects_description')} />
+        <link rel="icon" href="/favicon.png" />
       </Head>
 
-      <main className="min-h-screen dark:bg-[#0a0a0f] bg-[#fafafc] pt-14">
-        <div className="max-w-[1100px] mx-auto px-6 pt-20 pb-24">
-
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.2, 0, 0, 1] }}
-            className="mb-16"
-          >
-            <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-5">
-              {t('projects.hero_subtitle')}
-            </div>
-            <h1 className="text-5xl md:text-6xl font-extrabold dark:text-white text-zinc-900 tracking-tight mb-5 text-balance">
-              {t('projects.hero_title_part1')} <span className="text-indigo-500 italic">{t('projects.hero_title_part2')}</span>.
-            </h1>
-            <p className="dark:text-zinc-500 text-zinc-500 text-lg max-w-[520px] leading-[1.75]">
-              {t('projects.description')}
-            </p>
-          </motion.div>
-
-          {/* Featured Project Spotlight */}
-          {projects.find(p => p.featured) && (
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="mb-24"
-            >
-              <div className="flex items-center gap-2 text-indigo-500 font-bold text-[10px] uppercase tracking-[0.3em] mb-8">
-                <FiStar className="w-3 h-3" />
-                {t('projects.featured_spotlight')}
-              </div>
-              {(() => {
-                const featured = projects.find(p => p.featured)!;
-                return (
-                  <div 
-                    onClick={() => openModal(featured)}
-                    className="group relative h-[400px] md:h-[600px] rounded-[3rem] overflow-hidden dark:bg-zinc-900 bg-zinc-100 dark:border-white/5 border-zinc-200 border-2 cursor-pointer shadow-3xl"
-                  >
-                    <Image 
-                      src={featured.imageUrl} 
-                      alt={featured.title} 
-                      fill 
-                      className="object-cover transition-transform duration-1000 group-hover:scale-105" 
-                      priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                    <div className="absolute bottom-12 left-12 right-12">
-                      <div className="flex flex-wrap gap-2 mb-6">
-                        {featured.technologies.slice(0, 3).map(t => (
-                          <span key={t} className="px-4 py-1.5 bg-white/10 backdrop-blur-md text-white border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest">{t}</span>
-                        ))}
-                      </div>
-                      <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4 group-hover:text-indigo-400 transition-colors">{featured.title}</h2>
-                      <p className="text-zinc-400 text-lg max-w-2xl line-clamp-2 md:line-clamp-none">{featured.description}</p>
-                    </div>
-                  </div>
-                );
-              })()}
-            </motion.div>
-          )}
-
-          {/* Projects Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {projects.filter(p => !p.featured || projects.indexOf(p) !== projects.findIndex(fp => fp.featured)).map((project, index) => (
-              <motion.div
-                key={project._id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.3, delay: index * 0.06, ease: [0.2, 0, 0, 1] }}
-                onClick={() => openModal(project)}
-                className="group cursor-pointer dark:bg-white/[0.02] bg-white rounded-2xl border dark:border-white/[0.06] border-zinc-200 hover:dark:border-white/[0.12] hover:border-zinc-300 overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-black/40"
-              >
-                {/* Image */}
-                <div className="relative aspect-[16/9] dark:bg-zinc-900 bg-zinc-100 overflow-hidden">
-                  <Image
-                    src={project.imageUrl}
-                    alt={project.title}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, 540px"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                </div>
-
-                {/* Content */}
-                <div className="p-5">
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <h3 className="text-base font-bold dark:text-white text-zinc-900 tracking-tight leading-snug">
-                      {project.title}
-                    </h3>
-                    <div className="flex gap-2 shrink-0">
-                      {project.githubUrl && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); project.githubUrl && handleGithubClick(project._id, project.githubUrl); }}
-                          className="p-1.5 dark:text-zinc-600 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600 transition-colors"
-                        >
-                          <FiGithub className="w-4 h-4" />
-                        </button>
-                      )}
-                      {project.demoUrl && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); project.demoUrl && handleDemoClick(project._id, project.demoUrl); }}
-                          className="p-1.5 dark:text-zinc-600 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600 transition-colors"
-                        >
-                          <FiExternalLink className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-zinc-500 text-sm leading-relaxed line-clamp-2 mb-4">
-                    {project.description}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {project.technologies.slice(0, 4).map((tech, ti) => (
-                      <span key={ti} className="px-2.5 py-1 dark:bg-white/[0.04] bg-zinc-50 dark:text-zinc-500 text-zinc-500 rounded-md text-[11px] font-medium border dark:border-white/[0.05] border-zinc-100">
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+      {/* ════════════ EN-TÊTE ════════════ */}
+      <section className="relative pt-[8.5rem] pb-2">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)]">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-5 mb-9 border-b border-[rgb(var(--foreground-rgb))]/15">
+            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/65">
+              {t('nav.projects')} — {t('page_label.projects')}
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/65 tabular-nums">
+              {String(projects.length).padStart(2, '0')} {t('projects.entries')}
+            </span>
           </div>
 
-          {projects.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-24 dark:bg-white/[0.02] bg-white rounded-2xl border dark:border-white/[0.06] border-zinc-200 border-dashed"
+          <h1 className="font-display font-black text-[clamp(2.6rem,7.5vw,6.5rem)] leading-[0.9] tracking-[-0.05em] m-0 text-balance">
+            <motion.span
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: EASE }}
+              className="block"
             >
-              <div className="w-16 h-16 rounded-2xl dark:bg-indigo-500/10 bg-indigo-50 flex items-center justify-center mx-auto mb-6">
-                <FiCode className="w-7 h-7 text-indigo-500" />
-              </div>
-              <h3 className="text-xl font-bold dark:text-white text-zinc-900 mb-2 tracking-tight">{t('projects.empty')}</h3>
-              <p className="dark:text-zinc-500 text-zinc-500 text-sm">{t('projects.empty_desc')}</p>
-            </motion.div>
-          )}
-        </div>
+              {t('projects.title')}
+              <span className="text-[var(--accent-text)] dark:text-[var(--accent)]">.</span>
+            </motion.span>
+          </h1>
 
-        {/* Project Detail Modal */}
-        <AnimatePresence>
-          {isModalOpen && selectedProject && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-[100]" onClick={closeModal}>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="dark:bg-[#0d0d14] bg-white dark:border-white/10 border-zinc-200 border rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex justify-between items-center p-6 dark:border-white/5 border-zinc-200 border-b sticky top-0 bg-inherit z-10">
-                  <h2 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">{selectedProject.title}</h2>
-                  <button onClick={closeModal} className="p-2 dark:hover:bg-white/10 hover:bg-zinc-100 rounded-xl transition-colors">
-                    <FiX className="w-5 h-5 dark:text-zinc-400 text-zinc-600" />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-6 mt-10 mb-12">
+            <p className="lg:col-span-6 lead m-0">
+              {t('projects.description')}
+            </p>
+
+            {/* Filtres — carrés, monospace */}
+            <div className="lg:col-span-5 lg:col-start-8 lg:pb-1">
+              <div className="flex items-baseline justify-between gap-4 mb-3">
+                <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/65 m-0">
+                  {t('projects.filter_label')}
+                </p>
+                <span className="index-num tabular-nums">
+                  {String(visible.length).padStart(2, '0')} / {String(projects.length).padStart(2, '0')}
+                </span>
+              </div>
+              <div role="group" aria-label={t('projects.filter_label')} className="flex flex-wrap gap-2">
+                {[{ id: 'all', label: t('projects.filter_all') }, ...categories.map(c => ({ id: c, label: c }))].map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => applyCategory(f.id)}
+                    aria-pressed={filter === f.id}
+                    className={`pill pill-filter ${filter === f.id ? 'bg-[rgb(var(--foreground-rgb))] text-[rgb(var(--background-start-rgb))] border-[rgb(var(--foreground-rgb))]' : ''}`}
+                  >
+                    {f.label}
                   </button>
-                </div>
-                <div className="p-6 md:p-8 space-y-8">
-                  <div className="rounded-2xl overflow-hidden aspect-video relative dark:bg-zinc-800 bg-zinc-100 shadow-xl">
-                    <Image src={selectedProject.imageUrl} alt={selectedProject.title} fill className="object-cover" sizes="800px" />
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-xs font-bold dark:text-indigo-400 text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                       <span className="w-4 h-[1px] bg-current opacity-40" /> {t('projects.description_label')}
-                    </h3>
-                    <div className="dark:text-zinc-300 text-zinc-700 leading-relaxed text-base prose prose-zinc dark:prose-invert max-w-none">
-                      {parse(DOMPurify.sanitize(selectedProject.description))}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-xs font-bold dark:text-indigo-400 text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                       <span className="w-4 h-[1px] bg-current opacity-40" /> {t('projects.tech_label')}
-                    </h3>
-                    <div className="flex flex-wrap gap-2.5">
-                      {selectedProject.technologies.map((tech, i) => (
-                        <span key={i} className="px-3.5 py-2 dark:bg-indigo-500/10 bg-indigo-50 dark:text-indigo-400 text-indigo-600 dark:border-indigo-500/20 border-indigo-200 border rounded-xl text-sm font-bold">
-                          {tech}
+                ))}
+              </div>
+
+              {/* Explorateur de technologies — fréquences réelles de l'index */}
+              {techIndex.length > 0 && (
+                <>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/65 mt-7 mb-3 m-0">
+                    {t('lab.tech_label')}
+                  </p>
+                  <div role="group" aria-label={t('lab.tech_label')} className="flex flex-wrap gap-2">
+                    {techsToShow.map(tc => (
+                      <button
+                        key={tc.name}
+                        onClick={() => applyTech(tc.name)}
+                        aria-pressed={tech === tc.name}
+                        className={`pill pill-filter gap-2 ${tech === tc.name ? 'bg-[rgb(var(--foreground-rgb))] text-[rgb(var(--background-start-rgb))] border-[rgb(var(--foreground-rgb))]' : ''}`}
+                      >
+                        {tc.name}
+                        <span className={`tabular-nums ${tech === tc.name ? 'opacity-70' : 'opacity-55'}`}>
+                          {String(tc.count).padStart(2, '0')}
                         </span>
-                      ))}
-                    </div>
+                      </button>
+                    ))}
+                    {techIndex.length > TECH_VISIBLE && (
+                      <button
+                        onClick={() => setAllTechs(v => !v)}
+                        aria-expanded={allTechs}
+                        className="pill pill-filter"
+                      >
+                        {allTechs ? '−' : `+${techIndex.length - TECH_VISIBLE}`}
+                      </button>
+                    )}
                   </div>
-                  
-                  <div className="flex flex-wrap gap-4 pt-4">
-                    {selectedProject.demoUrl && (
-                      <motion.button
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => selectedProject.demoUrl && handleDemoClick(selectedProject._id, selectedProject.demoUrl)}
-                        className="flex items-center gap-2 px-7 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-indigo-600/20"
-                      >
-                        <FiExternalLink className="w-4 h-4" />{t('projects.view_demo')}
-                      </motion.button>
-                    )}
-                    {selectedProject.githubUrl && (
-                      <motion.button
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => selectedProject.githubUrl && handleGithubClick(selectedProject._id, selectedProject.githubUrl)}
-                        className="flex items-center gap-2 px-7 py-3.5 dark:bg-white/5 bg-zinc-100 dark:hover:bg-white/10 hover:bg-zinc-200 dark:text-white text-zinc-900 rounded-xl text-sm font-bold transition-all"
-                      >
-                        <FiGithub className="w-4 h-4" />{t('projects.view_code')}
-                      </motion.button>
-                    )}
+                </>
+              )}
+
+              {/* Annonce polie du résultat de filtrage */}
+              <p role="status" className="sr-only">
+                {t('lab.showing')} : {visible.length} / {projects.length}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════ PLANCHE DE TÊTE (vue index) ════════════ */}
+      {view === 'index' && lead && (
+        <section className="relative">
+          <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)]">
+            <motion.article
+              initial={{ opacity: 0, y: 28 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: EASE }}
+              onClick={() => openProject(lead)}
+              role="button"
+              tabIndex={0}
+              aria-label={`${lead.title} — ${t('projects.view_project')}`}
+              onKeyDown={openOnKey(lead)}
+              className="group cursor-pointer border-t border-[rgb(var(--foreground-rgb))]/20 pt-8"
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-7 items-start">
+                {/* Mobile : l'image d'abord — l'ancre visuelle de la page */}
+                <div className="lg:col-span-8 order-1 lg:order-1">
+                  <div className="relative">
+                    <div className="relative w-full aspect-[16/9] overflow-hidden border border-[rgb(var(--foreground-rgb))]/15 grain bg-[var(--color-surface)]">
+                      <Image
+                        src={lead.imageUrl || '/images/default-project.svg'}
+                        alt={lead.title}
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 62vw"
+                        priority
+                        className="object-cover transition-transform duration-[1400ms] ease-out-expo group-hover:scale-[1.04]"
+                      />
+                      <div className="absolute inset-0 bg-[rgb(var(--foreground-rgb))]/0 group-hover:bg-[rgb(var(--foreground-rgb))]/15 transition-colors duration-700" />
+                      {lead.featured && (
+                        <span className="absolute top-0 left-0 px-3 py-2 bg-[var(--accent)] text-[#14130f] font-mono text-[10px] font-semibold uppercase tracking-[0.18em] border-r border-b border-[rgb(var(--background-start-rgb))]/30">
+                          {t('projects.featured')}
+                        </span>
+                      )}
+                    </div>
+                    <CropMarks className="opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300" />
                   </div>
                 </div>
-              </motion.div>
+
+                <div className="lg:col-span-4 order-2 lg:order-2 lg:sticky lg:top-28">
+                  <span className="index-num text-[var(--accent-text)] dark:text-[var(--accent)]">
+                    01 / {String(visible.length).padStart(2, '0')}
+                  </span>
+
+                  <h2 className="text-[clamp(1.75rem,3.6vw,3rem)] font-black leading-[0.98] tracking-[-0.04em] mt-5 mb-5 text-balance transition-colors duration-300 group-hover:text-[var(--accent-text)] dark:group-hover:text-[var(--accent)]">
+                    {lead.title}
+                  </h2>
+
+                  {hasRealDescription(lead.description) && (
+                    <p className="text-[0.975rem] leading-[1.65] text-[rgb(var(--foreground-rgb))]/70 m-0 max-w-[44ch]">
+                      {lead.description}
+                    </p>
+                  )}
+
+                  {(lead.technologies || []).length > 0 && (
+                    <ul className="list-none p-0 m-0 mt-7 border-t border-[rgb(var(--foreground-rgb))]/12">
+                      {lead.technologies.slice(0, 5).map((item, i) => (
+                        <li key={i} className="flex items-center gap-3 py-2 border-b border-[rgb(var(--foreground-rgb))]/10">
+                          <span className="font-mono text-[10px] tabular-nums text-[rgb(var(--foreground-rgb))]/65">
+                            {String(i + 1).padStart(2, '0')}
+                          </span>
+                          <span className="text-[0.9rem] text-[rgb(var(--foreground-rgb))]/75">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  <ProjectFacts githubData={lead.githubData} className="mt-7 border-t border-[rgb(var(--foreground-rgb))]/12 pt-1" />
+
+                  <span className="link-arrow mt-6 inline-flex text-[var(--accent-text)] dark:text-[var(--accent)]">
+                    {t('projects.view_project')} <FiArrowUpRight className="w-3.5 h-3.5" />
+                  </span>
+                </div>
+              </div>
+            </motion.article>
+          </div>
+        </section>
+      )}
+
+      {/* ════════════ INDEX COMPLET ════════════ */}
+      <section id="index-complet" className="relative scroll-mt-24">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)] py-[var(--section-gap)]">
+          <div className="flex items-center gap-4 mb-8">
+            <SectionMark name="projects" size={18} className="text-[rgb(var(--foreground-rgb))]/75" />
+            <span className="kicker kicker--plain">{t('projects.all_projects')}</span>
+            <span className="h-px flex-1 bg-[rgb(var(--foreground-rgb))]/12" />
+
+            {/* Bascule de vue : planche-contact ou index éditorial */}
+            <div role="group" aria-label={t('lab.view_label')} className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => applyView('planche')}
+                aria-pressed={view === 'planche'}
+                className={`pill pill-filter ${view === 'planche' ? 'bg-[rgb(var(--foreground-rgb))] text-[rgb(var(--background-start-rgb))] border-[rgb(var(--foreground-rgb))]' : ''}`}
+              >
+                {t('lab.view_planche')}
+              </button>
+              <button
+                type="button"
+                onClick={() => applyView('index')}
+                aria-pressed={view === 'index'}
+                className={`pill pill-filter ${view === 'index' ? 'bg-[rgb(var(--foreground-rgb))] text-[rgb(var(--background-start-rgb))] border-[rgb(var(--foreground-rgb))]' : ''}`}
+              >
+                {t('lab.view_index')}
+              </button>
+            </div>
+          </div>
+
+          {visible.length === 0 ? (
+            <div className="border-t border-[rgb(var(--foreground-rgb))]/15 pt-10">
+              <p className="font-mono text-[12px] uppercase tracking-[0.16em] text-[rgb(var(--foreground-rgb))]/65">
+                — {t('projects.empty')}
+              </p>
+            </div>
+          ) : view === 'planche' ? (
+            /* ── Planche-contact : chaque projet est une case exposée ── */
+            <div className="border-t border-[rgb(var(--foreground-rgb))]/15 pt-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[var(--gutter)] gap-y-10 sm:gap-y-12">
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {visible.map((project, index) => (
+                    <motion.article
+                      key={project._id}
+                      layout
+                      initial={{ opacity: 0, y: 18 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.45, ease: EASE, delay: Math.min(index * 0.015, 0.18) }}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`${project.title} — ${t('projects.view_project')}`}
+                      onClick={() => openProject(project)}
+                      onKeyDown={openOnKey(project)}
+                      className="group cursor-pointer"
+                    >
+                      <div className="relative">
+                        <div className="relative w-full aspect-[4/3] overflow-hidden border border-[rgb(var(--foreground-rgb))]/15 grain bg-[var(--color-surface)]">
+                          <Image
+                            src={project.imageUrl || '/images/default-project.svg'}
+                            alt={project.title}
+                            fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            className="object-cover grayscale contrast-[1.04] transition-all duration-700 ease-out-expo group-hover:grayscale-0 group-hover:scale-[1.03]"
+                          />
+                          <div className="absolute inset-0 bg-[rgb(var(--foreground-rgb))]/0 group-hover:bg-[rgb(var(--foreground-rgb))]/12 transition-colors duration-700" />
+
+                          <span className="absolute top-0 left-0 px-2.5 py-1.5 bg-[rgb(var(--background-start-rgb))] font-mono text-[10px] uppercase tracking-[0.18em] text-[rgb(var(--foreground-rgb))]/70 border-r border-b border-[rgb(var(--foreground-rgb))]/15 tabular-nums">
+                            {String(index + 1).padStart(2, '0')}
+                            {project.featured && <span className="text-[var(--accent-text)] dark:text-[var(--accent)]"> · {t('projects.featured')}</span>}
+                          </span>
+
+                          {/* Relevé au survol : la stack réelle, glissée sous le cadre */}
+                          {(project.technologies || []).length > 0 && (
+                            <span className="absolute inset-x-0 bottom-0 hidden sm:flex flex-wrap gap-x-3 gap-y-1 px-3 py-2.5 bg-[rgb(var(--background-start-rgb))]/95 backdrop-blur-sm border-t border-[rgb(var(--foreground-rgb))]/15 translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 transition-all duration-500 ease-out-expo">
+                              {project.technologies.slice(0, 4).map((item, ti) => (
+                                <span key={ti} className="font-mono text-[10px] uppercase tracking-[0.14em] text-[rgb(var(--foreground-rgb))]/70">
+                                  {item}
+                                </span>
+                              ))}
+                            </span>
+                          )}
+                        </div>
+                        <CropMarks className="opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300" />
+                      </div>
+
+                      <div className="mt-4 flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <h3 className="text-[1.15rem] sm:text-[1.3rem] font-bold leading-tight tracking-[-0.025em] m-0 transition-colors duration-300 group-hover:text-[var(--accent-text)] dark:group-hover:text-[var(--accent)]">
+                            {project.title}
+                          </h3>
+                          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[rgb(var(--foreground-rgb))]/65 mt-2 mb-0">
+                            {project.category || '—'}
+                            {project.demoUrl && (
+                              <span className="text-[var(--accent-text)] dark:text-[var(--accent)]"> · {t('projects.live_demo')}</span>
+                            )}
+                          </p>
+                        </div>
+                        <FiArrowUpRight className="block w-5 h-5 shrink-0 mt-1 text-[rgb(var(--foreground-rgb))]/60 transition-all duration-500 ease-out-expo group-hover:text-[var(--accent)] group-hover:-translate-y-1 group-hover:translate-x-1" />
+                      </div>
+                    </motion.article>
+                  ))}
+                </AnimatePresence>
+              </div>
+            </div>
+          ) : (
+            /* ── Index éditorial : rangées numérotées ── */
+            <div className="border-t border-[rgb(var(--foreground-rgb))]/15">
+              {rest.map((project, index) => (
+                <Reveal key={project._id} delay={Math.min(index * 0.05, 0.25)} amount={0.3}>
+                  <article
+                    onClick={() => openProject(project)}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${project.title} — ${t('projects.view_project')}`}
+                    onKeyDown={openOnKey(project)}
+                    className="group grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-4 items-center py-7 border-b border-[rgb(var(--foreground-rgb))]/12 hover:bg-[var(--color-surface)] transition-colors duration-500 ease-out-expo -mx-3 px-3 cursor-pointer"
+                  >
+                    <div className="lg:col-span-1 order-1">
+                      <span className="index-num text-[var(--accent-text)] dark:text-[var(--accent)] tabular-nums">
+                        {String(index + 2).padStart(2, '0')}
+                      </span>
+                    </div>
+
+                    <div className="lg:col-span-4 order-3 lg:order-2">
+                      <h3 className="text-[1.35rem] sm:text-[1.6rem] font-bold leading-tight tracking-[-0.03em] m-0 transition-transform duration-500 ease-out-expo group-hover:translate-x-2">
+                        {project.title}
+                      </h3>
+                      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[rgb(var(--foreground-rgb))]/65 mt-2 mb-0">
+                        {project.category || '—'}
+                        {project.demoUrl && (
+                          <span className="text-[var(--accent-text)] dark:text-[var(--accent)]"> · {t('projects.live_demo')}</span>
+                        )}
+                        {project.featured && (
+                          <span className="text-[var(--accent-text)] dark:text-[var(--accent)]"> · {t('projects.featured')}</span>
+                        )}
+                      </p>
+                    </div>
+
+                    <p
+                      className={`lg:col-span-4 order-4 lg:order-3 m-0 line-clamp-2 max-w-[46ch] ${
+                        hasRealDescription(project.description)
+                          ? 'text-[0.925rem] leading-relaxed text-[rgb(var(--foreground-rgb))]/65'
+                          : 'font-mono text-[11px] uppercase tracking-[0.14em] leading-relaxed text-[rgb(var(--foreground-rgb))]/65'
+                      }`}
+                    >
+                      {hasRealDescription(project.description)
+                        ? project.description
+                        : (project.technologies || []).slice(0, 4).join(' · ')}
+                    </p>
+
+                    <div className="lg:col-span-3 order-2 lg:order-4 flex items-center gap-5 lg:justify-end">
+                      <div className="relative w-full max-w-[160px] aspect-[3/2] overflow-hidden border border-[rgb(var(--foreground-rgb))]/15 grain bg-[var(--color-surface)]">
+                        <Image
+                          src={project.imageUrl || '/images/default-project.svg'}
+                          alt={project.title}
+                          fill
+                          sizes="170px"
+                          className="object-cover grayscale transition-all duration-700 ease-out-expo group-hover:grayscale-0"
+                        />
+                      </div>
+                      {/* Flèche visible aussi au doigt */}
+                      <FiArrowUpRight className="block w-5 h-5 shrink-0 text-[rgb(var(--foreground-rgb))]/60 transition-all duration-500 ease-out-expo group-hover:text-[var(--accent)] group-hover:-translate-y-1 group-hover:translate-x-1" />
+                    </div>
+                  </article>
+                </Reveal>
+              ))}
             </div>
           )}
-        </AnimatePresence>
-      </main>
+
+          {/* Filet de fin */}
+          <div className="mt-16 flex items-center gap-4">
+            <span className="index-num tabular-nums">
+              {String(visible.length).padStart(2, '0')} / {String(projects.length).padStart(2, '0')}
+            </span>
+            <span className="h-px flex-1 bg-[rgb(var(--foreground-rgb))]/12" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[rgb(var(--foreground-rgb))]/65">
+              {locale?.toUpperCase()}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <ProjectModal
+        project={selectedProject}
+        onClose={() => setSelectedProject(null)}
+        position={modalIndex >= 0 ? { index: modalIndex, total: visible.length } : undefined}
+        onPrev={modalIndex >= 0 ? () => navigate(-1) : undefined}
+        onNext={modalIndex >= 0 ? () => navigate(1) : undefined}
+        onTechSelect={selectTechFromModal}
+      />
     </Layout>
   );
 }
@@ -301,27 +520,28 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
   const currentLocale = locale || 'fr';
   try {
     await connectDB();
-    const rawProjects = await ProjectModel.find({ 
-      archived: { $ne: true }
-    }).sort({ featured: -1, order: 1, createdAt: -1 }).lean();
+    const rawProjects = await ProjectModel.find({ archived: { $ne: true } })
+      .sort({ featured: -1, order: 1, createdAt: -1 })
+      /* `stats` (clickHistory/dailyStats, sans borne) inutile au rendu public */
+      .select('-stats -__v')
+      .lean();
 
-    // Map projects to active locale
-    const projects = rawProjects.map((p: any) => ({
+    const localizedProjects = rawProjects.map((p: any) => ({
       ...p,
-      _id: p._id.toString(),
       title: getLocalized(p, 'title', currentLocale),
       description: getLocalized(p, 'description', currentLocale),
+      _id: p._id.toString(),
     }));
 
     return {
       props: {
-        projects: JSON.parse(JSON.stringify(projects)),
+        projects: JSON.parse(JSON.stringify(localizedProjects)),
         ...(await serverSideTranslations(currentLocale, ['common'])),
       },
       revalidate: 60,
     };
   } catch (error) {
-    console.error('Error fetching projects:', error);
+    console.error('Error in getStaticProps:', error);
     return {
       props: {
         projects: [],
@@ -331,4 +551,3 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     };
   }
 };
-

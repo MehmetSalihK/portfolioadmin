@@ -1,43 +1,35 @@
-import { motion, useScroll, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Head from 'next/head';
 import { GetStaticProps } from 'next';
 import { useTranslation } from 'next-i18next/pages';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
 import Layout from '@/components/layout/Layout';
-
-import CVModal from '@/components/modals/CVModal';
-import { Analytics } from "@vercel/analytics/next";
 import connectDB from '@/lib/db';
 import ProjectModel from '@/models/Project';
 import ExperienceModel from '@/models/Experience';
-import SkillModel from '@/models/Skill';
-import HomePageModel from '@/models/HomePage';
 import SettingModel from '@/models/Setting';
 import { useRouter } from 'next/router';
-import { useRef, useEffect, useState } from 'react';
-import {
-  FaGithub, FaLinkedin, FaTwitter, FaWhatsapp, FaTelegram,
-} from 'react-icons/fa';
-import { HiArrowDown } from 'react-icons/hi';
-import {
-  FiExternalLink, FiGithub, FiX, FiDownload,
-  FiCode, FiSettings, FiStar, FiSend, FiChevronRight,
-  FiLayers, FiFilm, FiCpu
-} from 'react-icons/fi';
-import {
-  SiNextdotjs, SiReact, SiNodedotjs, SiMongodb, SiTypescript
-} from 'react-icons/si';
-import parse from 'html-react-parser';
-import DOMPurify from 'isomorphic-dompurify';
-import SkillCategory from '@/models/SkillCategory';
-import { toast } from 'react-hot-toast';
+import { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
+import { FiArrowUpRight, FiChevronRight, FiDownload } from 'react-icons/fi';
+import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
+import { SiNextdotjs, SiReact, SiNodedotjs, SiMongodb, SiTypescript } from 'react-icons/si';
 import Image from 'next/image';
 import Link from 'next/link';
 import SkillsSection from '@/components/home/SkillsSection';
 import JSONLD, { schemas } from '@/components/layout/JSONLD';
-import { getLocalized, localizeList } from '@/utils/i18n-utils';
+import { getLocalized } from '@/utils/i18n-utils';
+import type { ModalProject } from '@/components/projects/ProjectModal';
+import SectionHead from '@/components/ui/SectionHead';
+import { Reveal, RevealWords, DrawRule, EASE } from '@/components/motion/Reveal';
+import { SectionMark, DimensionMark, CropMarks } from '@/components/identity/Marks';
+import { hasRealDescription } from '@/utils/project-display';
 
-// ─── Interfaces ────────────────────────────────────────────────────────────────
+/* Modales : jamais dans le bundle initial (DOMPurify, html-react-parser,
+   headlessui) — le chunk part à la première ouverture, sans SSR */
+const ProjectModal = dynamic(() => import('@/components/projects/ProjectModal'), { ssr: false });
+const CVModal = dynamic(() => import('@/components/modals/CVModal'), { ssr: false });
+
 interface Project {
   _id: string;
   title: string;
@@ -49,9 +41,6 @@ interface Project {
   featured?: boolean;
   gallery?: string[];
   category?: string;
-  tags?: string[];
-  difficulty?: string;
-  status?: string;
 }
 
 interface Experience {
@@ -60,7 +49,7 @@ interface Experience {
   company: string;
   location: string;
   startDate: string;
-  endDate?: string;
+  endDate?: string | null;
   description: string;
   technologies: string[];
 }
@@ -68,7 +57,6 @@ interface Experience {
 interface HomePageProps {
   projects: Project[];
   experiences: Experience[];
-  skills: Array<{ _id: string; name: string; level: number; category: string }>;
   homeData: {
     title: string;
     subtitle: string;
@@ -87,76 +75,130 @@ interface HomePageProps {
   seoData?: { title?: string; description?: string; keywords?: string[]; ogImage?: string };
 }
 
-interface Category { _id: string; name: string; displayOrder: number }
-
 const defaultHomeData = {
   _id: 'default', __v: 0,
   title: 'Portfolio Professionnel',
-  subtitle: "Développeur Full Stack passionné par la création d'applications web modernes et performantes. Spécialisé dans React, Next.js, Node.js et les technologies cloud.",
+  subtitle: "J'écris du code, je fais des images, je répare des machines. Trois métiers sur un même établi — et toujours la même méthode : comprendre comment ça marche, puis le faire marcher.",
   aboutTitle: 'À propos',
-  aboutText: "Je suis un développeur Full Stack passionné par la création d'applications web innovantes.",
+  aboutText: "Développeur Full Stack : de l'interface à la base de données, en passant par l'API.",
   navigation: { about: 'À propos', projects: 'Projets', experience: 'Expérience', contact: 'Contact' },
-  contactInfo: { email: 'contact@portfolio.com', phone: '+33 X XX XX XX XX', location: 'France' },
-  footer: { copyright: '© 2024 Portfolio. Fait avec ❤️ et Next.js', description: "Développeur Full Stack." },
-  socialLinks: { github: '', linkedin: '', twitter: '', whatsapp: '', telegram: '' }
+  contactInfo: { email: 'contact@mehmetsalihk.fr', phone: '+33 X XX XX XX XX', location: 'France' },
+  footer: { copyright: '© 2024 MSK.', description: "Développeur Full Stack." },
+  socialLinks: { github: 'https://github.com/mehmetsalihk', linkedin: 'https://www.linkedin.com/in/mehmetsalihk/', twitter: '', whatsapp: '', telegram: '' }
 };
 
-// ─── Component ─────────────────────────────────────────────────────────────────
 export default function Home({
   projects, experiences, homeData = defaultHomeData, skillsByCategory, settings, seoData
 }: HomePageProps) {
   const { t } = useTranslation('common');
   const { locale } = useRouter();
-  const { scrollYProgress } = useScroll();
-  const mainRef = useRef<HTMLDivElement>(null);
-  const [showBanner, setShowBanner] = useState(true);
 
-
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [selectedProject, setSelectedProject] = useState<ModalProject | null>(null);
   const [isCVModalOpen, setIsCVModalOpen] = useState(false);
+  const [cvAvailable, setCvAvailable] = useState(false);
 
-  // Top 3 featured projects
-  const formattedProjects = projects
-    .sort((a, b) => {
-      if (a.featured && !b.featured) return -1;
-      if (!a.featured && b.featured) return 1;
-      return 0;
-    })
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/cv/status')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (!cancelled && d) setCvAvailable(Boolean(d.available)); })
+      .catch(() => { /* CV considéré indisponible en cas d'erreur */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  /* Lumière de table : un halo vermillon suit le curseur dans le hero,
+     comme une lampe sous la feuille. Décoratif, pointer:fine seulement,
+     jamais attaché sous prefers-reduced-motion. */
+  const heroRef = useRef<HTMLElement | null>(null);
+  const lightRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const sec = heroRef.current;
+    const light = lightRef.current;
+    if (!sec || !light) return;
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let raf = 0;
+    const onMove = (e: PointerEvent) => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(() => {
+        raf = 0;
+        const r = sec.getBoundingClientRect();
+        light.style.setProperty('--lx', `${e.clientX - r.left}px`);
+        light.style.setProperty('--ly', `${e.clientY - r.top}px`);
+        light.classList.add('table-light--on');
+      });
+    };
+    sec.addEventListener('pointermove', onMove);
+    return () => {
+      sec.removeEventListener('pointermove', onMove);
+      if (raf) window.cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  const featured = projects
+    .slice()
+    .sort((a, b) => (a.featured && !b.featured ? -1 : !a.featured && b.featured ? 1 : 0))
     .slice(0, 3);
 
-  const scrollToContent = () => mainRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const univers = [
+    {
+      key: '01',
+      href: '/developpeur',
+      dim: 'dev' as const,
+      label: t('home.univers.dev_label'),
+      title: t('home.univers.dev_title'),
+      desc: t('home.univers.dev_desc'),
+      image: '/images/developpeur/codage.jpg',
+      alt: t('home.univers.alt_dev'),
+    },
+    {
+      key: '02',
+      href: '/designer',
+      dim: 'creative' as const,
+      label: t('home.univers.creative_label'),
+      title: t('home.univers.creative_title'),
+      desc: t('home.univers.creative_desc'),
+      image: '/images/designer/camera.jpg',
+      alt: t('home.univers.alt_creative'),
+    },
+    {
+      key: '03',
+      href: '/maker',
+      dim: 'maker' as const,
+      label: t('home.univers.maker_label'),
+      title: t('home.univers.maker_title'),
+      desc: t('home.univers.maker_desc'),
+      image: '/images/maker/Assemblage & Upgrade PC.jpg',
+      alt: t('home.univers.alt_maker'),
+    },
+  ];
 
-  const openModal = (project: any) => {
-    setSelectedProject(project);
-    setIsModalOpen(true);
-    document.body.style.overflow = 'hidden';
+  const stack = [
+    { icon: SiNextdotjs, label: 'Next.js' },
+    { icon: SiReact, label: 'React' },
+    { icon: SiNodedotjs, label: 'Node.js' },
+    { icon: SiMongodb, label: 'MongoDB' },
+    { icon: SiTypescript, label: 'TypeScript' },
+  ];
+
+  const socials = [
+    { icon: FaGithub, href: homeData.socialLinks.github, label: 'GitHub' },
+    { icon: FaLinkedin, href: homeData.socialLinks.linkedin, label: 'LinkedIn' },
+    { icon: FaTwitter, href: homeData.socialLinks.twitter, label: 'Twitter' },
+  ].filter(s => s.href);
+
+  const dateFmt = locale === 'tr' ? 'tr-TR' : locale === 'en' ? 'en-US' : 'fr-FR';
+  const formatRange = (exp: Experience) => {
+    const start = new Date(exp.startDate).toLocaleDateString(dateFmt, { month: 'short', year: 'numeric' });
+    const end = exp.endDate
+      ? new Date(exp.endDate).toLocaleDateString(dateFmt, { month: 'short', year: 'numeric' })
+      : t('experience.present');
+    return `${start} — ${end}`;
   };
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedProject(null);
-    document.body.style.overflow = 'unset';
-  };
-  const handleModalContentClick = (e: React.MouseEvent) => e.stopPropagation();
 
-  // Analytics tracking
-  const trackClick = async (projectId: string, type: 'demo' | 'github' | 'view') => {
-    try {
-      await fetch('/api/projects/stats', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectId, type }),
-      });
-    } catch {}
-  };
-  const handleDemoClick = async (projectId: string, url: string) => { await trackClick(projectId, 'demo'); window.open(url, '_blank'); };
-  const handleGithubClick = async (projectId: string, url: string) => { await trackClick(projectId, 'github'); window.open(url, '_blank'); };
-
-
-
-
-
+  /* Largeurs asymétriques : rythme éditorial plutôt que grille égale */
+  const spans = ['lg:col-span-7', 'lg:col-span-5', 'lg:col-span-12'];
+  const ratios = ['aspect-[4/3]', 'aspect-[4/3]', 'aspect-[16/7]'];
 
   return (
     <Layout>
@@ -164,620 +206,456 @@ export default function Home({
       <Head>
         <title>{seoData?.title || t('seo.home_title')}</title>
         <meta name="description" content={seoData?.description || t('seo.home_description')} />
+        <meta property="og:title" content={seoData?.title || t('seo.home_title')} />
+        <meta property="og:description" content={seoData?.description || t('seo.home_description')} />
         {seoData?.keywords && seoData.keywords.length > 0 && (
           <meta name="keywords" content={seoData.keywords.join(', ')} />
         )}
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.png" />
       </Head>
 
-      {/* Beta banner - hidden for production, uncomment if needed for testing */}
-      {/* <AnimatePresence>
-        {showBanner && (
+      {/* ════════════ HERO — masthead éditorial ════════════ */}
+      <section ref={heroRef} className="relative min-h-[92svh] flex flex-col justify-center pt-[6.5rem] pb-10">
+        {/* Trame millimétrée : la table lumineuse sous la feuille */}
+        <div aria-hidden="true" className="absolute inset-0 grid-lines pointer-events-none" />
+        {/* La lampe : halo qui suit le curseur (décoratif) */}
+        <div ref={lightRef} aria-hidden="true" className="table-light pointer-events-none" />
+        <div className="relative mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)]">
+
+          {/* Ligne de métadonnées */}
           <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            className="fixed top-20 left-0 right-0 z-50 flex justify-center px-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="flex flex-wrap items-center justify-between gap-3 pb-5 mb-10 border-b border-[rgb(var(--foreground-rgb))]/15"
           >
-            <div className="flex items-center gap-3 bg-amber-500/90 text-amber-900 px-4 py-3 rounded-lg shadow-lg backdrop-blur-sm max-w-2xl">
-              <FiAlertTriangle className="w-5 h-5 flex-shrink-0" />
-              <p className="text-sm">Ce site est actuellement en cours de développement (version bêta). Certaines fonctionnalités peuvent ne pas fonctionner correctement.</p>
-              <button onClick={() => setShowBanner(false)} className="flex-shrink-0 text-amber-900 hover:text-amber-950 transition-colors">
-                <FiX className="w-5 h-5" />
-              </button>
-            </div>
+            {/* Pile technique masquée sous sm : 3 lignes de 10px au-dessus
+                du titre écrasaient le hero à 390px */}
+            <span className="hidden sm:inline font-mono text-[10px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/60">
+              MSK — {t('hero.stack')} · {stack.map(s => s.label).join(' / ')}
+            </span>
+            <span className="flex items-center gap-2.5 font-mono text-[10px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/60">
+              <motion.span
+                className="w-1.5 h-1.5 bg-[var(--accent)]"
+                animate={{ opacity: [1, 0.25, 1] }}
+                transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+              />
+              {t('hero.status')}
+            </span>
           </motion.div>
-        )}
-      </AnimatePresence> */}
 
-      {/* Scroll progress bar */}
-      <motion.div className="fixed top-0 left-0 right-0 h-0.5 bg-indigo-500 origin-left z-50" style={{ scaleX: scrollYProgress }} />
+          {/* Titre display — révélation mot à mot, deux plans successifs */}
+          <h1 className="font-display font-black text-[clamp(2.6rem,7.4vw,6.75rem)] leading-[0.92] tracking-[-0.05em] m-0 text-balance">
+            <RevealWords
+              delay={0.15}
+              segments={[
+                { text: `${t('hero.title_part1')} ${t('hero.title_part2')}` },
+                { text: ',', glue: 'none', className: 'text-[var(--accent-text)] dark:text-[var(--accent)]' },
+              ]}
+            />
+            <RevealWords
+              delay={0.44}
+              segments={[
+                { text: t('hero.title_part3') },
+                {
+                  text: t('hero.title_part4'),
+                  className: 'font-accent text-[1.1em] text-[var(--accent-text)] dark:text-[var(--accent)]',
+                },
+                { text: '.', glue: 'none', className: 'text-[var(--accent-text)] dark:text-[var(--accent)]' },
+              ]}
+            />
+          </h1>
 
+          {/* Le filet d'exposition se trace sous le titre */}
+          <DrawRule accent delay={0.6} className="mt-9" />
 
-      {/* ═══════════════════════════════════════
-          HERO SECTION
-      ═══════════════════════════════════════ */}
-      <section className="relative min-h-[92vh] flex items-center dark:bg-[#0a0a0f] bg-[#fafafc] pt-14">
-        {/* Subtle radial glow — lightweight */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] dark:bg-indigo-600/6 bg-indigo-100/40 rounded-full blur-[100px]" />
-        </div>
+          {/* Sous-titre + fiche technique */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-10 mt-12">
+            <div className="lg:col-span-6">
+              <Reveal delay={0.45}>
+                <p className="lead max-w-[46ch]">
+                  {homeData?.subtitle || t('hero.description')}
+                </p>
+              </Reveal>
 
-        <div className="max-w-[1100px] mx-auto px-6 w-full relative z-10">
-          <div className="max-w-[680px] mx-auto text-center">
-
-            {/* Status badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 dark:bg-white/[0.04] bg-zinc-100 dark:border-white/[0.07] border-zinc-200 border rounded-full mb-10"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="text-[12px] font-medium dark:text-zinc-400 text-zinc-500">
-                {t('hero.status')}
-              </span>
-            </motion.div>
-
-            {/* H1 */}
-            <motion.h1
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-              className="text-5xl sm:text-6xl lg:text-7xl font-extrabold dark:text-white text-zinc-900 leading-[1.05] tracking-tight mb-6 text-balance"
-            >
-              {t('hero.title_part1')}&nbsp;<span className="text-indigo-500 italic">{t('hero.title_part2')}</span>,{' '}<br className="hidden sm:block" />
-              {t('hero.title_part3')}&nbsp;<span className="text-indigo-500 italic">{t('hero.title_part4')}</span>.
-            </motion.h1>
-
-            {/* Subtitle */}
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.18, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-              className="text-lg dark:text-zinc-300 text-zinc-600 mb-10 max-w-[540px] mx-auto leading-[1.8] font-normal"
-            >
-              {homeData?.subtitle || t('hero.description')}
-            </motion.p>
-
-            {/* CTAs */}
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25, duration: 0.35 }}
-              className="flex flex-wrap items-center justify-center gap-4 mb-14"
-            >
-              <Link
-                href="/projects"
-                className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_25px_rgba(79,70,229,0.5)] active:scale-95"
-              >
-                {t('hero.cta')}
-              </Link>
-              <button
-                onClick={() => setIsCVModalOpen(true)}
-                className="h-12 px-8 dark:bg-white/[0.05] bg-white dark:hover:bg-white/[0.1] hover:bg-zinc-50 dark:text-zinc-100 text-zinc-800 dark:border-white/10 border-zinc-300 border rounded-xl text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
-              >
-                <FiDownload className="w-4 h-4" />
-                {t('hero.cv')}
-              </button>
-            </motion.div>
-
-            {/* Social links - Enhanced Visibility */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex items-center justify-center gap-4 mb-12">
-              {[
-                { icon: FaGithub, href: homeData.socialLinks.github, title: 'GitHub' },
-                { icon: FaLinkedin, href: homeData.socialLinks.linkedin, title: 'LinkedIn' },
-                { icon: FaTwitter, href: homeData.socialLinks.twitter, title: 'Twitter' },
-                { icon: FaWhatsapp, href: homeData.socialLinks.whatsapp, title: 'WhatsApp' },
-                { icon: FaTelegram, href: homeData.socialLinks.telegram, title: 'Telegram' },
-              ].map((social, i) => social.href && (
-                <motion.a
-                  key={i}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={social.title}
-                  whileHover={{ y: -4, scale: 1.1 }}
-                  className="w-11 h-11 dark:bg-white/[0.03] bg-zinc-100 dark:border-white/5 border-zinc-200 border rounded-xl flex items-center justify-center dark:text-zinc-300 text-zinc-500 dark:hover:text-white hover:text-indigo-600 hover:dark:bg-white/[0.08] hover:bg-white transition-all duration-200 shadow-sm"
-                >
-                  <social.icon className="w-5 h-5" />
-                </motion.a>
-              ))}
-            </motion.div>
-
-            {/* Tech badges strip - Improved Readability */}
-            <motion.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.35 }}
-              className="flex flex-wrap items-center justify-center gap-3"
-            >
-              <span className="text-[10px] font-bold dark:text-zinc-500 text-zinc-400 uppercase tracking-[0.2em] mr-2">{t('hero.stack')}</span>
-              {[
-                { icon: SiNextdotjs, label: 'Next.js', color: 'currentColor' },
-                { icon: SiReact, label: 'React', color: '#61DAFB' },
-                { icon: SiNodedotjs, label: 'Node.js', color: '#339933' },
-                { icon: SiMongodb, label: 'MongoDB', color: '#47A248' },
-                { icon: SiTypescript, label: 'TypeScript', color: '#3178C6' },
-              ].map((t, i) => (
-                <div
-                  key={i}
-                  title={t.label}
-                  className="flex items-center gap-2 px-3 py-2 dark:bg-white/[0.05] bg-white rounded-xl border dark:border-white/[0.08] border-zinc-200 hover:dark:border-white/[0.15] hover:border-indigo-300 transition-all duration-200 cursor-default group shadow-sm"
-                >
-                  <t.icon
-                    className="w-4 h-4 dark:opacity-80 opacity-70 group-hover:opacity-100 transition-opacity"
-                    style={{ color: t.color }}
-                  />
-                  <span className="text-[12px] font-bold dark:text-zinc-200 text-zinc-700 group-hover:text-black dark:group-hover:text-white transition-colors tracking-tight">{t.label}</span>
+              <Reveal delay={0.55}>
+                <div className="flex flex-wrap items-stretch gap-3 mt-8">
+                  <Link href="/projects" className="btn btn-primary">
+                    {t('hero.cta')}
+                    <FiArrowUpRight className="w-4 h-4" />
+                  </Link>
+                  {cvAvailable && (
+                    <button onClick={() => setIsCVModalOpen(true)} className="btn btn-outline">
+                      <FiDownload className="w-4 h-4" />
+                      {t('hero.cv')}
+                    </button>
+                  )}
                 </div>
-              ))}
-            </motion.div>
+              </Reveal>
+            </div>
+
+            {/* Colonne spec : rôle + réseaux */}
+            <div className="lg:col-span-5 lg:col-start-8">
+              <Reveal delay={0.6}>
+                <div className="border-t border-[rgb(var(--foreground-rgb))]/15 pt-5">
+                  <div className="flex items-baseline gap-4 py-2.5 border-b border-[rgb(var(--foreground-rgb))]/10">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[rgb(var(--foreground-rgb))]/60 w-24 shrink-0">
+                      {t('hero.role_label')}
+                    </span>
+                    <span className="text-[0.95rem] text-[rgb(var(--foreground-rgb))]/85">{t('home.role_line')}</span>
+                  </div>
+
+                  {socials.map((s) => (
+                    <a
+                      key={s.label}
+                      href={s.href!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center gap-4 py-2.5 border-b border-[rgb(var(--foreground-rgb))]/10"
+                    >
+                      <s.icon className="w-4 h-4 text-[rgb(var(--foreground-rgb))]/60 transition-colors group-hover:text-[var(--accent-text)] dark:group-hover:text-[var(--accent)]" />
+                      <span className="text-[0.95rem] text-[rgb(var(--foreground-rgb))]/70 group-hover:text-[rgb(var(--foreground-rgb))] transition-colors">
+                        {s.label}
+                      </span>
+                      <FiArrowUpRight className="ml-auto w-3.5 h-3.5 hover-reveal text-[rgb(var(--foreground-rgb))]/60 group-hover:text-[var(--accent)] dark:group-hover:text-[var(--accent)] group-hover:translate-x-0" />
+                    </a>
+                  ))}
+                </div>
+              </Reveal>
+            </div>
           </div>
         </div>
       </section>
 
+      {/* ════════════ 01 — TROIS UNIVERS ════════════ */}
+      <section className="relative border-t border-[rgb(var(--foreground-rgb))]/15">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)] py-[var(--section-gap)]">
+          <SectionHead
+            index="01"
+            kicker={t('home.univers_kicker')}
+            sigil={<SectionMark name="univers" />}
+            title={
+              <>
+                {t('home.univers.dev_title')}, {t('home.univers.creative_title')}{' '}
+                <span className="font-accent text-[1.08em]">&</span> {t('home.univers.maker_title')}
+              </>
+            }
+          />
 
-      {/* ═══════════════════════════════════════
-          3 UNIVERS — Hub identitaire
-      ═══════════════════════════════════════ */}
-      <section className="py-20 dark:bg-[#0a0a0f] bg-[#fafafc] border-t dark:border-white/[0.05] border-zinc-100">
-        <div className="max-w-[1100px] mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              {
-                href: '/developpeur',
-                label: t('home.univers.dev_label'),
-                title: t('home.univers.dev_title'),
-                desc: t('home.univers.dev_desc'),
-                accent: 'indigo',
-                border: 'hover:border-indigo-500/30',
-                icon: FiLayers,
-              },
-              {
-                href: '/designer',
-                label: t('home.univers.creative_label'),
-                title: t('home.univers.creative_title'),
-                desc: t('home.univers.creative_desc'),
-                accent: 'rose',
-                border: 'hover:border-rose-500/30',
-                icon: FiFilm,
-              },
-              {
-                href: '/maker',
-                label: t('home.univers.maker_label'),
-                title: t('home.univers.maker_title'),
-                desc: t('home.univers.maker_desc'),
-                accent: 'amber',
-                border: 'hover:border-amber-500/30',
-                icon: FiCpu,
-              },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08, duration: 0.35, ease: [0.2, 0, 0, 1] }}
-              >
+          <div className="mt-12 border-t border-[rgb(var(--foreground-rgb))]/15">
+            {univers.map((u, i) => (
+              <Reveal key={u.key} delay={i * 0.06} amount={0.35}>
                 <Link
-                  href={item.href}
-                  className={`group block p-6 rounded-2xl dark:bg-white/[0.02] bg-white border dark:border-white/[0.06] border-zinc-200 ${item.border} transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-black/40`}
+                  href={u.href}
+                  className="group grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-4 items-center py-7 lg:py-8 border-b border-[rgb(var(--foreground-rgb))]/12 hover:bg-[var(--color-surface)] transition-colors duration-500 ease-out-expo -mx-3 px-3"
                 >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${
-                      item.accent === 'indigo' ? 'dark:bg-indigo-500/10 bg-indigo-50 dark:border-indigo-500/20 border-indigo-100' :
-                      item.accent === 'rose' ? 'dark:bg-rose-500/10 bg-rose-50 dark:border-rose-500/20 border-rose-100' :
-                      'dark:bg-amber-500/10 bg-amber-50 dark:border-amber-500/20 border-amber-100'
-                    }`}>
-                      <item.icon className={`w-4 h-4 ${
-                        item.accent === 'indigo' ? 'text-indigo-500' :
-                        item.accent === 'rose' ? 'text-rose-500' : 'text-amber-500'
-                      }`} />
-                    </div>
-                    <div className={`text-[11px] font-semibold uppercase tracking-widest ${
-                      item.accent === 'indigo' ? 'text-indigo-500' :
-                      item.accent === 'rose' ? 'text-rose-500' : 'text-amber-500'
-                    }`}>{item.label}</div>
+                  <div className="lg:col-span-1 order-1">
+                    <span className="index-num text-[var(--accent-text)] dark:text-[var(--accent)]">{u.key}</span>
                   </div>
-                  <h3 className="text-lg font-bold dark:text-white text-zinc-900 mb-2 tracking-tight">{item.title}</h3>
-                  <p className="text-sm dark:text-zinc-500 text-zinc-500 leading-relaxed mb-4">{item.desc}</p>
-                  <span className={`text-[12px] font-semibold flex items-center gap-1.5 group-hover:gap-2.5 transition-all duration-150 ${
-                    item.accent === 'indigo' ? 'text-indigo-500' :
-                    item.accent === 'rose' ? 'text-rose-500' : 'text-amber-500'
-                  }`}>
-                    {t('common.discover')} <FiChevronRight className="w-3.5 h-3.5" />
-                  </span>
+
+                  <div className="lg:col-span-4 order-3 lg:order-2">
+                    <span className="flex items-center gap-2.5 mb-2">
+                      <DimensionMark dim={u.dim} size={16} className="text-[rgb(var(--foreground-rgb))]/75" />
+                      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[rgb(var(--foreground-rgb))]/65">
+                        {u.label}
+                      </span>
+                    </span>
+                    <h3 className="text-[clamp(1.75rem,3.4vw,2.75rem)] font-black leading-none tracking-[-0.04em] m-0 transition-transform duration-500 ease-out-expo group-hover:translate-x-2">
+                      {u.title}
+                    </h3>
+                  </div>
+
+                  <p className="lg:col-span-4 order-4 lg:order-3 text-[0.95rem] leading-relaxed text-[rgb(var(--foreground-rgb))]/60 m-0 max-w-[42ch]">
+                    {u.desc}
+                  </p>
+
+                  <div className="lg:col-span-3 order-2 lg:order-4 flex items-center gap-4 lg:justify-end">
+                    <div className="relative w-full max-w-[190px]">
+                      <div className="relative w-full aspect-[3/2] overflow-hidden border border-[rgb(var(--foreground-rgb))]/15 grain">
+                        <Image
+                          src={u.image}
+                          alt={u.alt}
+                          fill
+                          sizes="200px"
+                          className="object-cover grayscale contrast-[1.05] transition-all duration-700 ease-out-expo group-hover:grayscale-0 group-hover:scale-105"
+                        />
+                      </div>
+                      {/* Repères de coupe : se posent au survol comme au focus */}
+                      <CropMarks className="opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300" />
+                    </div>
+                    {/* Flèche visible aussi au doigt (l'indice de tappable ne doit pas dépendre du survol) */}
+                    <FiArrowUpRight className="block w-5 h-5 shrink-0 text-[rgb(var(--foreground-rgb))]/60 transition-all duration-500 ease-out-expo group-hover:text-[var(--accent)] group-hover:-translate-y-1 group-hover:translate-x-1" />
+                  </div>
                 </Link>
-              </motion.div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      <main ref={mainRef}>
-        {/* ═══════════════════════════════════════
-            FEATURED PROJECTS
-        ═══════════════════════════════════════ */}
-        <section id="projects" className="py-24 dark:bg-[#09090f] bg-white relative overflow-hidden">
-          <div className="absolute inset-0 dark:bg-[radial-gradient(ellipse_at_top_right,rgba(99,102,241,0.06)_0%,transparent_60%)] pointer-events-none" />
-
-          <div className="max-w-7xl mx-auto px-6 relative z-10">
-            {/* Header */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-14 gap-4"
-            >
-              <div>
-                <div className="flex items-center gap-2 text-indigo-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-3">
-                  <span className="w-8 h-[1px] bg-indigo-500" />
-                  {t('projects.subtitle')}
-                </div>
-                <h2 className="text-4xl lg:text-5xl font-black dark:text-white text-zinc-900 tracking-tight">
-                  {t('projects.title')}
-                </h2>
-              </div>
-              <Link
-                href="/projects"
-                className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest dark:text-zinc-500 text-zinc-500 dark:hover:text-white hover:text-zinc-900 transition-colors group"
-              >
-                {t('projects.view_all')}
-                <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
+      {/* ════════════ 02 — RÉALISATIONS ════════════ */}
+      <section id="projects" className="relative border-t border-[rgb(var(--foreground-rgb))]/15">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)] py-[var(--section-gap)]">
+          <SectionHead
+            index="02"
+            kicker={t('projects.subtitle')}
+            sigil={<SectionMark name="projects" />}
+            title={
+              <>
+                {t('projects.hero_title_part1')}{' '}
+                <span className="font-accent text-[1.08em]">{t('projects.hero_title_part2')}</span>
+              </>
+            }
+            action={
+              <Link href="/projects" className="link-arrow">
+                {t('projects.view_all')} <FiChevronRight className="w-3.5 h-3.5" />
               </Link>
-            </motion.div>
+            }
+          />
 
-            {/* Projects grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {formattedProjects.map((project, index) => (
-                <motion.div
+          {featured.length === 0 ? (
+            <div className="mt-14 border-t border-[rgb(var(--foreground-rgb))]/15 pt-10">
+              <p className="font-mono text-[12px] uppercase tracking-[0.16em] text-[rgb(var(--foreground-rgb))]/60">
+                — {t('projects.empty')}
+              </p>
+            </div>
+          ) : (
+            <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-14">
+              {featured.map((project, index) => (
+                <motion.article
                   key={project._id}
-                  data-project-id={project._id}
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 32 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  whileHover={{ y: -6 }}
-                  className="group dark:bg-zinc-900/60 bg-white backdrop-blur-sm rounded-3xl overflow-hidden dark:border-white/5 border-zinc-200 border dark:hover:border-indigo-500/20 hover:border-indigo-300 transition-all duration-300 shadow-sm hover:shadow-lg flex flex-col"
+                  viewport={{ once: true, amount: 0.25 }}
+                  transition={{ duration: 0.7, delay: Math.min(index * 0.08, 0.24), ease: EASE }}
+                  className={`${spans[index] || 'lg:col-span-6'} group cursor-pointer`}
+                  onClick={() => setSelectedProject(project)}
+                  /* Carte interactive : ouvrable au clavier comme au pointeur */
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${project.title} — ${t('projects.view_project')}`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSelectedProject(project);
+                    }
+                  }}
                 >
-                  {/* Project image */}
-                  <div className="relative aspect-video overflow-hidden dark:bg-zinc-800 bg-zinc-100">
+                  <div className={`relative w-full ${ratios[index] || 'aspect-[4/3]'} overflow-hidden border border-[rgb(var(--foreground-rgb))]/15 grain bg-[var(--color-surface)]`}>
                     <Image
-                      src={project.imageUrl}
+                      src={project.imageUrl || '/images/default-project.svg'}
                       alt={project.title}
                       fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      sizes={index === 2 ? '(max-width: 1024px) 100vw, 90vw' : '(max-width: 1024px) 100vw, 45vw'}
+                      className="object-cover transition-transform duration-[1200ms] ease-out-expo group-hover:scale-[1.04]"
                     />
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-indigo-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
-                      {project.demoUrl && (
-                        <motion.button
-                          onClick={() => project.demoUrl && handleDemoClick(project._id, project.demoUrl)}
-                          whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                          className="p-3 bg-white rounded-xl text-zinc-900 shadow-lg"
-                          title={t('projects.view_demo')}
-                        ><FiExternalLink className="w-5 h-5" /></motion.button>
-                      )}
-                      {project.githubUrl && (
-                        <motion.button
-                          onClick={() => project.githubUrl && handleGithubClick(project._id, project.githubUrl)}
-                          whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                          className="p-3 bg-white rounded-xl text-zinc-900 shadow-lg"
-                          title={t('projects.view_code')}
-                        ><FiGithub className="w-5 h-5" /></motion.button>
-                      )}
-                    </div>
-                    {/* Featured badge */}
-                    {project.featured && (
-                      <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 bg-indigo-600/90 text-white text-[10px] font-black uppercase tracking-widest rounded-full backdrop-blur-sm">
-                        <FiStar className="w-3 h-3" />{t('projects.featured')}
-                      </div>
-                    )}
+                    <div className="absolute inset-0 bg-[rgb(var(--foreground-rgb))]/0 group-hover:bg-[rgb(var(--foreground-rgb))]/15 transition-colors duration-700" />
+
+                    <span className="absolute top-0 left-0 px-3 py-2 bg-[rgb(var(--background-start-rgb))] font-mono text-[10px] uppercase tracking-[0.18em] text-[rgb(var(--foreground-rgb))]/70 border-r border-b border-[rgb(var(--foreground-rgb))]/15">
+                      {String(index + 1).padStart(2, '0')}
+                      {project.featured && <span className="text-[var(--accent-text)] dark:text-[var(--accent)]"> · {t('projects.featured')}</span>}
+                    </span>
                   </div>
 
-                  {/* Card body */}
-                  <div className="p-6 flex flex-col flex-1">
-                    <h3 className="text-lg font-black dark:text-white text-zinc-900 tracking-tight mb-2 dark:group-hover:text-indigo-400 group-hover:text-indigo-600 transition-colors">
-                      {project.title}
-                    </h3>
-                    <p className="text-sm dark:text-zinc-500 text-zinc-500 leading-relaxed mb-4 flex-1">
-                      {project.description.length > 100 ? (
-                        <>
-                          {project.description.substring(0, 100)}…{' '}
-                          <button onClick={() => openModal(project)} className="text-indigo-500 hover:text-indigo-400 font-bold underline transition-colors">
-                            {t('projects.read_more')}
-                          </button>
-                        </>
-                      ) : project.description}
-                    </p>
-
-                    {/* Tech stack */}
-                    <div className="flex flex-wrap gap-1.5 mb-5">
-                      {project.technologies.slice(0, 4).map((tech, ti) => (
-                        <span key={ti} className="px-2.5 py-1 dark:bg-indigo-500/10 bg-indigo-50 dark:text-indigo-400 text-indigo-600 dark:border-indigo-500/20 border-indigo-200 border rounded-lg text-[10px] font-black uppercase tracking-wider">
-                          {tech}
-                        </span>
-                      ))}
-                      {project.technologies.length > 4 && (
-                        <span className="px-2.5 py-1 dark:bg-white/5 bg-zinc-100 dark:text-zinc-500 text-zinc-400 rounded-lg text-[10px] font-bold">
-                          +{project.technologies.length - 4}
-                        </span>
+                  <div className="mt-5 grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-3">
+                    <div className="lg:col-span-7">
+                      <h3 className="text-[1.4rem] sm:text-[1.7rem] font-bold leading-tight tracking-[-0.03em] m-0 transition-colors duration-300 group-hover:text-[var(--accent-text)] dark:group-hover:text-[var(--accent)]">
+                        {project.title}
+                      </h3>
+                      {hasRealDescription(project.description) && (
+                        <p className="text-[0.95rem] leading-relaxed text-[rgb(var(--foreground-rgb))]/60 mt-2 mb-0 line-clamp-2 max-w-[54ch]">
+                          {project.description}
+                        </p>
                       )}
                     </div>
 
-                    {/* Action row */}
-                    <div className="flex items-center justify-between pt-6 mt-auto border-t dark:border-white/5 border-zinc-100">
-                      <div className="flex gap-4">
-                        {project.demoUrl && (
-                          <button
-                            onClick={() => project.demoUrl && handleDemoClick(project._id, project.demoUrl)}
-                            className="flex items-center gap-1.5 text-indigo-500 hover:text-indigo-400 font-black text-[10px] uppercase tracking-widest transition-colors"
-                          >
-                            <FiExternalLink className="w-3.5 h-3.5" />{t('projects.live_demo')}
-                          </button>
-                        )}
-                        {project.githubUrl && (
-                          <button
-                            onClick={() => project.githubUrl && handleGithubClick(project._id, project.githubUrl)}
-                            className="flex items-center gap-1.5 dark:text-zinc-500 text-zinc-400 dark:hover:text-white hover:text-zinc-900 font-black text-[10px] uppercase tracking-widest transition-colors"
-                          >
-                            <FiGithub className="w-3.5 h-3.5" />{t('projects.source_code')}
-                          </button>
-                        )}
+                    <div className="lg:col-span-5 lg:text-right">
+                      <div className="flex flex-wrap lg:justify-end gap-x-4 gap-y-1">
+                        {(project.technologies || []).slice(0, 4).map((tech, ti) => (
+                          <span key={ti} className="font-mono text-[10px] uppercase tracking-[0.14em] text-[rgb(var(--foreground-rgb))]/60">
+                            {tech}
+                          </span>
+                        ))}
                       </div>
-                      <div className="w-1.5 h-1.5 rounded-full dark:bg-white/10 bg-zinc-200" />
+                      <span className="link-arrow mt-3 inline-flex text-[var(--accent-text)] dark:text-[var(--accent)]">
+                        {t('projects.view_project')} <FiArrowUpRight className="w-3.5 h-3.5" />
+                      </span>
                     </div>
                   </div>
-                </motion.div>
+                </motion.article>
               ))}
             </div>
+          )}
+        </div>
+      </section>
 
-            {/* Empty state */}
-            {formattedProjects.length === 0 && (
-              <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center py-20">
-                <div className="w-20 h-20 rounded-3xl dark:bg-indigo-500/10 bg-indigo-50 flex items-center justify-center mx-auto mb-6">
-                  <FiCode className="w-10 h-10 text-indigo-500" />
-                </div>
-                <h3 className="text-xl font-black dark:text-white text-zinc-900 mb-3">{t('projects.empty')}</h3>
-                <p className="dark:text-zinc-500 text-zinc-500 max-w-sm mx-auto font-medium">{t('projects.empty_desc')}</p>
-              </motion.div>
-            )}
-          </div>
+      {/* ════════════ 03 — COMPÉTENCES ════════════ */}
+      <div className="border-t border-[rgb(var(--foreground-rgb))]/15">
+        <SkillsSection skillsByCategory={skillsByCategory} />
+      </div>
 
-          {/* ── Project Detail Modal ── */}
-          {isModalOpen && selectedProject && (
-            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={closeModal}>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="dark:bg-[#0d0d14] bg-white dark:border-white/10 border-zinc-200 border rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
-                onClick={handleModalContentClick}
-              >
-                <div className="flex justify-between items-center p-6 dark:border-white/5 border-zinc-200 border-b">
-                  <h2 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">{selectedProject.title}</h2>
-                  <button onClick={closeModal} className="p-2 dark:hover:bg-white/10 hover:bg-zinc-100 rounded-xl transition-colors">
-                    <FiX className="w-5 h-5 dark:text-zinc-400 text-zinc-600" />
-                  </button>
-                </div>
-                <div className="p-6 space-y-6">
-                  <div className="rounded-2xl overflow-hidden aspect-video relative dark:bg-zinc-800 bg-zinc-100">
-                    <Image src={selectedProject.imageUrl} alt={selectedProject.title} fill className="object-cover" sizes="800px" />
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-black dark:text-zinc-400 text-zinc-500 uppercase tracking-widest mb-3">{t('projects.description_label')}</h3>
-                    <div className="dark:text-zinc-300 text-zinc-700 leading-relaxed text-sm">
-                      {parse(DOMPurify.sanitize(selectedProject.description))}
+      {/* ════════════ 04 — EXPÉRIENCES ════════════ */}
+      <section id="experience" className="relative border-t border-[rgb(var(--foreground-rgb))]/15">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)] py-[var(--section-gap)]">
+          <SectionHead
+            index="04"
+            kicker={t('experience.subtitle')}
+            sigil={<SectionMark name="experience" />}
+            title={t('experience.title')}
+            action={
+              <Link href="/experiences" className="link-arrow">
+                {t('projects.view_all')} <FiChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            }
+          />
+
+          {experiences.length === 0 ? (
+            <p className="mt-14 font-mono text-[12px] uppercase tracking-[0.16em] text-[rgb(var(--foreground-rgb))]/60">
+              — {t('experience.empty')}
+            </p>
+          ) : (
+            <div className="mt-12 border-t border-[rgb(var(--foreground-rgb))]/15">
+              {experiences.slice(0, 3).map((exp, i) => (
+                <Reveal key={exp._id} delay={i * 0.06} amount={0.35}>
+                  <div className="group grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-3 py-7 border-b border-[rgb(var(--foreground-rgb))]/12 hover:bg-[var(--color-surface)] transition-colors duration-500 ease-out-expo -mx-3 px-3">
+                    <div className="lg:col-span-3 flex items-start gap-3">
+                      <span className="index-num text-[var(--accent-text)] dark:text-[var(--accent)] tabular-nums pt-1">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <span className="font-mono text-[12px] tracking-[0.04em] text-[rgb(var(--foreground-rgb))]/60 tabular-nums">
+                        {formatRange(exp)}
+                      </span>
+                    </div>
+
+                    <div className="lg:col-span-4">
+                      <h3 className="text-[1.25rem] font-bold leading-tight tracking-[-0.025em] m-0">{exp.title}</h3>
+                      <p className="text-[0.9rem] text-[rgb(var(--foreground-rgb))]/60 mt-1.5 mb-0">
+                        {exp.company} · {exp.location}
+                      </p>
+                    </div>
+
+                    <div className="lg:col-span-5">
+                      <p className="text-[0.95rem] leading-relaxed text-[rgb(var(--foreground-rgb))]/65 m-0 line-clamp-3">
+                        {exp.description}
+                      </p>
+                      {(exp.technologies || []).length > 0 && (
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3">
+                          {exp.technologies.slice(0, 4).map((tech, ti) => (
+                            <span key={ti} className="font-mono text-[10px] uppercase tracking-[0.14em] text-[rgb(var(--foreground-rgb))]/60">
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div>
-                    <h3 className="text-xs font-black dark:text-zinc-400 text-zinc-500 uppercase tracking-widest mb-3">{t('projects.tech_label')}</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedProject.technologies.map((tech: string, i: number) => (
-                        <span key={i} className="px-3 py-1.5 dark:bg-indigo-500/10 bg-indigo-50 dark:text-indigo-400 text-indigo-600 dark:border-indigo-500/20 border-indigo-200 border rounded-xl text-sm font-bold">
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    {selectedProject.demoUrl && (
-                      <a href={selectedProject.demoUrl} target="_blank" rel="noopener noreferrer"
-                        onClick={() => handleDemoClick(selectedProject._id, selectedProject.demoUrl)}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20"
-                      >
-                        <FiExternalLink className="w-4 h-4" />{t('projects.live_demo')}
-                      </a>
-                    )}
-                    {selectedProject.githubUrl && (
-                      <a href={selectedProject.githubUrl} target="_blank" rel="noopener noreferrer"
-                        onClick={() => handleGithubClick(selectedProject._id, selectedProject.githubUrl)}
-                        className="flex items-center gap-2 px-5 py-2.5 dark:bg-white/10 bg-zinc-100 dark:hover:bg-white/20 hover:bg-zinc-200 dark:text-white text-zinc-900 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
-                      >
-                        <FiGithub className="w-4 h-4" />{t('projects.source_code')}
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
+                </Reveal>
+              ))}
             </div>
           )}
-        </section>
+        </div>
+      </section>
 
-        {/* ═══════════════════════════════════════
-            SKILLS SECTION
-        ═══════════════════════════════════════ */}
-        <SkillsSection />
+      {/* ════════════ 05 — CLÔTURE : la lumière s'éteint ════════════ */}
+      <section id="contact" className="relative border-t border-[rgb(var(--foreground-rgb))]/15 encre-block">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)] py-[var(--section-gap)]">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-10 items-end">
+            <div className="lg:col-span-8">
+              <Reveal>
+                <div className="flex items-center gap-4 mb-7">
+                  <SectionMark name="contact" size={18} className="text-[rgb(var(--foreground-rgb))]/75" />
+                  <span className="index-num text-[var(--accent-text)]">05</span>
+                  <span className="kicker kicker--plain">{t('contact.title')}</span>
+                </div>
+              </Reveal>
 
-        {/* ═══════════════════════════════════════
-            EXPERIENCE TIMELINE
-        ═══════════════════════════════════════ */}
-        <section id="experience" className="py-24 dark:bg-[#09090f] bg-white relative overflow-hidden">
-          <div className="absolute inset-0 dark:bg-[radial-gradient(ellipse_at_bottom_left,rgba(99,102,241,0.05)_0%,transparent_60%)] pointer-events-none" />
-
-          <div className="max-w-5xl mx-auto px-6 relative z-10">
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-14">
-              <div className="flex items-center gap-2 text-indigo-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-3">
-                <span className="w-8 h-[1px] bg-indigo-500" />
-                {t('experience.subtitle')}
-              </div>
-              <h2 className="text-4xl lg:text-5xl font-black dark:text-white text-zinc-900 tracking-tight">
-                {t('experience.title')}
+              <h2 className="text-[clamp(2.5rem,7vw,6rem)] leading-[0.9] tracking-[-0.05em] m-0 text-balance">
+                <RevealWords
+                  delay={0.05}
+                  segments={[
+                    { text: t('home.contact_title_part1') },
+                    {
+                      text: t('home.contact_title_part2'),
+                      className: 'font-accent text-[1.1em] text-[var(--accent-text)]',
+                    },
+                    { text: '.', glue: 'none', className: 'text-[var(--accent-text)]' },
+                  ]}
+                />
               </h2>
-            </motion.div>
 
-            {experiences.length > 0 ? (
-              <div className="relative">
-                {/* Timeline line */}
-                <div className="absolute left-5 top-2 bottom-2 w-px dark:bg-indigo-500/20 bg-indigo-200 hidden md:block" />
-                <div className="space-y-8">
-                  {experiences.map((exp, index) => (
-                    <motion.div
-                      key={exp._id}
-                      initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                      className="md:pl-16 relative"
+              <Reveal delay={0.2}>
+                <p className="lead max-w-[48ch] mt-7">{t('contact.description')}</p>
+              </Reveal>
+            </div>
+
+            <div className="lg:col-span-4">
+              <Reveal delay={0.15}>
+                <div className="flex flex-col gap-3">
+                  <Link href="/contact" className="btn btn-primary justify-between w-full">
+                    {t('contact.cta')}
+                    <FiArrowUpRight className="w-4 h-4" />
+                  </Link>
+                  {cvAvailable && (
+                    <button onClick={() => setIsCVModalOpen(true)} className="btn btn-outline justify-between w-full">
+                      {t('contact.cv_btn')}
+                      <FiDownload className="w-4 h-4" />
+                    </button>
+                  )}
+
+                  {settings?.email && (
+                    <a
+                      href={`mailto:${settings.email}`}
+                      className="mt-3 inline-flex items-center min-h-[2.75rem] self-start font-mono text-[13px] text-[rgb(var(--foreground-rgb))]/60 hover:text-[var(--accent-text)] dark:hover:text-[var(--accent)] transition-colors u-line"
                     >
-                      {/* Timeline dot */}
-                      <div className="absolute left-3.5 top-7 w-3.5 h-3.5 rounded-full bg-indigo-500 border-4 dark:border-[#09090f] border-white shadow-md shadow-indigo-500/40 hidden md:block z-10" />
-
-                      <div className="dark:bg-zinc-900/60 bg-white backdrop-blur-sm rounded-3xl p-6 lg:p-8 dark:border-white/5 border-zinc-200 border dark:hover:border-indigo-500/20 hover:border-indigo-300 transition-all shadow-sm">
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
-                          <div>
-                            <h3 className="text-xl font-black dark:text-white text-zinc-900 tracking-tight mb-1">{exp.title}</h3>
-                            <div className="flex items-center gap-2 text-sm">
-                              <span className="font-bold dark:text-white text-zinc-800">{exp.company}</span>
-                              <span className="dark:text-zinc-700 text-zinc-400">·</span>
-                              <span className="dark:text-zinc-500 text-zinc-500">{exp.location}</span>
-                            </div>
-                          </div>
-                          <span className="flex-shrink-0 px-3 py-1.5 dark:bg-indigo-500/10 bg-indigo-50 dark:text-indigo-400 text-indigo-600 dark:border-indigo-500/20 border-indigo-200 border rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
-                            {new Date(exp.startDate).toLocaleDateString(locale === 'tr' ? 'tr-TR' : (locale === 'en' ? 'en-US' : 'fr-FR'), { month: 'short', year: 'numeric' })}
-                            {' — '}
-                            {exp.endDate
-                              ? new Date(exp.endDate).toLocaleDateString(locale === 'tr' ? 'tr-TR' : (locale === 'en' ? 'en-US' : 'fr-FR'), { month: 'short', year: 'numeric' })
-                              : t('experience.present')}
-                          </span>
-                        </div>
-                        <p className="dark:text-zinc-500 text-zinc-600 leading-relaxed text-sm mb-5">{exp.description}</p>
-                        {exp.technologies?.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5">
-                            {exp.technologies.map((tech, ti) => (
-                              <span key={ti} className="px-2.5 py-1 dark:bg-white/5 bg-zinc-100 dark:text-zinc-400 text-zinc-600 dark:border-white/10 border-zinc-200 border rounded-lg text-[10px] font-bold">
-                                {tech}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  ))}
+                      {settings.email}
+                    </a>
+                  )}
                 </div>
-              </div>
-            ) : (
-              <div className="text-center py-16">
-                <div className="w-16 h-16 rounded-2xl dark:bg-indigo-500/10 bg-indigo-50 flex items-center justify-center mx-auto mb-4">
-                  <FiSettings className="w-8 h-8 text-indigo-500" />
-                </div>
-                <h3 className="text-lg font-black dark:text-white text-zinc-900 mb-2">{t('experience.empty')}</h3>
-                <p className="dark:text-zinc-500 text-zinc-500 text-sm font-medium">{t('experience.empty_desc')}</p>
-              </div>
-            )}
+              </Reveal>
+            </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* ═══════════════════════════════════════
-            FINAL CTA
-        ═══════════════════════════════════════ */}
-        <section className="py-28 dark:bg-zinc-900/30 bg-indigo-50/60 dark:border-white/5 border-indigo-100 border-y relative overflow-hidden">
-          <div className="absolute inset-0 dark:bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.08)_0%,transparent_70%)] bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.04)_0%,transparent_70%)] pointer-events-none" />
-
-          <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-            <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
-              <div className="flex items-center gap-2 text-indigo-500 font-bold text-[10px] uppercase tracking-[0.2em] justify-center mb-6">
-                <span className="w-8 h-[1px] bg-indigo-500" />
-                {t('contact.subtitle_small')}
-                <span className="w-8 h-[1px] bg-indigo-500" />
-              </div>
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black dark:text-white text-zinc-900 tracking-tight mb-6">
-                {t('contact.title')}
-              </h2>
-              <p className="dark:text-zinc-400 text-zinc-600 text-lg font-medium mb-10 max-w-xl mx-auto">
-                {t('contact.description')}
-              </p>
-              <div className="flex flex-wrap gap-4 justify-center mb-10">
-                <Link
-                  href="/contact"
-                  className="h-16 px-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-indigo-600/20 transition-all active:scale-95 flex items-center justify-center gap-3"
-                >
-                  <FiSend className="w-4 h-4" />
-                  {t('contact.cta')}
-                </Link>
-                
-                <button
-                  onClick={() => setIsCVModalOpen(true)}
-                  className="h-16 px-10 dark:bg-white/5 bg-white dark:hover:bg-white/10 hover:bg-zinc-50 dark:text-white text-zinc-900 dark:border-white/5 border-zinc-200 border rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-3 shadow-sm"
-                >
-                  <FiDownload className="w-4 h-4" />
-                  {t('contact.cv_btn')}
-                </button>
-              </div>
-              
-              {/* Contact options */}
-              <div className="flex flex-wrap gap-6 justify-center dark:text-zinc-400 text-zinc-500">
-                {homeData.socialLinks.github && (
-                  <a href={homeData.socialLinks.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-indigo-500 transition-colors">
-                    <FaGithub className="w-5 h-5" />
-                    <span className="text-sm font-medium">GitHub</span>
-                  </a>
-                )}
-                {homeData.socialLinks.linkedin && (
-                  <a href={homeData.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-indigo-500 transition-colors">
-                    <FaLinkedin className="w-5 h-5" />
-                    <span className="text-sm font-medium">LinkedIn</span>
-                  </a>
-                )}
-                {homeData.contactInfo?.email && (
-                  <a href={`mailto:${homeData.contactInfo.email}`} className="flex items-center gap-2 hover:text-indigo-500 transition-colors">
-                    <span className="text-sm font-medium">{homeData.contactInfo.email}</span>
-                  </a>
-                )}
-              </div>
-            </motion.div>
-          </div>
-        </section>
-      </main>
-
-      <Analytics />
+      <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />
       <CVModal isOpen={isCVModalOpen} onClose={() => setIsCVModalOpen(false)} />
     </Layout>
   );
 }
 
-// ─── getStaticProps ──────────────────────────────────────────────────────────────
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
   const currentLocale = locale || 'fr';
-
   try {
     await connectDB();
 
     const Maintenance = (await import('@/models/Maintenance')).default;
     const maintenanceStatus = await Maintenance.findOne().lean();
-
     if (maintenanceStatus && (maintenanceStatus as any).isEnabled) {
       return { redirect: { destination: '/maintenance', permanent: false } };
     }
 
-    let homeData = await HomePageModel.findOne().lean();
-    if (!homeData) homeData = defaultHomeData;
-
-    const settingsFromDB = await SettingModel.findOne().lean();
+    // Phase 3 — source unique du contenu : le document `Setting` (singleton)
+    // est la vérité centrale (site + about + socials). Plus de lecture via
+    // un modèle HomePage dupliqué.
+    const settingsFromDB: any = await SettingModel.findOne().lean();
     const settings = settingsFromDB || { email: 'contact@mehmetsalihk.fr', linkedin: 'https://www.linkedin.com/in/mehmetsalihk' };
+
+    const homeData: any = settingsFromDB
+      ? {
+          _id: (settingsFromDB as any)._id?.toString?.() ?? 'default',
+          title: getLocalized(settingsFromDB, 'siteTitle', currentLocale),
+          subtitle: getLocalized(settingsFromDB, 'siteDescription', currentLocale),
+          aboutTitle: getLocalized(settingsFromDB, 'aboutTitle', currentLocale),
+          aboutText: getLocalized(settingsFromDB, 'aboutBio', currentLocale),
+          socialLinks: {
+            github: settingsFromDB.github || '',
+            linkedin: settingsFromDB.linkedin || '',
+            twitter: settingsFromDB.twitter || '',
+            whatsapp: settingsFromDB.whatsapp || '',
+            telegram: settingsFromDB.telegram || '',
+          },
+        }
+      : defaultHomeData;
 
     const SEO = (await import('@/models/SEO')).default;
     const seoData = await SEO.findOne({ page: 'home' }).lean();
@@ -796,35 +674,22 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
         }
       },
       { $sort: { featured: -1, totalClicks: -1, order: 1 } },
-      { $limit: 6 }
+      { $limit: 6 },
+      /* Les tableaux `stats` (clickHistory/dailyStats) ne sont jamais affichés
+         sur la home : on les écarte du payload statique */
+      { $project: { stats: 0, __v: 0 } }
     ]);
 
-    const rawExperiences = await ExperienceModel.find({})
+    const rawExperiences = await ExperienceModel.find({ isVisible: { $ne: false } })
       .sort({ startDate: -1 })
       .select('title title_en title_tr company location startDate endDate description description_en description_tr technologies')
       .lean();
 
-    // Localize Experiences
-    const experiences = rawExperiences.map((exp: any) => ({
-      ...exp,
-      title: getLocalized(exp, 'title', currentLocale),
-      description: getLocalized(exp, 'description', currentLocale),
-      _id: exp._id.toString(),
-      startDate: exp.startDate.toISOString(),
-      endDate: exp.endDate ? exp.endDate.toISOString() : null,
-    }));
-
-    // Localize HomePage Data
     const localizedHomeData = homeData ? {
       ...homeData,
-      _id: (homeData as any)._id.toString(),
-      title: getLocalized(homeData, 'title', currentLocale),
-      subtitle: getLocalized(homeData, 'subtitle', currentLocale),
-      aboutTitle: getLocalized(homeData, 'aboutTitle', currentLocale),
-      aboutText: getLocalized(homeData, 'aboutText', currentLocale),
+      _id: (homeData as any)._id?.toString?.() ?? 'default',
     } : defaultHomeData;
 
-    // Localize Projects
     const localizedProjects = projects.map((proj: any) => ({
       ...proj,
       title: getLocalized(proj, 'title', currentLocale),
@@ -832,7 +697,6 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       _id: proj._id.toString(),
     }));
 
-    // Localize Experiences
     const localizedExperiences = rawExperiences.map((exp: any) => ({
       ...exp,
       title: getLocalized(exp, 'title', currentLocale),
@@ -842,22 +706,14 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       endDate: exp.endDate ? exp.endDate.toISOString() : null,
     }));
 
-    // Localize SEO
-    const localizedSEO = seoData ? {
-      ...seoData,
-      title: getLocalized(seoData, 'title', currentLocale),
-      description: getLocalized(seoData, 'description', currentLocale),
-    } : null;
-
-    const allCategories = await SkillCategory.find({ isVisible: true }).sort('displayOrder').lean();
-
+    const allCategories = await (await import('@/models/SkillCategory')).default.find({ isVisible: true }).sort('displayOrder').lean();
     const uniqueCategories = allCategories.reduce<any[]>((acc, current) => {
       const exists = acc.find((cat: any) => cat.name === current.name);
       if (!exists) acc.push(current);
       return acc;
     }, []);
 
-    const skills = await SkillModel.find({ isHidden: false, categoryId: { $exists: true, $ne: null } })
+    const skills = await (await import('@/models/Skill')).default.find({ isHidden: false, categoryId: { $exists: true, $ne: null } })
       .populate('categoryId')
       .lean();
 
@@ -873,7 +729,6 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       ).sort((a: any, b: any) => a.displayOrder - b.displayOrder).map((s: any) => ({...s, _id: s._id.toString(), categoryId: s.categoryId._id.toString()}))
     })).sort((a: any, b: any) => a.displayOrder - b.displayOrder);
 
-    // Localize Settings
     const localizedSettings = settings ? {
       ...settings,
       position: getLocalized(settings, 'position', currentLocale),
@@ -887,24 +742,23 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
         homeData: JSON.parse(JSON.stringify(localizedHomeData)),
         skillsByCategory: JSON.parse(JSON.stringify(skillsByCategory)),
         settings: JSON.parse(JSON.stringify(localizedSettings)),
-        seoData: localizedSEO ? JSON.parse(JSON.stringify(localizedSEO)) : null,
+        seoData: seoData ? JSON.parse(JSON.stringify({ ...seoData, title: getLocalized(seoData, 'title', currentLocale), description: getLocalized(seoData, 'description', currentLocale) })) : null,
         ...(await serverSideTranslations(currentLocale, ['common'])),
       },
-      revalidate: 1,
+      revalidate: 60,
     };
-
   } catch (error) {
     console.error('Error in getStaticProps:', error);
     return {
       props: {
         projects: [],
         experiences: [],
-        skills: [],
         homeData: defaultHomeData,
         skillsByCategory: [],
         settings: { email: '', linkedin: '', phone: '' },
+        ...(await serverSideTranslations(currentLocale, ['common'])),
       },
-      revalidate: 1,
+      revalidate: 60,
     };
   }
 };

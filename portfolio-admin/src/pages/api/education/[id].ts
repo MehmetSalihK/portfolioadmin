@@ -1,51 +1,64 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
+import mongoose from 'mongoose';
 import connectDB from '@/lib/db';
 import Education from '@/models/Education';
 import path from 'path';
 import fs from 'fs';
+import { resolveSafePath } from '@/utils/pathSafety';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
-
-  if (!session) {
-    return res.status(401).json({ error: 'Non autorisé' });
-  }
+  // Écriture (PUT/DELETE) → rôle admin exigé.
+  const guard = await requireAdmin(req, res);
+  if (!guard) return;
 
   const { id } = req.query;
+
+  if (typeof id !== 'string' || !mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: 'Identifiant invalide' });
+  }
 
   await connectDB();
 
   switch (req.method) {
     case 'PUT':
       try {
-        // Debug: Afficher les données reçues
-        console.log('Données reçues dans l\'API PUT:', req.body);
-        
-        // Si un nouveau diplôme est uploadé, supprimer l'ancien
-        if (req.body.diplomaFilePath || req.body.diplomaFile) {
+        // Garde anti mass-assignment : aucune clé d'opérateur Mongo ni de
+        // prototype dans le corps (évite $unset/$rename et le pollution).
+        const body =
+          req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
+        const unsafeKey = Object.keys(body).find(
+          (key) => key.startsWith('$') || ['__proto__', 'constructor', 'prototype'].includes(key)
+        );
+        if (unsafeKey) {
+          return res.status(400).json({ error: 'Clé de mise à jour invalide' });
+        }
+
+        // Si un nouveau diplôme est uploadé, supprimer l'ancien fichier.
+        // Chemin résolu puis contraint à public/ (le startsWith acceptait
+        // « /uploads/../../... » → suppression hors du dossier uploads).
+        if (body.diplomaFilePath || body.diplomaFile) {
           const existingEducation = await Education.findById(id);
           if (existingEducation && (existingEducation.diplomaFilePath || existingEducation.diplomaFile)) {
             const oldFilePath = existingEducation.diplomaFilePath || existingEducation.diplomaFile;
             if (oldFilePath && oldFilePath.startsWith('/uploads/')) {
-              const fullPath = path.join(process.cwd(), 'public', oldFilePath);
-              if (fs.existsSync(fullPath)) {
+              const fullPath = resolveSafePath(
+                path.join(process.cwd(), 'public'),
+                String(oldFilePath).replace(/^\/+/, '')
+              );
+              if (fullPath && fs.existsSync(fullPath)) {
                 fs.unlinkSync(fullPath);
               }
             }
           }
         }
-        
+
         const updatedEducation = await Education.findByIdAndUpdate(
           id,
-          req.body,
+          body,
           { new: true }
         );
-        
-        // Debug: Afficher ce qui a été sauvegardé
-        console.log('Formation mise à jour:', updatedEducation);
-        
+
         if (!updatedEducation) {
           return res.status(404).json({ error: 'Formation non trouvée' });
         }

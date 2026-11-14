@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
 import dbConnect from '../../../lib/db';
 import { EntityVersion } from '../../../models/Backup';
 import Project from '../../../models/Project';
@@ -8,7 +7,6 @@ import Skill from '../../../models/Skill';
 import Experience from '../../../models/Experience';
 import Education from '../../../models/Education';
 import Contact from '../../../models/Contact';
-import HomePage from '../../../models/HomePage';
 import Media from '../../../models/Media';
 import Category from '../../../models/Category';
 import Setting from '../../../models/Setting';
@@ -20,7 +18,7 @@ const MODELS = {
   experience: Experience,
   education: Education,
   contact: Contact,
-  homepage: HomePage,
+  homepage: Setting,
   media: Media,
   category: Category,
   setting: Setting,
@@ -126,10 +124,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await dbConnect();
     
-    const session = await getServerSession(req, res, authOptions);
-    if (!session?.user?.email) {
-      return res.status(401).json({ message: 'Non authentifié' });
-    }
+    const guard = await requireAdmin(req, res);
+    if (!guard) return;
+    const session = { user: guard.user as { email: string } };
 
     if (req.method === 'GET') {
       const { entityType, entityId, versionId, action } = req.query;

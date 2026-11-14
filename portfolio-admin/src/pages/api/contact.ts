@@ -76,14 +76,14 @@ export default async function handler(
       subject,
       message,
     });
-    console.log('Message enregistré dans la base de données:', newMessage);
+    // Log minimal : jamais le contenu du message ni les coordonnées (PII).
+    console.log('Message de contact enregistré');
 
     if (!process.env.RESEND_API_KEY || !process.env.RESEND_EMAIL) {
       console.error('Configuration Resend incomplète. Vérifiez vos variables d\'environnement.');
       return res.status(500).json({ message: 'Configuration du service d\'email incomplète' });
     }
 
-    console.log('Tentative d\'envoi d\'email à:', process.env.RESEND_EMAIL);
     try {
       const result = await resend.emails.send({
         from: 'onboarding@resend.dev',
@@ -100,9 +100,9 @@ export default async function handler(
         }),
         replyTo: email,
       });
-      console.log('Email envoyé avec succès:', result);
+      console.log('Email de contact envoyé');
     } catch (emailError) {
-      console.error('Erreur détaillée lors de l\'envoi de l\'email:', emailError);
+      console.error("Erreur lors de l'envoi de l'email de contact:", emailError);
     }
 
     return res.status(201).json({ message: 'Message envoyé avec succès' });

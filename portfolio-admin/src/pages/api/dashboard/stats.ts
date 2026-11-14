@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
 import connectDB from '@/lib/db';
 import Contact from '@/models/Contact';
 import Project from '@/models/Project';
@@ -51,6 +50,14 @@ interface DashboardStats {
       mobile: number;
       tablet: number;
     };
+    projectsByCategory: Array<{
+      name: string;
+      value: number;
+    }>;
+    skillsByCategory: Array<{
+      name: string;
+      value: number;
+    }>;
   };
   performance: {
     lastBackup: Date | null;
@@ -186,11 +193,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<DashboardStats | { message: string }>
 ) {
-  const session = await getServerSession(req, res, authOptions);
-
-  if (!session) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
+  const guard = await requireAdmin(req, res);
+  if (!guard) return;
 
   if (req.method !== 'GET') {
     res.setHeader('Allow', ['GET']);
@@ -224,6 +228,17 @@ export default async function handler(
       Backup.countDocuments().catch(() => 0)
     ]);
 
+    // Données de visualisation par catégorie (projet / compétence) pour le
+    // dashboard unifié — même source que les charts de la page Control Center.
+    const [projectsByCategory, skillsByCategory] = await Promise.all([
+      Project.aggregate([
+        { $group: { _id: '$category', count: { $sum: 1 } } }
+      ]),
+      Skill.aggregate([
+        { $group: { _id: '$category', count: { $sum: 1 } } }
+      ]),
+    ]);
+
     // Statistiques analytics et graphiques
     const [analytics, charts] = await Promise.all([
       getAnalyticsStats(daysNumber),
@@ -251,7 +266,12 @@ export default async function handler(
         totalBackups
       },
       analytics,
-      charts,
+      charts: {
+        dailyViews: charts.dailyViews,
+        deviceStats: charts.deviceStats,
+        projectsByCategory: projectsByCategory.map(p => ({ name: p._id || 'Uncategorized', value: p.count })),
+        skillsByCategory: skillsByCategory.map(s => ({ name: s._id || 'Uncategorized', value: s.count })),
+      },
       performance: {
         lastBackup: lastBackup?.createdAt || null,
         systemHealth

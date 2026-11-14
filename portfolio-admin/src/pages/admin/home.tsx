@@ -70,10 +70,33 @@ export default function HomePageAdmin() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('/api/homepage');
+      // Phase 3 : le contenu du site est centralisé dans le document
+      // `Setting` (source unique) — consommé via /api/admin/settings.
+      const response = await fetch('/api/admin/settings');
       if (!response.ok) throw new Error('Erreur');
-      const fetchedData = await response.json();
-      setData({ ...defaultData, ...fetchedData, socialLinks: { ...defaultData.socialLinks, ...(fetchedData.socialLinks || {}) } });
+      const fetched: any = await response.json();
+      setData({
+        ...defaultData,
+        title: fetched?.siteTitle ?? '',
+        title_en: fetched?.siteTitle_en ?? '',
+        title_tr: fetched?.siteTitle_tr ?? '',
+        subtitle: fetched?.siteDescription ?? '',
+        subtitle_en: fetched?.siteDescription_en ?? '',
+        subtitle_tr: fetched?.siteDescription_tr ?? '',
+        aboutTitle: fetched?.aboutTitle ?? '',
+        aboutTitle_en: fetched?.aboutTitle_en ?? '',
+        aboutTitle_tr: fetched?.aboutTitle_tr ?? '',
+        aboutText: fetched?.aboutBio ?? '',
+        aboutText_en: fetched?.aboutBio_en ?? '',
+        aboutText_tr: fetched?.aboutBio_tr ?? '',
+        socialLinks: {
+          github: fetched?.github || '',
+          linkedin: fetched?.linkedin || '',
+          twitter: fetched?.twitter || '',
+          whatsapp: fetched?.whatsapp || '',
+          telegram: fetched?.telegram || '',
+        },
+      });
     } catch (error) {
       toast.error('Erreur de chargement');
     } finally {
@@ -85,10 +108,29 @@ export default function HomePageAdmin() {
     e.preventDefault();
     setSaving(true);
     try {
-      const response = await fetch('/api/homepage', {
+      // Phase 3 : envoi unique vers l'endpoint centralisé des contenus.
+      const response = await fetch('/api/admin/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          siteTitle: data.title,
+          siteTitle_en: data.title_en || '',
+          siteTitle_tr: data.title_tr || '',
+          siteDescription: data.subtitle,
+          siteDescription_en: data.subtitle_en || '',
+          siteDescription_tr: data.subtitle_tr || '',
+          aboutTitle: data.aboutTitle,
+          aboutTitle_en: data.aboutTitle_en || '',
+          aboutTitle_tr: data.aboutTitle_tr || '',
+          aboutBio: data.aboutText,
+          aboutBio_en: data.aboutText_en || '',
+          aboutBio_tr: data.aboutText_tr || '',
+          github: data.socialLinks.github,
+          linkedin: data.socialLinks.linkedin,
+          twitter: data.socialLinks.twitter,
+          whatsapp: data.socialLinks.whatsapp,
+          telegram: data.socialLinks.telegram,
+        }),
       });
       if (!response.ok) throw new Error('Erreur');
       toast.success('Modifications enregistrées');

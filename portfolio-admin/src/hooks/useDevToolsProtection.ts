@@ -58,23 +58,9 @@ export const useDevToolsProtection = () => {
     // Désactiver la console
     disableConsole();
 
-    // Détection basique du débogueur
-    const debugItems = setInterval(() => {
-      const start = performance.now();
-      // @ts-ignore
-      debugger;
-      const end = performance.now();
-      if (end - start > 100) {
-        // Potentiellement en train de déboguer
-        // On pourrait rediriger l'utilisateur ou effacer le DOM
-        // document.body.innerHTML = 'Security Violation';
-      }
-    }, 1000);
-
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('keydown', handleKeyDown);
-      clearInterval(debugItems);
     };
   }, []);
 };

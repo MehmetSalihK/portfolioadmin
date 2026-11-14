@@ -140,23 +140,60 @@ export const githubService = {
             let createdCount = 0;
             const errors: string[] = [];
 
+            const existingGithubProjects = await Project.find({ isFromGitHub: true }).select('githubUrl title updatedAt').lean();
+            const existingByUrl = new Map<string, any>();
+            const existingByOwner = new Map<string, any[]>();
+            for (const p of existingGithubProjects) {
+                const url = String(p.githubUrl || '');
+                if (url) existingByUrl.set(url, p);
+                const owner = url.replace(/^https?:\/\/github\.com\//, '').split('/')[0] || '';
+                if (!existingByOwner.has(owner)) existingByOwner.set(owner, []);
+                existingByOwner.get(owner)!.push(p);
+            }
+
             for (const githubProject of projects) {
                 try {
-                    const existingProject = await Project.findOne({
-                        githubUrl: githubProject.githubUrl
-                    });
+                    const existingProject = existingByUrl.get(githubProject.githubUrl) || null;
+                    let targetProject = existingProject;
+                    let isRename = false;
 
-                    if (existingProject) {
+                    if (!targetProject) {
+                        const owner = githubProject.githubUrl.replace(/^https?:\/\/github\.com\//, '').split('/')[0] || '';
+                        const incomingName = githubProject.githubUrl.replace(/^https?:\/\/github\.com\//, '').split('/')[1] || '';
+                        const candidates = existingByOwner.get(owner) || [];
+                        const renamedCandidate = candidates.find((p) => {
+                            const existingName = String(p.githubUrl || '').replace(/^https?:\/\/github\.com\//, '').split('/')[1] || '';
+                            const a = existingName.toLowerCase();
+                            const b = incomingName.toLowerCase();
+                            let i = 0;
+                            while (i < Math.min(a.length, b.length) && a[i] === b[i]) i++;
+                            return i > 3;
+                        });
+                        if (renamedCandidate) { targetProject = renamedCandidate; isRename = true; }
+                    }
+
+                    if (targetProject) {
+                        const repoUpdatedAt = new Date(githubProject.lastUpdated).getTime();
+                        const targetUpdatedAt = targetProject.updatedAt ? new Date(String(targetProject.updatedAt)).getTime() : 0;
+                        const manualEdit = targetUpdatedAt > repoUpdatedAt;
+
+                        if (manualEdit) {
+                            // Phase 9 — ne pas écraser une édition manuelle plus récente que le dépôt GitHub.
+                            syncedCount++;
+                            continue;
+                        }
+
                         const updated = await Project.findByIdAndUpdate(
-                            existingProject._id,
+                            targetProject._id,
                             {
+                                ...(isRename ? { githubUrl: githubProject.githubUrl } : {}),
                                 title: githubProject.title,
                                 description: githubProject.description,
                                 technologies: githubProject.technologies,
-                                demoUrl: githubProject.demoUrl || existingProject.demoUrl,
-                                featured: githubProject.featured || existingProject.featured,
-                                imageUrl: existingProject.imageUrl.includes('/uploads/')
-                                    ? existingProject.imageUrl
+                                demoUrl: githubProject.demoUrl || targetProject.demoUrl,
+                                featured: githubProject.featured || targetProject.featured,
+                                imageUrl: String(targetProject.imageUrl || '').includes('/uploads/')
+                                    ? String(targetProject.imageUrl)
                                     : githubProject.imageUrl,
                                 githubData: {
                                     language: githubProject.language,

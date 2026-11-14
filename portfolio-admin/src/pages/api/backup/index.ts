@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
 import dbConnect from '../../../lib/db';
 import { Backup, EntityVersion } from '../../../models/Backup';
 import Project from '../../../models/Project';
@@ -8,7 +7,6 @@ import Skill from '../../../models/Skill';
 import Experience from '../../../models/Experience';
 import Education from '../../../models/Education';
 import Contact from '../../../models/Contact';
-import HomePage from '../../../models/HomePage';
 import Media from '../../../models/Media';
 import Category from '../../../models/Category';
 import Setting from '../../../models/Setting';
@@ -26,10 +24,10 @@ const MODELS = {
   experiences: Experience,
   education: Education,
   contacts: Contact,
-  homepage: HomePage,
+  // Phase 3 : le contenu singleton est centralisé dans le modèle `Setting`
+  settings: Setting,
   media: Media,
   categories: Category,
-  settings: Setting,
 };
 
 // Fonction pour créer une sauvegarde complète
@@ -39,7 +37,7 @@ async function createFullBackup(name: string, description: string, createdBy: st
   try {
     // Récupérer toutes les données de chaque modèle
     for (const [key, Model] of Object.entries(MODELS)) {
-      if (key === 'homepage' || key === 'settings') {
+      if (key === 'settings') {
         // Pour les modèles singleton
         const data = await Model.findOne();
         backupData[key] = data ? data.toObject() : null;
@@ -110,7 +108,7 @@ async function createIncrementalBackup(name: string, description: string, create
   try {
     // Récupérer seulement les données modifiées depuis la dernière sauvegarde
     for (const [key, Model] of Object.entries(MODELS)) {
-      if (key === 'homepage' || key === 'settings') {
+      if (key === 'settings') {
         const data = await Model.findOne({ updatedAt: { $gte: lastBackupDate } });
         backupData[key] = data ? data.toObject() : null;
       } else {
@@ -182,7 +180,7 @@ async function restoreBackup(backupId: string, options: any = {}) {
       if (!backupData[key]) continue;
       
       try {
-        if (key === 'homepage' || key === 'settings') {
+        if (key === 'settings') {
           // Pour les modèles singleton
           if (backupData[key]) {
             const existing = await Model.findOne();
@@ -251,10 +249,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await dbConnect();
     
-    const session = await getServerSession(req, res, authOptions);
-    if (!session?.user?.email) {
-      return res.status(401).json({ message: 'Non authentifié' });
-    }
+    const guard = await requireAdmin(req, res);
+    if (!guard) return;
+    const session = { user: guard.user as { email: string } };
 
     if (req.method === 'GET') {
       // Récupérer la liste des sauvegardes

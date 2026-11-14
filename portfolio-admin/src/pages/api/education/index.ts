@@ -1,16 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
 import connectDB from '@/lib/db';
 import Education from '@/models/Education';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const session = await getServerSession(req, res, authOptions);
-
-    if (!session) {
-      return res.status(401).json({ error: 'Non autorisé' });
-    }
+    const guard = await requireAdmin(req, res);
+    if (!guard) return;
 
     await connectDB();
 
@@ -27,7 +23,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       case 'POST':
         try {
-          console.log('Données reçues:', req.body);
           const education = await Education.create(req.body);
           res.status(201).json(education);
         } catch (error) {

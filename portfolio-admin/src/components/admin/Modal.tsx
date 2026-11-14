@@ -44,6 +44,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
                   {title}
                   <button
                     type="button"
+                    aria-label="Fermer"
                     className="p-2 rounded-lg bg-white/5 text-zinc-500 hover:text-white hover:bg-white/10 transition-all duration-300"
                     onClick={onClose}
                   >

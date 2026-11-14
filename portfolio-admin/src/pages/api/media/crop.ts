@@ -1,12 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
 import mongoose from 'mongoose';
 import path from 'path';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
 import connectDB from '@/lib/db';
 import Media from '@/models/Media';
+import { resolveSafePath } from '@/utils/pathSafety';
+import { sanitizeFilename } from '@/utils/uploadSafety';
 
 let sharp: any;
 try {
@@ -32,10 +33,8 @@ interface CropOptions {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const session = await getServerSession(req, res, authOptions);
-    if (!session) {
-      return res.status(401).json({ error: 'Non autorisé' });
-    }
+    const guard = await requireAdmin(req, res);
+    if (!guard) return;
 
     if (req.method !== 'POST') {
       res.setHeader('Allow', ['POST']);
@@ -60,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       cropOptions: CropOptions;
       saveAsNew?: boolean;
       newFilename?: string;
-    } = req.body;
+    } = req.body || {};
 
     if (!mongoose.Types.ObjectId.isValid(mediaId)) {
       return res.status(400).json({ error: 'ID de média invalide' });
@@ -75,48 +74,83 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Le recadrage n\'est disponible que pour les images' });
     }
 
-    // Validation des options de recadrage
+    // Validation stricte des options de recadrage
+    if (!cropOptions || typeof cropOptions !== 'object') {
+      return res.status(400).json({ error: 'Options de recadrage manquantes' });
+    }
     const { x, y, width, height, outputWidth, outputHeight, quality = 85, format = 'jpeg' } = cropOptions;
-    
-    if (x < 0 || y < 0 || width <= 0 || height <= 0) {
+
+    if (![x, y, width, height].every((n) => typeof n === 'number' && Number.isFinite(n))) {
+      return res.status(400).json({ error: 'Paramètres de recadrage invalides' });
+    }
+    if (x < 0 || y < 0 || width <= 0 || height <= 0 || width > 20000 || height > 20000) {
       return res.status(400).json({ error: 'Paramètres de recadrage invalides' });
     }
 
-    const originalPath = path.join(process.cwd(), 'public', originalMedia.url);
-    
-    if (!existsSync(originalPath)) {
+    // Liste blanche des formats (une extension arbitraire permettait
+    // d'écrire n'importe quel type de fichier dans public/uploads/media).
+    const safeFormat: 'jpeg' | 'png' | 'webp' = (['jpeg', 'png', 'webp'] as const).includes(
+      format as never
+    )
+      ? (format as 'jpeg' | 'png' | 'webp')
+      : 'jpeg';
+    const safeQuality =
+      typeof quality === 'number' && Number.isFinite(quality)
+        ? Math.min(100, Math.max(1, Math.round(quality)))
+        : 85;
+    const safeOutputWidth =
+      typeof outputWidth === 'number' && Number.isFinite(outputWidth) && outputWidth > 0
+        ? Math.min(8000, Math.round(outputWidth))
+        : undefined;
+    const safeOutputHeight =
+      typeof outputHeight === 'number' && Number.isFinite(outputHeight) && outputHeight > 0
+        ? Math.min(8000, Math.round(outputHeight))
+        : undefined;
+
+    const originalPath = resolveSafePath(
+      path.join(process.cwd(), 'public'),
+      String(originalMedia.url || '').replace(/^\/+/, '')
+    );
+
+    if (!originalPath || !existsSync(originalPath)) {
       return res.status(404).json({ error: 'Fichier original non trouvé' });
     }
 
     try {
-      // Créer le nom du fichier de sortie
-      const fileId = new mongoose.Types.ObjectId();
-      const outputFilename = newFilename || 
-        `${path.parse(originalMedia.filename).name}_cropped_${Date.now()}.${format}`;
-      const outputPath = path.join(uploadDir, outputFilename);
+      // Nom de sortie sanitisé : le chemin doit rester dans uploadDir
+      // (avant : `newFilename` acceptait « ../../x » → écriture arbitraire).
+      const baseName = sanitizeFilename(
+        String(newFilename || `${path.parse(originalMedia.filename).name}_cropped_${Date.now()}`)
+          .replace(/\.[a-z0-9]{1,10}$/i, '')
+      );
+      const outputFilename = `${baseName}.${safeFormat}`;
+      const outputPath = resolveSafePath(uploadDir, outputFilename);
+      if (!outputPath) {
+        return res.status(400).json({ error: 'Nom de fichier invalide' });
+      }
       const webPath = `/uploads/media/${outputFilename}`;
 
       // Effectuer le recadrage
       let image = sharp(originalPath)
         .extract({ left: Math.round(x), top: Math.round(y), width: Math.round(width), height: Math.round(height) });
 
-      // Redimensionner si spécifié
-      if (outputWidth && outputHeight) {
-        image = image.resize(outputWidth, outputHeight, {
+      // Redimensionner si spécifié (dimensions bornées)
+      if (safeOutputWidth && safeOutputHeight) {
+        image = image.resize(safeOutputWidth, safeOutputHeight, {
           fit: 'fill',
         });
       }
 
-      // Appliquer le format et la qualité
-      switch (format) {
+      // Appliquer le format (liste blanche) et la qualité bornée
+      switch (safeFormat) {
         case 'jpeg':
-          image = image.jpeg({ quality });
+          image = image.jpeg({ quality: safeQuality });
           break;
         case 'png':
-          image = image.png({ quality });
+          image = image.png({ quality: safeQuality });
           break;
         case 'webp':
-          image = image.webp({ quality });
+          image = image.webp({ quality: safeQuality });
           break;
       }
 
@@ -135,7 +169,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           description: originalMedia.description,
           altText: originalMedia.altText,
           type: 'image',
-          mimeType: `image/${format}`,
+          mimeType: `image/${safeFormat}`,
           fileSize: stats.size,
           dimensions: {
             width: metadata.width,
@@ -159,7 +193,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       } else {
         // Remplacer le fichier original (sauvegarder l'ancien d'abord)
-        const backupPath = path.join(uploadDir, `backup_${originalMedia.filename}`);
+        const backupName = `backup_${sanitizeFilename(String(originalMedia.filename || 'file'))}`;
+        const backupPath = resolveSafePath(uploadDir, backupName);
+        if (!backupPath) {
+          return res.status(400).json({ error: 'Nom de fichier invalide' });
+        }
         await fs.copyFile(originalPath, backupPath);
         
         // Remplacer le fichier original
@@ -175,7 +213,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               width: metadata.width,
               height: metadata.height,
             },
-            mimeType: `image/${format}`,
+            mimeType: `image/${safeFormat}`,
             isOptimized: true,
             optimizedAt: new Date(),
           },
@@ -192,8 +230,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } catch (error) {
       console.error('Erreur lors du recadrage:', error);
       return res.status(500).json({ 
-        error: 'Erreur lors du recadrage de l\'image',
-        details: error instanceof Error ? error.message : 'Erreur inconnue'
+        // Pas de message d'erreur interne en réponse.
+        error: 'Erreur lors du recadrage de l\'image'
       });
     }
   } catch (error) {

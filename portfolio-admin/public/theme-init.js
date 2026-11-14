@@ -1,0 +1,1 @@
+(function(){try{var k='portfolio-admin-theme';var s=localStorage.getItem(k);var t=(s==='dark'||s==='light')?s:'light';var e=document.documentElement;e.classList.remove('light','dark');e.classList.add(t);e.setAttribute('data-theme',t);}catch(e){}})();

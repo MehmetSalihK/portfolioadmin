@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth';
+import { requireAdmin } from '@/lib/auth-guard';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import dbConnect from '../../../lib/dbConnect';
 import Project from '../../../models/Project';
@@ -8,17 +9,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const session = await getServerSession(req, res, authOptions);
-
-  if (!session && req.method !== 'GET') {
-    return res.status(401).json({ error: 'Non autorisé' });
-  }
-
-  // Strict Admin Role Check for potentially destructive actions
+  // Écritures (POST) → rôle admin exigé (session seule insuffisante).
   if (req.method !== 'GET') {
-    if ((session?.user as any)?.role !== 'admin') {
-      return res.status(403).json({ error: 'Interdit : Droits administrateur requis' });
-    }
+    const guard = await requireAdmin(req, res);
+    if (!guard) return;
   }
 
   await dbConnect();
@@ -37,6 +31,14 @@ export default async function handler(
           // Escape special characters for regex to prevent ReDoS
           const escapedTags = String(tags).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           query.tags = { $regex: new RegExp(escapedTags, 'i') };
+        }
+
+        // Phase 5 — filtre serveur : l'API publique ne doit jamais exposer
+        // les projets archivés. Les sessions admin (dashboard) gardent un accès
+        // complet via le paramètre `?archived=true`.
+        const session = await getServerSession(req, res, authOptions);
+        if (req.query.archived !== 'true' && !session?.user) {
+          query.archived = { $ne: true };
         }
 
         // Sort by 'order' ascending, then by 'createdAt' descending
@@ -61,6 +63,19 @@ export default async function handler(
 
       case 'POST':
         try {
+          // Anti mass-assignment : pas de clé d'opérateur Mongo ni de
+          // prototype dans le corps (le spread partait tel quel en base).
+          if (
+            !req.body ||
+            typeof req.body !== 'object' ||
+            Array.isArray(req.body) ||
+            Object.keys(req.body).some(
+              (k) => k.startsWith('$') || ['__proto__', 'constructor', 'prototype'].includes(k)
+            )
+          ) {
+            return res.status(400).json({ error: 'Corps de requête invalide' });
+          }
+
           // Obtenir le nombre total de projets pour définir l'ordre
           const projectCount = await Project.countDocuments();
           

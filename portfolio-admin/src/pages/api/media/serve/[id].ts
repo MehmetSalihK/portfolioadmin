@@ -1,4 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../../auth/[...nextauth]';
 import mongoose from 'mongoose';
 import connectDB from '@/lib/db';
 import Media from '@/models/Media';
@@ -24,10 +26,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: 'Média non trouvé' });
     }
 
-    // Vérifier si le média est public ou si l'utilisateur est authentifié
+    // Média non public : seul l'administrateur y accède. 404 (et non 403)
+    // pour ne pas révéler l'existence du média à un tiers.
     if (!media.isPublic) {
-      // Ici, vous pourriez ajouter une vérification d'authentification
-      // Pour l'instant, on permet l'accès à tous les médias
+      let isAdmin = false;
+      try {
+        const session = await getServerSession(req, res, authOptions);
+        isAdmin = (session?.user as { role?: string } | undefined)?.role === 'admin';
+      } catch {
+        isAdmin = false;
+      }
+      if (!isAdmin) {
+        return res.status(404).json({ error: 'Média non trouvé' });
+      }
     }
 
     // Incrémenter le compteur de vues

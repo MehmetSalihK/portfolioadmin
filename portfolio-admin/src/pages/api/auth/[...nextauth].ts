@@ -3,6 +3,17 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import connectDB from '@/lib/db';
 import Admin from '@/models/Admin';
 import { loginSchema } from '@/utils/schemas';
+import { readCookieHeader, verifyTwoFaProof, TWOFA_COOKIE_NAME } from '@/lib/two-fa';
+
+/**
+ * Jeton de passage utilisé par la page de vérification 2FA.
+ * Ce n'est PAS un secret : il ne sert que de signal « l'étape 1 a été
+ * validée ». L'authentification réelle est la preuve 2FA signée par le
+ * serveur (cookie HttpOnly) vérifiée ci-dessous. Le mot de passe réel n'est
+ * JAMAIS accepté ici, sinon la 2FA serait contournable en appelant
+ * directement l'endpoint credentials.
+ */
+const TWOFA_PASSAGE_TOKEN = 'verified-2fa';
 
 if (!process.env.NEXTAUTH_SECRET) {
   throw new Error('NEXTAUTH_SECRET is not defined');
@@ -20,7 +31,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         try {
           if (!credentials?.email || !credentials?.password) {
             console.error('Missing credentials');
@@ -39,16 +50,27 @@ export const authOptions: NextAuthOptions = {
           }
 
           await connectDB();
-          console.log('Connected to database');
-          console.log('Attempting login for:', credentials.email);
-          
-          // Vérifier si c'est une authentification 2FA déjà vérifiée
-          if (credentials.password === 'verified-2fa') {
-            // ... (rest of 2FA logic)
-            console.log('2FA already verified, creating session...');
-            
-            // Vérifier si c'est l'admin par défaut
-            if (credentials.email === process.env.ADMIN_EMAIL) {
+
+          // — Sécurité : TOUTE session exige la preuve 2FA serveur —
+          // Le mot de passe réel n'est jamais accepté ici : il est vérifié
+          // par /api/auth/send-2fa (étape 1). Sans preuve signée, pas de session.
+          if (credentials.password !== TWOFA_PASSAGE_TOKEN) {
+            throw new Error('Vérification en deux étapes requise');
+          }
+
+          const normalizedEmail = String(credentials.email).toLowerCase();
+          const proof = readCookieHeader(req?.headers?.cookie, TWOFA_COOKIE_NAME);
+          if (!verifyTwoFaProof(proof, normalizedEmail)) {
+            console.warn('2FA: preuve absente ou invalide');
+            throw new Error('Vérification en deux étapes requise ou expirée');
+          }
+
+          const admin = await Admin.findOne({ email: credentials.email });
+
+          if (!admin) {
+            // Compte par défaut (env) : autorisé UNIQUEMENT avec preuve 2FA
+            // valide — plus aucun contournement possible.
+            if (normalizedEmail === String(process.env.ADMIN_EMAIL || '').toLowerCase()) {
               return {
                 id: 'default-admin',
                 email: process.env.ADMIN_EMAIL,
@@ -56,56 +78,10 @@ export const authOptions: NextAuthOptions = {
                 role: 'admin',
               };
             }
-            
-            // Chercher l'admin dans la base de données
-            const admin = await Admin.findOne({ email: credentials.email });
-            if (!admin) {
-              throw new Error('Utilisateur non trouvé');
-            }
-            
-            // Mettre à jour la dernière connexion
-            await Admin.findByIdAndUpdate(admin._id, {
-              lastLogin: new Date(),
-            });
-            
-            return {
-              id: admin._id.toString(),
-              email: admin.email,
-              name: admin.name,
-              role: admin.role,
-            };
-          }
-          
-          // Authentification normale (ne devrait plus être utilisée avec 2FA)
-          // Vérifier si c'est l'admin par défaut
-          if (credentials.email === process.env.ADMIN_EMAIL && 
-              credentials.password === process.env.ADMIN_PASSWORD) {
-            console.log('Using default admin credentials');
-            return {
-              id: 'default-admin',
-              email: process.env.ADMIN_EMAIL,
-              name: 'Admin',
-              role: 'admin',
-            };
+            console.error('Admin not found');
+            throw new Error('Utilisateur non trouvé');
           }
 
-          const admin = await Admin.findOne({ email: credentials.email }).select('+password');
-          
-          if (!admin) {
-            console.error('Admin not found:', credentials.email);
-            throw new Error('Email ou mot de passe invalide');
-          }
-
-          const isPasswordValid = await admin.comparePassword(credentials.password);
-          
-          if (!isPasswordValid) {
-            console.error('Invalid password for:', credentials.email);
-            throw new Error('Email ou mot de passe invalide');
-          }
-
-          console.log('Login successful for:', credentials.email);
-
-          // Update last login
           await Admin.findByIdAndUpdate(admin._id, {
             lastLogin: new Date(),
           });

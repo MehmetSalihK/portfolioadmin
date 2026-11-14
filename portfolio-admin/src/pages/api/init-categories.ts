@@ -2,11 +2,16 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '@/lib/db';
 import Category from '@/models/Category';
 import { defaultCategories } from '@/lib/defaultCategories';
+import { requireAdmin } from '@/lib/auth-guard';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Méthode non autorisée' });
   }
+
+  // deleteMany({}) = destruction de toutes les catégories → réservé admin.
+  const guard = await requireAdmin(req, res);
+  if (!guard) return;
 
   try {
     await connectDB();

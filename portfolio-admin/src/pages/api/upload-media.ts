@@ -1,10 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from './auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
 import formidable from 'formidable';
 import path from 'path';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
+import { isPathInside, resolveSafePath } from '@/utils/pathSafety';
+import { extensionOf, readFileHead, sniffFileKind } from '@/utils/uploadSafety';
 
 export const config = {
   api: {
@@ -17,15 +18,8 @@ const isVercel = process.env.VERCEL === '1';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const session = await getServerSession(req, res, authOptions);
-    if (!session) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    // Strict Admin Role Check
-    if ((session.user as any).role !== 'admin') {
-      return res.status(403).json({ error: 'Forbidden: Admin access required' });
-    }
+    const guard = await requireAdmin(req, res);
+    if (!guard) return;
 
     if (req.method === 'POST') {
       // Ensure upload directory exists locally
@@ -51,6 +45,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const file = files.file?.[0]; // React-dropzone often sends 'file'
         if (!file) {
           return res.status(400).json({ error: 'No file found' });
+        }
+
+        // MIME déclaré par le client = non fiable. On impose une extension
+        // image de la liste blanche et on vérifie la signature réelle.
+        // Le SVG est refusé : il contiendrait du JavaScript servi depuis
+        // l'origine (XSS stocké).
+        const originalExt = extensionOf(file.originalFilename || '');
+        const storedExt = extensionOf(file.filepath || '');
+        const allowedImageExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif'];
+        if (!allowedImageExt.includes(originalExt || storedExt)) {
+          return res.status(400).json({ error: 'Extension non autorisée (SVG refusé)' });
+        }
+
+        let head: Buffer;
+        try {
+          head = await readFileHead(file.filepath, 16);
+        } catch {
+          return res.status(400).json({ error: 'Fichier illisible' });
+        }
+        if (sniffFileKind(head) !== 'image') {
+          return res.status(400).json({ error: 'Le contenu du fichier n’est pas une image valide' });
         }
 
         const fileName = path.basename(file.filepath);
@@ -80,14 +95,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     } else if (req.method === 'DELETE') {
         const { filePath } = req.body;
-        if (!filePath) return res.status(400).json({ error: 'No file path provided' });
-        
-        // Security check: ensure we only delete files in our uploads dir
-        if (!filePath.startsWith('/uploads/projects/')) {
-             return res.status(403).json({ error: 'Invalid file path' });
+        if (typeof filePath !== 'string' || !filePath) {
+          return res.status(400).json({ error: 'No file path provided' });
         }
 
-        const fullPath = path.join(process.cwd(), 'public', filePath);
+        // Contrainte stricte : résolution du chemin puis containment dans
+        // public/uploads/projects. Le simple startsWith laissait passer
+        // « /uploads/projects/../../secrets » (path traversal).
+        const publicDir = path.join(process.cwd(), 'public');
+        const relative = filePath.replace(/^\/+/, '');
+        const fullPath = resolveSafePath(publicDir, relative);
+        if (!fullPath || !isPathInside(fullPath, uploadDir)) {
+          return res.status(403).json({ error: 'Invalid file path' });
+        }
+
         if (existsSync(fullPath)) {
             await fs.unlink(fullPath);
         }

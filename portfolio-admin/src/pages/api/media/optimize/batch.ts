@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
 import dbConnect from '../../../../lib/db';
 import Media from '../../../../models/Media';
 import sharp from 'sharp';
@@ -259,11 +258,9 @@ export default async function handler(
   }
   
   try {
-    // Vérifier l'authentification
-    const session = await getServerSession(req, res, authOptions);
-    if (!session) {
-      return res.status(401).json({ error: 'Non authentifié' });
-    }
+    // Vérification du rôle admin (session + rôle en une seule garde)
+    const guard = await requireAdmin(req, res);
+    if (!guard) return;
     
     await dbConnect();
     

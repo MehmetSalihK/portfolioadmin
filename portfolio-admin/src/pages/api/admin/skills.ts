@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '@/lib/db';
 import Skill from '@/models/Skill';
 import SkillCategory from '@/models/SkillCategory';
+import { requireAdmin } from '@/lib/auth-guard';
 
 const detectCategory = (skillName: string): string => {
   const name = skillName.toLowerCase();
@@ -39,12 +40,26 @@ const detectCategory = (skillName: string): string => {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
+    // Écriture en base → réservée admin (avant : aucune vérification).
+    const guard = await requireAdmin(req, res);
+    if (!guard) return;
+
     try {
       await connectDB();
 
       const { name, level } = req.body;
+
+      // Types stricts + longueurs bornées (anti injection / pollution).
+      if (typeof name !== 'string' || typeof level !== 'string') {
+        return res.status(400).json({ error: 'Nom et niveau requis' });
+      }
+      const trimmedName = name.trim();
+      const trimmedLevel = level.trim();
+      if (!trimmedName || trimmedName.length > 100 || !trimmedLevel || trimmedLevel.length > 50) {
+        return res.status(400).json({ error: 'Valeurs invalides' });
+      }
       
-      const categoryName = detectCategory(name);
+      const categoryName = detectCategory(trimmedName);
       
       let category = await SkillCategory.findOne({ name: categoryName });
       
@@ -57,8 +72,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       const skill = await Skill.create({
-        name,
-        level,
+        name: trimmedName,
+        level: trimmedLevel,
         categoryId: category._id,
         isHidden: false
       });
@@ -69,5 +84,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Internal Server Error' });
     }
   }
-  
+
+  res.setHeader('Allow', ['POST']);
+  return res.status(405).json({ error: 'Méthode non autorisée' });
 } 

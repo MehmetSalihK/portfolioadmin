@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
 import connectDB from '@/lib/db';
 import Maintenance from '@/models/Maintenance';
 
@@ -46,11 +45,9 @@ export default async function handler(
   }
 
   // Pour les autres méthodes, vérifier l'authentification
-  const session = await getServerSession(req, res, authOptions);
-
-  if (!session) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
+  const guard = await requireAdmin(req, res);
+  if (!guard) return;
+  const session = { user: guard.user };
 
   if (req.method === 'PUT') {
     // Mettre à jour le mode maintenance

@@ -1,12 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
 import mongoose from 'mongoose';
 import path from 'path';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
 import connectDB from '@/lib/db';
 import Media from '@/models/Media';
+import { resolveSafePath } from '@/utils/pathSafety';
 
 let sharp: any;
 try {
@@ -19,12 +19,18 @@ try {
 const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'media');
 const isVercel = process.env.VERCEL === '1';
 
+/** Résout une URL de fichier de la base vers un chemin réel sûr (anti
+ *  path traversal : ces URLs sont concaténées à public/ pour unlink). */
+function safePublicPath(url: unknown): string | null {
+  if (typeof url !== 'string' || !url) return null;
+  const publicDir = path.join(process.cwd(), 'public');
+  return resolveSafePath(publicDir, url.replace(/^\/+/, ''));
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const session = await getServerSession(req, res, authOptions);
-    if (!session) {
-      return res.status(401).json({ error: 'Non autorisé' });
-    }
+    const guard = await requireAdmin(req, res);
+    if (!guard) return;
 
     await connectDB();
 
@@ -63,13 +69,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       } = req.body;
 
       const updateData: any = {};
-      
-      if (title !== undefined) updateData.title = title;
-      if (description !== undefined) updateData.description = description;
-      if (altText !== undefined) updateData.altText = altText;
-      if (tags !== undefined) updateData.tags = tags;
-      if (category !== undefined) updateData.category = category;
-      if (isPublic !== undefined) updateData.isPublic = isPublic;
+
+      // Validation stricte des champs (les objets injectés type
+      // { $gt: ... } sont rejetés au lieu d'atteindre MongoDB).
+      const stringFields: Array<[string, unknown, number]> = [
+        ['title', title, 200],
+        ['description', description, 5000],
+        ['altText', altText, 300],
+        ['category', category, 100],
+      ];
+      for (const [key, value, max] of stringFields) {
+        if (value === undefined) continue;
+        if (typeof value !== 'string' || value.length > max) {
+          return res.status(400).json({ error: `Valeur invalide : ${key}` });
+        }
+        updateData[key] = value;
+      }
+      if (tags !== undefined) {
+        if (
+          !Array.isArray(tags) ||
+          tags.length > 30 ||
+          tags.some((t: unknown) => typeof t !== 'string' || t.length > 50)
+        ) {
+          return res.status(400).json({ error: 'Valeur invalide : tags' });
+        }
+        updateData.tags = tags;
+      }
+      if (isPublic !== undefined) {
+        if (typeof isPublic !== 'boolean') {
+          return res.status(400).json({ error: 'Valeur invalide : isPublic' });
+        }
+        updateData.isPublic = isPublic;
+      }
 
       const media = await Media.findByIdAndUpdate(
         id,
@@ -99,24 +130,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Supprimer les fichiers physiques
       if (!isVercel) {
         try {
-          // Supprimer le fichier principal
-          const mainFilePath = path.join(process.cwd(), 'public', media.url);
-          if (existsSync(mainFilePath)) {
+          // Supprimer le fichier principal (chemin contraint à public/)
+          const mainFilePath = safePublicPath(media.url);
+          if (mainFilePath && existsSync(mainFilePath)) {
             await fs.unlink(mainFilePath);
           }
 
           // Supprimer les variantes
           for (const variant of media.variants) {
-            const variantPath = path.join(process.cwd(), 'public', variant.url);
-            if (existsSync(variantPath)) {
+            const variantPath = safePublicPath(variant.url);
+            if (variantPath && existsSync(variantPath)) {
               await fs.unlink(variantPath);
             }
           }
 
           // Supprimer la miniature si elle existe
           if (media.thumbnailUrl) {
-            const thumbnailPath = path.join(process.cwd(), 'public', media.thumbnailUrl);
-            if (existsSync(thumbnailPath)) {
+            const thumbnailPath = safePublicPath(media.thumbnailUrl);
+            if (thumbnailPath && existsSync(thumbnailPath)) {
               await fs.unlink(thumbnailPath);
             }
           }
@@ -172,15 +203,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
 
           try {
-            const originalPath = path.join(process.cwd(), 'public', media.url);
-            if (!existsSync(originalPath)) {
+            const originalPath = safePublicPath(media.url);
+            if (!originalPath || !existsSync(originalPath)) {
               return res.status(404).json({ error: 'Fichier original non trouvé' });
             }
 
             // Supprimer les anciennes variantes
             for (const variant of media.variants) {
-              const variantPath = path.join(process.cwd(), 'public', variant.url);
-              if (existsSync(variantPath)) {
+              const variantPath = safePublicPath(variant.url);
+              if (variantPath && existsSync(variantPath)) {
                 await fs.unlink(variantPath);
               }
             }

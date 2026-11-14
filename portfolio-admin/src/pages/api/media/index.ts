@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
 import formidable from 'formidable';
 import mongoose from 'mongoose';
 import path from 'path';
@@ -8,6 +7,25 @@ import fs from 'fs/promises';
 import { existsSync } from 'fs';
 import connectDB from '@/lib/db';
 import Media from '@/models/Media';
+import { resolveSafePath } from '@/utils/pathSafety';
+import {
+  expectedKindForExtension,
+  extensionOf,
+  familyOf,
+  readFileHead,
+  sniffFileKind,
+} from '@/utils/uploadSafety';
+
+/** Échappe les méta-caractères d'une expression régulière (anti ReDoS). */
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/** Résout une URL de fichier de la base vers un chemin réel sûr. */
+function safePublicPath(url: unknown): string | null {
+  if (typeof url !== 'string' || !url) return null;
+  return resolveSafePath(path.join(process.cwd(), 'public'), url.replace(/^\/+/, ''));
+}
 
 let sharp: any;
 try {
@@ -396,10 +414,10 @@ async function extractImageMetadata(filePath: string): Promise<any> {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const session = await getServerSession(req, res, authOptions);
-    if (!session) {
-      return res.status(401).json({ error: 'Non autorisé' });
-    }
+    const guard = await requireAdmin(req, res);
+    if (!guard) return;
+    // Conservé pour `uploadedBy` plus bas.
+    const session = { user: guard.user };
 
     await connectDB();
 
@@ -418,10 +436,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       
       if (search) {
+        // Expression échappée + longueur bornée : une regex non échappée
+        // saisie par l'utilisateur permettait une attaque ReDoS (boucle
+        // catastrophique côté serveur).
+        const term = String(search).slice(0, 100);
+        const safe = escapeRegExp(term);
         query.$or = [
-          { title: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
-          { tags: { $in: [new RegExp(search as string, 'i')] } },
+          { title: { $regex: safe, $options: 'i' } },
+          { description: { $regex: safe, $options: 'i' } },
+          { tags: { $in: [new RegExp(safe, 'i')] } },
         ];
       }
 
@@ -473,6 +496,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const mediaType = getMediaType(file.mimetype || '');
         if (mediaType === 'other') {
           return res.status(400).json({ error: 'Type de fichier non autorisé' });
+        }
+
+        // Le MIME déclaré par le client est non fiable : on vérifie
+        // l'extension (liste blanche) puis la signature réelle du fichier.
+        // Sans cela, un .html/.svg pouvait être stocké et servi depuis
+        // l'origine → XSS stocké.
+        const ext = extensionOf(file.originalFilename || file.filepath || '');
+        const expectedKind = expectedKindForExtension(ext);
+        if (!expectedKind) {
+          return res.status(400).json({ error: 'Extension non autorisée' });
+        }
+        if (familyOf(expectedKind) !== mediaType) {
+          return res.status(400).json({ error: 'L’extension ne correspond pas au type de fichier déclaré' });
+        }
+
+        let head: Buffer;
+        try {
+          head = await readFileHead(file.filepath, 64);
+        } catch {
+          return res.status(400).json({ error: 'Fichier illisible' });
+        }
+        if (sniffFileKind(head) !== expectedKind) {
+          return res.status(400).json({ error: 'Le contenu du fichier ne correspond pas à son extension' });
         }
 
         const fileId = new mongoose.Types.ObjectId();
@@ -603,13 +649,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(404).json({ error: 'Média non trouvé' });
       }
 
-      // Mettre à jour les champs
-      if (title !== undefined) media.title = title;
-      if (description !== undefined) media.description = description;
-      if (altText !== undefined) media.altText = altText;
-      if (tags !== undefined) media.tags = tags;
-      if (category !== undefined) media.category = category;
-      if (isPublic !== undefined) media.isPublic = isPublic;
+      // Mettre à jour les champs (types stricts : rejette les objets
+      // injectés et borne les tailles)
+      const validString = (value: unknown, max: number) =>
+        typeof value === 'string' && value.length <= max;
+      if (title !== undefined) {
+        if (!validString(title, 200)) return res.status(400).json({ error: 'Titre invalide' });
+        media.title = title;
+      }
+      if (description !== undefined) {
+        if (!validString(description, 5000)) return res.status(400).json({ error: 'Description invalide' });
+        media.description = description;
+      }
+      if (altText !== undefined) {
+        if (!validString(altText, 300)) return res.status(400).json({ error: 'Texte alternatif invalide' });
+        media.altText = altText;
+      }
+      if (tags !== undefined) {
+        if (
+          !Array.isArray(tags) ||
+          tags.length > 30 ||
+          tags.some((t: unknown) => typeof t !== 'string' || t.length > 50)
+        ) {
+          return res.status(400).json({ error: 'Tags invalides' });
+        }
+        media.tags = tags;
+      }
+      if (category !== undefined) {
+        if (!validString(category, 100)) return res.status(400).json({ error: 'Catégorie invalide' });
+        media.category = category;
+      }
+      if (isPublic !== undefined) {
+        if (typeof isPublic !== 'boolean') return res.status(400).json({ error: 'Valeur invalide' });
+        media.isPublic = isPublic;
+      }
 
       await media.save();
 
@@ -633,18 +706,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(404).json({ error: 'Média non trouvé' });
       }
 
-      // Supprimer les fichiers physiques
+      // Supprimer les fichiers physiques (chemins contraints à public/)
       if (!isVercel) {
         try {
-          const mainFilePath = path.join(process.cwd(), 'public', media.url);
-          if (existsSync(mainFilePath)) {
+          const mainFilePath = safePublicPath(media.url);
+          if (mainFilePath && existsSync(mainFilePath)) {
             await fs.unlink(mainFilePath);
           }
 
           // Supprimer les variantes
           for (const variant of media.variants) {
-            const variantPath = path.join(process.cwd(), 'public', variant.url);
-            if (existsSync(variantPath)) {
+            const variantPath = safePublicPath(variant.url);
+            if (variantPath && existsSync(variantPath)) {
               await fs.unlink(variantPath);
             }
           }

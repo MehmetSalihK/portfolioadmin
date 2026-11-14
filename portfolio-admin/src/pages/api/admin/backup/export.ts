@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
 import connectDB from '@/lib/db';
 
 // Models
@@ -18,11 +17,9 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
-    const session = await getServerSession(req, res, authOptions);
-
-    if (!session) {
-        return res.status(401).json({ error: 'Non authentifié' });
-    }
+    const guard = await requireAdmin(req, res);
+    if (!guard) return;
+    const session = { user: guard.user as { email: string } };
 
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Méthode non autorisée' });

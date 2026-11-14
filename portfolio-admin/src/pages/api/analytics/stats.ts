@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
 import connectDB from '@/lib/db';
 import Analytics from '@/models/Analytics';
 
@@ -8,11 +7,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const session = await getServerSession(req, res, authOptions);
-
-  if (!session) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
+  const guard = await requireAdmin(req, res);
+  if (!guard) return;
 
   if (req.method !== 'GET') {
     res.setHeader('Allow', ['GET']);

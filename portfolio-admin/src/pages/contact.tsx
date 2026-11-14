@@ -1,16 +1,19 @@
-import { useState, useEffect } from 'react';
-import { FiSend, FiMail, FiLinkedin, FiGithub, FiMapPin } from 'react-icons/fi';
+import { useState } from 'react';
+import { FiSend, FiMail, FiLinkedin, FiGithub, FiMapPin, FiPhone, FiArrowUpRight } from 'react-icons/fi';
 import { FaWhatsapp, FaTelegram } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import Layout from '@/components/layout/Layout';
+import JSONLD, { schemas } from '@/components/layout/JSONLD';
 import Head from 'next/head';
 import { GetStaticProps } from 'next';
 import connectDB from '@/lib/db';
 import Setting from '@/models/Setting';
-import { motion } from 'framer-motion';
 import { useTranslation } from 'next-i18next/pages';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
 import { useRouter } from 'next/router';
+import SectionHead from '@/components/ui/SectionHead';
+import { SectionMark } from '@/components/identity/Marks';
+import { Reveal, RevealLines } from '@/components/motion/Reveal';
 
 interface ContactPageProps {
   settings: {
@@ -18,12 +21,13 @@ interface ContactPageProps {
     github: string;
     linkedin: string;
     position: string;
+    phone: string;
     whatsapp?: string;
     telegram?: string;
   };
 }
 
-export default function ContactPage({ settings = { email: '', github: '', linkedin: '', position: '' } }: ContactPageProps) {
+export default function ContactPage({ settings = { email: '', github: '', linkedin: '', position: '', phone: '' } }: ContactPageProps) {
   const { locale } = useRouter();
   const { t } = useTranslation('common');
   const [formData, setFormData] = useState({
@@ -31,30 +35,13 @@ export default function ContactPage({ settings = { email: '', github: '', linked
     email: '', subject: '', message: ''
   });
   const [isSending, setIsSending] = useState(false);
-  const [mapUrl, setMapUrl] = useState('');
-  const [cityName, setCityName] = useState('');
-
-  useEffect(() => {
-    if (settings.position) {
-      fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(settings.position)}&limit=1`)
-        .then(r => r.json())
-        .then(data => {
-          if (data.features?.length) {
-            const f = data.features[0];
-            const name = f.properties.city || f.properties.label;
-            setCityName(name);
-            setMapUrl(`https://maps.google.com/maps?q=${encodeURIComponent(name)}&t=&z=13&ie=UTF8&iwloc=&output=embed`);
-          }
-        }).catch(() => {});
-    } else {
-      setCityName('Nogent-sur-Oise, France');
-      setMapUrl('https://maps.google.com/maps?q=Nogent-sur-Oise,%20France&t=&z=13&ie=UTF8&iwloc=&output=embed');
-    }
-  }, [settings.position]);
+  /* Retour du formulaire aussi annoncé aux lecteurs d'écran (role=status) */
+  const [formStatus, setFormStatus] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSending(true);
+    setFormStatus('');
     try {
       const response = await fetch('/api/contact', {
         method: 'POST',
@@ -63,19 +50,28 @@ export default function ContactPage({ settings = { email: '', github: '', linked
       });
       if (response.ok) {
         toast.success(t('contact.toast.success'));
+        setFormStatus(t('contact.toast.success'));
         setFormData({ firstName: '', lastName: '', company: '', phone: '', email: '', subject: '', message: '' });
       } else {
         toast.error(t('contact.toast.error'));
+        setFormStatus(t('contact.toast.error'));
       }
     } catch {
       toast.error(t('contact.toast.error_general'));
+      setFormStatus(t('contact.toast.error_general'));
     } finally {
       setIsSending(false);
     }
   };
 
-  const inputCls = 'w-full dark:bg-white/[0.03] bg-zinc-50 dark:text-white text-zinc-900 px-4 py-3 rounded-xl dark:border-white/[0.07] border-zinc-200 border dark:focus:border-indigo-500/40 focus:border-indigo-400 focus:ring-0 outline-none dark:placeholder:text-zinc-600 placeholder:text-zinc-400 text-sm font-medium transition-colors duration-150';
-  const labelCls = 'block text-[11px] font-semibold dark:text-zinc-500 text-zinc-500 mb-2 uppercase tracking-wider';
+  /* Bordereau : champs soulignés, jamais de boîtes arrondies.
+     `focus:outline-none` est retiré : le contour `:focus-visible` global
+     (vermillon, 2px) doit rester visible au clavier — le changement de
+     filet en accent reste le repère visuel au pointeur. */
+  const field =
+    'w-full bg-transparent border-0 border-b border-[rgb(var(--foreground-rgb))]/25 px-0 py-3 text-[1rem] text-[rgb(var(--foreground-rgb))] placeholder:text-[rgb(var(--foreground-rgb))]/60 focus:border-[var(--accent)] transition-colors duration-300 rounded-none';
+  const label =
+    'block font-mono text-[10px] uppercase tracking-[0.18em] text-[rgb(var(--foreground-rgb))]/60 mb-1';
 
   const contactLinks = [
     { label: 'Email', value: settings.email, href: `mailto:${settings.email}`, icon: FiMail, show: !!settings.email },
@@ -83,165 +79,229 @@ export default function ContactPage({ settings = { email: '', github: '', linked
     { label: 'GitHub', value: 'GitHub', href: settings.github, icon: FiGithub, show: !!settings.github },
     { label: 'WhatsApp', value: 'WhatsApp', href: settings.whatsapp, icon: FaWhatsapp, show: !!settings.whatsapp },
     { label: 'Telegram', value: 'Telegram', href: settings.telegram, icon: FaTelegram, show: !!settings.telegram },
+    { label: 'Phone', value: settings.phone, href: `tel:${settings.phone}`, icon: FiPhone, show: !!settings.phone },
   ].filter(l => l.show);
 
   return (
     <Layout>
+      <JSONLD
+        type="ProfessionalService"
+        data={{
+          name: schemas.me.name,
+          url: schemas.me.url,
+          description: schemas.me.description,
+          email: settings.email || undefined,
+          sameAs: schemas.me.sameAs,
+        }}
+      />
       <Head>
-        <title>{t('nav.contact')} — Portfolio</title>
+        <title>{`${t('nav.contact')} — Portfolio`}</title>
         <meta name="description" content={t('contact.hero_description')} />
+        <meta property="og:title" content={`${t('nav.contact')} — Portfolio`} />
+        <meta property="og:description" content={t('contact.hero_description')} />
+        <link rel="icon" href="/favicon.png" />
       </Head>
 
-      <main className="min-h-screen dark:bg-[#0a0a0f] bg-[#fafafc] pt-14">
-        <div className="max-w-[1100px] mx-auto px-6 pt-20 pb-24">
+      {/* ════════════ OUVERTURE ════════════ */}
+      <section className="relative pt-[8.5rem] pb-2">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)]">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-5 mb-9 border-b border-[rgb(var(--foreground-rgb))]/15">
+            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/60">
+              {t('nav.contact')} — {t('page_label.contact')}
+            </span>
+            <span className="flex items-center gap-2.5 font-mono text-[10px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/60">
+              <span className="w-1.5 h-1.5 bg-[var(--accent)]" />
+              {t('hero.status')}
+            </span>
+          </div>
 
-          {/* ── Hero ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.2, 0, 0, 1] }}
-            className="mb-16"
-          >
-            <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-5">
-              {t('contact.subtitle')}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-8">
+            <div className="lg:col-span-8">
+              <h1 className="font-display font-black text-[clamp(2.5rem,7vw,6rem)] leading-[0.9] tracking-[-0.05em] m-0 text-balance">
+                <RevealLines delay={0.1} stagger={0.1}>
+                  <span>
+                    {t('contact.hero_title_part1')}{' '}
+                    <span className="font-accent text-[1.1em] text-[var(--accent-text)] dark:text-[var(--accent)]">
+                      {t('contact.hero_title_part2')}
+                    </span>
+                    <span className="text-[var(--accent-text)] dark:text-[var(--accent)]">.</span>
+                  </span>
+                </RevealLines>
+              </h1>
             </div>
-            <h1 className="text-5xl md:text-6xl font-extrabold dark:text-white text-zinc-900 tracking-tight mb-5 text-balance">
-              {t('contact.hero_title_part1')} <span className="text-indigo-500 italic">{t('contact.hero_title_part2')}</span>.
-            </h1>
-            <p className="dark:text-zinc-500 text-zinc-500 text-lg max-w-[520px] leading-[1.75]">
-              {t('contact.hero_description')}
-            </p>
-          </motion.div>
+            <div className="lg:col-span-4 lg:pb-3">
+              <Reveal delay={0.3}>
+                <p className="lead m-0">{t('contact.hero_description')}</p>
+              </Reveal>
+            </div>
+          </div>
+        </div>
+      </section>
 
-          {/* ── Séparateur ── */}
-          <div className="border-t dark:border-white/[0.05] border-zinc-100 mb-12" />
+      {/* ════════════ 01 — BORDERAU : la lumière s'éteint ════════════ */}
+      <section className="relative mt-[var(--section-gap)] encre-block">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)] pb-[var(--section-gap)] pt-[var(--section-gap)]">
+          <SectionHead
+            index="01"
+            kicker={t('contact.subtitle')}
+            sigil={<SectionMark name="contact" />}
+            title={t('contact.form_title')}
+          />
 
-          {/* ── Grid formulaire + infos ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-14 items-start">
 
-            {/* Formulaire */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.35, ease: [0.2, 0, 0, 1] }}
-              className="lg:col-span-7"
-            >
-              <div className="dark:bg-white/[0.02] bg-white rounded-2xl p-6 md:p-8 border dark:border-white/[0.06] border-zinc-200">
-                <form onSubmit={handleSubmit} className="space-y-5">
-
-                  <div className="grid grid-cols-2 gap-4">
+            {/* — Formulaire — */}
+            <div className="lg:col-span-7">
+              <Reveal>
+                <form onSubmit={handleSubmit} className="border-t border-[rgb(var(--foreground-rgb))]/20 pt-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-7">
                     <div>
-                      <label className={labelCls}>{t('contact.form.firstname')}</label>
-                      <input type="text" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })}
-                        placeholder={t('contact.form.placeholder_firstname')} className={inputCls} required />
+                      <label className={label} htmlFor="c-first">
+                        {t('contact.form.firstname')}
+                        <span aria-hidden="true" className="text-[var(--accent-text)]"> *</span>
+                      </label>
+                      <input
+                        id="c-first" name="firstName" type="text" autoComplete="given-name"
+                        value={formData.firstName}
+                        onChange={e => setFormData({ ...formData, firstName: e.target.value })}
+                        placeholder={t('contact.form.placeholder_firstname')}
+                        className={field} required
+                      />
                     </div>
                     <div>
-                      <label className={labelCls}>{t('contact.form.lastname')}</label>
-                      <input type="text" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })}
-                        placeholder={t('contact.form.placeholder_lastname')} className={inputCls} required />
+                      <label className={label} htmlFor="c-last">
+                        {t('contact.form.lastname')}
+                        <span aria-hidden="true" className="text-[var(--accent-text)]"> *</span>
+                      </label>
+                      <input
+                        id="c-last" name="lastName" type="text" autoComplete="family-name"
+                        value={formData.lastName}
+                        onChange={e => setFormData({ ...formData, lastName: e.target.value })}
+                        placeholder={t('contact.form.placeholder_lastname')}
+                        className={field} required
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className={label} htmlFor="c-email">
+                        {t('contact.form.email')}
+                        <span aria-hidden="true" className="text-[var(--accent-text)]"> *</span>
+                      </label>
+                      <input
+                        id="c-email" name="email" type="email" autoComplete="email"
+                        value={formData.email}
+                        onChange={e => setFormData({ ...formData, email: e.target.value })}
+                        placeholder={t('contact.form.placeholder_email')}
+                        className={field} required
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className={label} htmlFor="c-subject">{t('contact.form.subject')}</label>
+                      <input
+                        id="c-subject" name="subject" type="text"
+                        value={formData.subject}
+                        onChange={e => setFormData({ ...formData, subject: e.target.value })}
+                        placeholder={t('contact.form.placeholder_subject')}
+                        className={field}
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className={label} htmlFor="c-message">
+                        {t('contact.form.message')}
+                        <span aria-hidden="true" className="text-[var(--accent-text)]"> *</span>
+                      </label>
+                      <textarea
+                        id="c-message" name="message" rows={6} value={formData.message}
+                        onChange={e => setFormData({ ...formData, message: e.target.value })}
+                        placeholder={t('contact.form.placeholder_message')}
+                        className={`${field} resize-none leading-relaxed`} required
+                      />
                     </div>
                   </div>
 
-                  <div>
-                    <label className={labelCls}>{t('contact.form.email')}</label>
-                    <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })}
-                      placeholder={t('contact.form.placeholder_email')} className={inputCls} required />
-                  </div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[rgb(var(--foreground-rgb))]/65 mt-7 mb-0">
+                    {t('contact.form.required_note')}
+                  </p>
 
-                  <div>
-                    <label className={labelCls}>{t('contact.form.subject')}</label>
-                    <input type="text" value={formData.subject} onChange={e => setFormData({ ...formData, subject: e.target.value })}
-                      placeholder={t('contact.form.placeholder_subject')} className={inputCls} />
-                  </div>
+                  {/* Retour du formulaire annoncé poliment */}
+                  <p role="status" className="sr-only">{formStatus}</p>
 
-                  <div>
-                    <label className={labelCls}>{t('contact.form.message')}</label>
-                    <textarea value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })}
-                      placeholder={t('contact.form.placeholder_message')} rows={5}
-                      className={`${inputCls} resize-none`} required />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSending}
-                    className="w-full h-11 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors duration-150 shadow-lg shadow-indigo-600/20"
-                  >
-                    {isSending ? (
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        {t('contact.form.send')}
-                        <FiSend className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-                </form>
-              </div>
-            </motion.div>
-
-            {/* Infos */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.18, duration: 0.35, ease: [0.2, 0, 0, 1] }}
-              className="lg:col-span-5 space-y-4"
-            >
-              {/* Liens rapides */}
-              {contactLinks.length > 0 && (
-                <div className="grid grid-cols-2 gap-3">
-                  {contactLinks.map((link) => (
-                    <a
-                      key={link.label}
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-3 p-4 dark:bg-white/[0.02] bg-white rounded-xl border dark:border-white/[0.06] border-zinc-200 hover:dark:border-indigo-500/30 hover:border-indigo-200 transition-all duration-200"
+                  <div className="flex flex-wrap items-center justify-between gap-5 mt-10 pt-7 border-t border-[rgb(var(--foreground-rgb))]/12">
+                    <p className="font-mono text-[11px] leading-relaxed text-[rgb(var(--foreground-rgb))]/60 m-0 max-w-[34ch]">
+                      <span dangerouslySetInnerHTML={{ __html: t('contact.info.sla') }} />
+                    </p>
+                    <button
+                      type="submit"
+                      disabled={isSending}
+                      aria-busy={isSending}
+                      aria-label={t('contact.form.send')}
+                      className="btn btn-primary"
                     >
-                      <div className="w-8 h-8 rounded-lg dark:bg-indigo-500/10 bg-indigo-50 border dark:border-indigo-500/20 border-indigo-100 flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:border-transparent transition-all duration-200">
-                        <link.icon className="w-4 h-4 text-indigo-500 group-hover:text-white transition-colors" />
-                      </div>
-                      <span className="text-[12px] font-semibold dark:text-zinc-400 text-zinc-500">{link.label}</span>
-                    </a>
-                  ))}
-                </div>
-              )}
+                      {isSending ? (
+                        <span className="inline-block w-3.5 h-3.5 border-2 border-[#14130f]/40 border-t-[#14130f] animate-spin" />
+                      ) : (
+                        <>
+                          {t('contact.form.send')}
+                          <FiSend className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </Reveal>
+            </div>
 
-              {/* Localisation + SLA */}
-              <div className="dark:bg-white/[0.02] bg-white rounded-xl p-5 border dark:border-white/[0.06] border-zinc-200">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-lg dark:bg-emerald-500/10 bg-emerald-50 border dark:border-emerald-500/20 border-emerald-100 flex items-center justify-center shrink-0">
-                    <FiMapPin className="w-4 h-4 text-emerald-500" />
+            {/* — Index des canaux — */}
+            <aside className="lg:col-span-4 lg:col-start-9">
+              <Reveal delay={0.1}>
+                <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/60 mb-4">
+                  {t('contact.subtitle_small')}
+                </p>
+
+                <ul className="list-none p-0 m-0 border-t border-[rgb(var(--foreground-rgb))]/20">
+                  {contactLinks.map((link, i) => (
+                    <li key={link.label}>
+                      <a
+                        href={link.href}
+                        target={link.label === 'Email' ? '_self' : '_blank'}
+                        rel="noopener noreferrer"
+                        className="group flex items-center gap-4 py-4 border-b border-[rgb(var(--foreground-rgb))]/12 hover:bg-[var(--color-surface)] transition-colors duration-[400ms] ease-out-expo -mx-3 px-3"
+                      >
+                        <span className="index-num tabular-nums">{String(i + 1).padStart(2, '0')}</span>
+                        <link.icon className="w-4 h-4 text-[rgb(var(--foreground-rgb))]/60 transition-colors group-hover:text-[var(--accent)]" />
+                        <span className="text-[0.95rem] text-[rgb(var(--foreground-rgb))]/75 group-hover:text-[rgb(var(--foreground-rgb))] transition-colors">
+                          {link.label}
+                        </span>
+                        <FiArrowUpRight className="ml-auto w-3.5 h-3.5 hover-reveal text-[var(--accent)] group-hover:translate-x-0" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Localisation + engagement de délai */}
+                <div className="mt-10 border border-[rgb(var(--foreground-rgb))]/15 p-6">
+                  <div className="flex items-start gap-3.5">
+                    <FiMapPin className="w-4 h-4 mt-0.5 text-[var(--accent-text)] dark:text-[var(--accent)] shrink-0" />
+                    <div>
+                      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[rgb(var(--foreground-rgb))]/60 m-0 mb-1.5">
+                        {t('contact.info.location')}
+                      </p>
+                      <p className="text-[1rem] font-medium m-0 text-[rgb(var(--foreground-rgb))]">
+                        {locale === 'fr' ? 'France' : (locale === 'tr' ? 'Fransa' : 'France')}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-[10px] font-semibold dark:text-zinc-600 text-zinc-400 uppercase tracking-widest mb-0.5">{t('contact.info.location')}</div>
-                    <div className="text-sm font-semibold dark:text-white text-zinc-900">{cityName || (locale === 'fr' ? 'France' : (locale === 'tr' ? 'Fransa' : 'France'))}</div>
-                  </div>
-                </div>
-                <div className="p-3.5 rounded-lg dark:bg-emerald-500/[0.05] bg-emerald-50 border dark:border-emerald-500/20 border-emerald-100">
-                  <p className="text-xs dark:text-emerald-400 text-emerald-700 leading-relaxed">
+
+                  <div className="h-px w-full bg-[rgb(var(--foreground-rgb))]/12 my-5" />
+
+                  <p className="font-mono text-[11px] leading-[1.7] text-[rgb(var(--foreground-rgb))]/60 m-0">
                     <span dangerouslySetInnerHTML={{ __html: t('contact.info.sla') }} />
                   </p>
                 </div>
-              </div>
-
-              {/* Carte */}
-              {mapUrl && (
-                <div className="rounded-xl overflow-hidden border dark:border-white/[0.06] border-zinc-200 h-[180px] grayscale hover:grayscale-0 transition-all duration-500">
-                  <iframe
-                    src={mapUrl}
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    allowFullScreen
-                    loading="lazy"
-                    className="opacity-60 hover:opacity-100 transition-opacity"
-                  />
-                </div>
-              )}
-            </motion.div>
+              </Reveal>
+            </aside>
           </div>
         </div>
-      </main>
+      </section>
     </Layout>
   );
 }
@@ -258,6 +318,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
           github: settings?.github || 'https://github.com/mehmetsalihk',
           linkedin: settings?.linkedin || 'https://www.linkedin.com/in/mehmetsalihk/',
           position: settings?.position || '60180 Nogent-sur-Oise',
+          phone: settings?.phone || '',
           whatsapp: settings?.whatsapp || '',
           telegram: settings?.telegram || '',
         },
@@ -273,6 +334,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
           github: 'https://github.com/mehmetsalihk',
           linkedin: 'https://www.linkedin.com/in/mehmetsalihk/',
           position: '60180 Nogent-sur-Oise',
+          phone: '',
           whatsapp: '',
           telegram: '',
         },

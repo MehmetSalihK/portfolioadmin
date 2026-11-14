@@ -4,8 +4,5 @@ Allow: /
 Disallow: /admin
 Disallow: /api
 
-# Host
-Host: https://mehmetsalihk.fr
-
 # Sitemaps
 Sitemap: https://mehmetsalihk.fr/sitemap.xml

@@ -1,5 +1,13 @@
 import type { Config } from 'tailwindcss'
 
+/**
+ * TRACÉ — Direction artistique « Editorial Engineering »
+ * Les teintes indigo / rose / amber sont reconverties vers les trois
+ * dimensions de l'identité (Dev / Creative / Maker) via variables CSS,
+ * ce qui les fait basculer automatiquement d'un thème à l'autre.
+ */
+const rgbVar = (name: string) => `rgb(var(${name}) / <alpha-value>)`
+
 const config: Config = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -16,7 +24,7 @@ const config: Config = {
           200: '#ced9fd',
           300: '#a1b5fa',
           400: '#7089f5',
-          500: '#4f46e5', // Brand Indigo (Premium SaaS)
+          500: '#4f46e5',
           600: '#3e35cc',
           700: '#312aab',
           800: '#2a248a',
@@ -24,40 +32,62 @@ const config: Config = {
           950: '#161344',
           DEFAULT: '#4f46e5',
         },
+        accent: {
+          DEFAULT: '#ff4a17',
+          hover: '#e63f0f',
+          ink: '#c0330a',
+        },
         background: {
-          light: '#ffffff',
-          dark: '#020617',    // Deep Slate
-          card: '#0f172a',    // Slate 900
-          surface: '#1e293b', // Slate 800
+          light: '#efeae1',
+          dark: '#0c0c0b',
+          card: '#131312',
+          surface: '#1a1a18',
         },
         border: {
-          subtle: 'rgba(255, 255, 255, 0.05)',
-          strong: '#1e293b',
-        }
+          subtle: 'rgba(20, 19, 15, 0.07)',
+          strong: 'rgba(20, 19, 15, 0.18)',
+        },
+        /* Dimension DEV — bleu de méthode */
+        indigo: {
+          300: rgbVar('--c-dev-300'),
+          400: rgbVar('--c-dev-400'),
+          500: rgbVar('--c-dev-500'),
+          600: rgbVar('--c-dev-600'),
+          700: rgbVar('--c-dev-700'),
+        },
+        /* Dimension CREATIVE — vermillon */
+        rose: {
+          300: rgbVar('--c-creative-300'),
+          400: rgbVar('--c-creative-400'),
+          500: rgbVar('--c-creative-500'),
+          600: rgbVar('--c-creative-600'),
+          700: rgbVar('--c-creative-700'),
+        },
+        /* Dimension MAKER — ocre */
+        amber: {
+          300: rgbVar('--c-maker-300'),
+          400: rgbVar('--c-maker-400'),
+          500: rgbVar('--c-maker-500'),
+          600: rgbVar('--c-maker-600'),
+          700: rgbVar('--c-maker-700'),
+        },
       },
       fontFamily: {
-        jakarta: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
-        sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        display: ['Satoshi', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        body: ['Satoshi', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        jakarta: ['Satoshi', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        sans: ['Satoshi', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        mono: ['IBM Plex Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        tech: ['IBM Plex Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       boxShadow: {
-        'premium': '0 10px 40px -10px rgba(0,0,0,0.1), 0 5px 20px -5px rgba(0,0,0,0.05)',
-        'premium-lg': '0 25px 60px -12px rgba(0,0,0,0.15)',
+        'premium': '0 1px 0 rgba(20,19,15,0.05)',
+        'premium-lg': '0 18px 40px -28px rgba(20,19,15,0.55)',
+        'lift': '18px 18px 0 -12px rgba(20,19,15,0.08)',
       },
-      animation: {
-        'fade-in': 'fadeIn 0.5s ease-in-out',
-        'slide-up': 'slideUp 0.5s ease-out',
-        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-      },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-        slideUp: {
-          '0%': { transform: 'translateY(20px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' },
-        },
+      transitionTimingFunction: {
+        'out-expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
+        'snappy': 'cubic-bezier(0.4, 0, 0.2, 1)',
       },
     },
   },

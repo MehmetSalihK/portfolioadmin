@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/pages/api/auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
 import connectDB from '@/lib/db';
 import Message from '@/models/Message';
 
@@ -9,11 +8,8 @@ export default async function handler(
   res: NextApiResponse
 ) {
   // Vérifier l'authentification
-  const session = await getServerSession(req, res, authOptions);
-  
-  if (!session) {
-    return res.status(401).json({ message: 'Non autorisé' });
-  }
+  const guard = await requireAdmin(req, res);
+  if (!guard) return;
 
   // Récupérer l'ID du message depuis l'URL
   const { id } = req.query;

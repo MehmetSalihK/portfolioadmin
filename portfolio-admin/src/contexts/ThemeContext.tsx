@@ -23,36 +23,29 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [theme, setThemeState] = useState<Theme>('dark');
+  /* Papier est le thème par défaut — la préférence système n'intervient plus */
+  const [theme, setThemeState] = useState<Theme>('light');
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Charger le thème depuis localStorage au démarrage
+    /* Lire AVANT d'écrire : le second effet dépend de `ready` et n'écrit
+       dans localStorage qu'une fois la préférence réelle restaurée */
     const savedTheme = localStorage.getItem('portfolio-admin-theme') as Theme;
-    if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
+    if (savedTheme === 'light' || savedTheme === 'dark') {
       setThemeState(savedTheme);
-    } else {
-      // Détecter la préférence système
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setThemeState(prefersDark ? 'dark' : 'light');
     }
+    setReady(true);
   }, []);
 
   useEffect(() => {
-    // Appliquer le thème au document
+    if (!ready) return;
     const root = document.documentElement;
-    
-    // Nettoyer toutes les classes de thème existantes
+
     root.classList.remove('dark', 'light');
-    
-    // Ajouter la nouvelle classe de thème
     root.classList.add(theme);
-    
-    // Forcer le re-render en modifiant l'attribut data-theme
     root.setAttribute('data-theme', theme);
-    
-    // Sauvegarder dans localStorage
     localStorage.setItem('portfolio-admin-theme', theme);
-  }, [theme]);
+  }, [theme, ready]);
 
   const toggleTheme = () => {
     setThemeState(prevTheme => prevTheme === 'light' ? 'dark' : 'light');

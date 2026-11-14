@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
 import dbConnect from '@/lib/db';
 import Analytics from '@/models/Analytics';
 import Project from '@/models/Project';
@@ -12,11 +11,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const session = await getServerSession(req, res, authOptions);
-
-  if (!session) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
+  const guard = await requireAdmin(req, res);
+  if (!guard) return;
 
   if (req.method !== 'GET') {
     res.setHeader('Allow', ['GET']);
@@ -101,7 +97,12 @@ export default async function handler(
     const sortedActivity = recentActivity
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       .slice(0, 10)
-      .map(({ timestamp, ...activity }) => activity); // Retirer timestamp du résultat final
+      .map((activity) => ({
+        _id: String(activity._id),
+        type: activity.type,
+        description: activity.description,
+        timestamp: activity.timestamp,
+      }));
 
     return res.status(200).json({
       recentActivity: sortedActivity,

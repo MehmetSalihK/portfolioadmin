@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '@/lib/db';
 import Skill from '@/models/Skill';
 import Category from '@/models/Category';
+import { requireAdmin } from '@/lib/auth-guard';
 
 const skillCategoryMapping: { [key: string]: string } = {
   'JavaScript': 'Langages de programmation',
@@ -41,6 +42,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Méthode non autorisée' });
   }
+
+  // Réécriture massive des catégories/compétences → réservée admin.
+  const guard = await requireAdmin(req, res);
+  if (!guard) return;
 
   try {
     await connectDB();

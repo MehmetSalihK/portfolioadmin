@@ -201,7 +201,7 @@ export default function ImageCropper({ imageUrl, imageId, onClose, onSave }: Ima
                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Outil d'édition visuelle</p>
               </div>
            </div>
-           <button onClick={onClose} className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all"><FiX className="w-5 h-5"/></button>
+           <button onClick={onClose} aria-label="Fermer" className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all"><FiX className="w-5 h-5"/></button>
         </div>
 
         <div className="flex flex-1 overflow-hidden">

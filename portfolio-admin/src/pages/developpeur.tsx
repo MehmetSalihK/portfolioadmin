@@ -1,24 +1,23 @@
+import React from 'react';
 import { motion, useScroll } from 'framer-motion';
 import Head from 'next/head';
 import { GetStaticProps } from 'next';
 import Layout from '@/components/layout/Layout';
 import connectDB from '@/lib/db';
 import ProjectModel from '@/models/Project';
-import {
-  FiLayers, FiCpu, FiZap, FiExternalLink, FiGithub, FiChevronRight, FiCode
-} from 'react-icons/fi';
-import {
-  SiNextdotjs, SiReact, SiNodedotjs, SiMongodb,
-  SiTypescript, SiTailwindcss, SiDocker, SiRedis
-} from 'react-icons/si';
+import { FiArrowUpRight, FiChevronRight } from 'react-icons/fi';
+import { SiNextdotjs, SiReact, SiNodedotjs, SiMongodb, SiTypescript, SiTailwindcss, SiDocker, SiRedis } from 'react-icons/si';
 import JSONLD, { schemas } from '@/components/layout/JSONLD';
 import { useTranslation } from 'next-i18next/pages';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
-
 import { useRouter } from 'next/router';
 import { getLocalized } from '@/utils/i18n-utils';
 import Link from 'next/link';
 import Image from 'next/image';
+import SectionHead from '@/components/ui/SectionHead';
+import { DimensionMark } from '@/components/identity/Marks';
+import { Reveal, RevealLines, EASE } from '@/components/motion/Reveal';
+import { hasRealDescription } from '@/utils/project-display';
 
 interface Project {
   _id: string; title: string; description: string;
@@ -28,226 +27,202 @@ interface Project {
 
 interface DeveloppeurPageProps { projects: Project[]; }
 
-export default function DeveloppeurPage({ projects }: DeveloppeurPageProps) {
+const services = [
+  { n: '01', titleKey: 'dev_page.service1_title', descKey: 'dev_page.service1_desc' },
+  { n: '02', titleKey: 'dev_page.service2_title', descKey: 'dev_page.service2_desc' },
+  { n: '03', titleKey: 'dev_page.service3_title', descKey: 'dev_page.service3_desc' },
+];
+
+const process = [
+  { n: '01', tKey: 'dev_page.step1_title', dKey: 'dev_page.step1_desc' },
+  { n: '02', tKey: 'dev_page.step2_title', dKey: 'dev_page.step2_desc' },
+  { n: '03', tKey: 'dev_page.step3_title', dKey: 'dev_page.step3_desc' },
+  { n: '04', tKey: 'dev_page.step4_title', dKey: 'dev_page.step4_desc' },
+];
+
+const stack = {
+  Frontend: [
+    { label: 'Next.js', icon: SiNextdotjs },
+    { label: 'React', icon: SiReact },
+    { label: 'TypeScript', icon: SiTypescript },
+    { label: 'Tailwind CSS', icon: SiTailwindcss },
+  ],
+  'Backend & Outils': [
+    { label: 'Node.js', icon: SiNodedotjs },
+    { label: 'MongoDB', icon: SiMongodb },
+    { label: 'Docker', icon: SiDocker },
+    { label: 'Redis', icon: SiRedis },
+  ],
+};
+
+export default function DeveloppeurPage({ projects = [] }: DeveloppeurPageProps) {
   const { scrollYProgress } = useScroll();
   const { t } = useTranslation('common');
   const { locale } = useRouter();
-
-  // Localized data
-  const services = [
-    {
-      title: t('dev_page.service1_title'),
-      desc: t('dev_page.service1_desc'),
-      icon: FiLayers, accent: 'indigo'
-    },
-    {
-      title: t('dev_page.service2_title'),
-      desc: t('dev_page.service2_desc'),
-      icon: FiCpu, accent: 'violet'
-    },
-    {
-      title: t('dev_page.service3_title'),
-      desc: t('dev_page.service3_desc'),
-      icon: FiZap, accent: 'emerald'
-    }
-  ];
-
-  const process = [
-    { n: '01', t: t('dev_page.step1_title'), d: t('dev_page.step1_desc') },
-    { n: '02', t: t('dev_page.step2_title'), d: t('dev_page.step2_desc') },
-    { n: '03', t: t('dev_page.step3_title'), d: t('dev_page.step3_desc') },
-    { n: '04', t: t('dev_page.step4_title'), d: t('dev_page.step4_desc') },
-  ];
-
-  const stack = {
-    "Frontend": [
-      { label: "Next.js", icon: SiNextdotjs },
-      { label: "React", icon: SiReact },
-      { label: "Typescript", icon: SiTypescript },
-      { label: "Tailwind CSS", icon: SiTailwindcss }
-    ],
-    "Backend & Tools": [
-      { label: "Node.js", icon: SiNodedotjs },
-      { label: "MongoDB", icon: SiMongodb },
-      { label: "Docker", icon: SiDocker },
-      { label: "Redis", icon: SiRedis }
-    ]
-  };
-
-  const accentColor = (a: string) =>
-    a === 'indigo' ? 'text-indigo-500' :
-    a === 'violet' ? 'text-violet-500' : 'text-emerald-500';
-
-  const accentBg = (a: string) =>
-    a === 'indigo' ? 'dark:bg-indigo-500/10 bg-indigo-50 dark:border-indigo-500/20 border-indigo-100' :
-    a === 'violet' ? 'dark:bg-violet-500/10 bg-violet-50 dark:border-violet-500/20 border-violet-100' :
-    'dark:bg-emerald-500/10 bg-emerald-50 dark:border-emerald-500/20 border-emerald-100';
 
   return (
     <Layout>
       <JSONLD type="ProfessionalService" data={schemas.developpeur} />
       <Head>
-        <title>{t('nav.developer')} — Portfolio</title>
+        <title>{`${t('nav.developer')} — Portfolio`}</title>
         <meta name="description" content={t('dev_page.hero_description')} />
+        <meta property="og:title" content={`${t('nav.developer')} — Portfolio`} />
+        <meta property="og:description" content={t('dev_page.hero_description')} />
+        <link rel="icon" href="/favicon.png" />
       </Head>
 
-      {/* Progress bar */}
-      <motion.div className="fixed top-0 left-0 right-0 h-[2px] bg-indigo-500 origin-left z-50" style={{ scaleX: scrollYProgress }} />
+      {/* Barre de progression — trait de méthode */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-[2px] bg-[var(--color-dev)] origin-left z-50"
+        style={{ scaleX: scrollYProgress }}
+      />
 
-      {/* ── HERO ── */}
-      <section className="min-h-[92vh] flex items-center dark:bg-[#0a0a0f] bg-[#fafafc] pt-14 relative overflow-hidden">
+      {/* ════════════ HERO — trame technique ════════════ */}
+      <section className="relative min-h-[92svh] flex flex-col justify-center pt-[7.5rem] pb-12 overflow-hidden">
+        <span aria-hidden="true" className="absolute inset-0 grid-lines pointer-events-none" />
+        <span aria-hidden="true" className="absolute top-0 right-0 w-px h-full bg-[rgb(var(--foreground-rgb))]/10 hidden lg:block" />
 
-        {/* ── Background images collage (right side) ── */}
-        <div className="absolute inset-0 pointer-events-none">
-          {/* Ambient glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] dark:bg-indigo-600/6 bg-indigo-100/30 rounded-full blur-[120px]" />
+        <div className="relative mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)]">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-5 mb-10 border-b border-[rgb(var(--foreground-rgb))]/15">
+            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[var(--color-dev)]">
+              01 / {t('nav.developer')}
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/60">
+              {t('dev_page.hero_subtitle')}
+            </span>
+          </div>
 
-          {/* Photo 1 — codage.jpg (top right, tilted) */}
-          <motion.div
-            initial={{ opacity: 0, x: 60, rotate: 3 }}
-            animate={{ opacity: 1, x: 0, rotate: 3 }}
-            transition={{ delay: 0.3, duration: 0.8, ease: [0.2, 0, 0, 1] }}
-            className="absolute hidden lg:block right-[-50px] top-[70px] w-[420px] h-[260px] rounded-2xl overflow-hidden shadow-2xl shadow-black/40 border dark:border-white/[0.08] border-zinc-200/60"
-          >
-            <Image
-              src="/images/developpeur/codage.jpg"
-              alt="Code en cours"
-              fill
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-l dark:from-[#0a0a0f]/10 from-[#fafafc]/5 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t dark:from-[#0a0a0f]/70 from-zinc-100/60 to-transparent" />
-            <div className="absolute bottom-3 left-4 flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-              <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Full Stack Development</span>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-12 items-end">
+            <div className="lg:col-span-8">
+              <h1 className="font-display font-black text-[clamp(2.4rem,6.4vw,5.5rem)] leading-[0.94] tracking-[-0.05em] m-0 text-balance">
+                <RevealLines delay={0.1} stagger={0.1}>
+                  <span>{t('dev_page.hero_title_part1')}</span>{' '}
+                  <span>
+                    <span className="font-accent text-[1.1em] text-[var(--color-dev)]">
+                      {t('dev_page.hero_title_part2')}
+                    </span>
+                    <span className="text-[var(--color-dev)]">,</span>
+                  </span>{' '}
+                  <span>
+                    {t('dev_page.hero_title_part3')}
+                  </span>
+                </RevealLines>
+              </h1>
+
+              <Reveal delay={0.45}>
+                <p className="lead max-w-[54ch] mt-9 mb-0">{t('dev_page.hero_description')}</p>
+              </Reveal>
+
+              <Reveal delay={0.55}>
+                <div className="flex flex-wrap items-stretch gap-3 mt-9">
+                  <Link href="/contact" className="btn btn-primary">
+                    {t('dev_page.cta_expertise')}
+                    <FiArrowUpRight className="w-4 h-4" />
+                  </Link>
+                  <Link href="/projects" className="btn btn-outline">
+                    {t('dev_page.cta_projects')}
+                  </Link>
+                </div>
+              </Reveal>
             </div>
-          </motion.div>
 
-          {/* Photo 2 — Trends_05_Security.jpg (bottom right, opposite tilt) */}
-          <motion.div
-            initial={{ opacity: 0, x: 80, rotate: -2 }}
-            animate={{ opacity: 1, x: 0, rotate: -2 }}
-            transition={{ delay: 0.5, duration: 0.8, ease: [0.2, 0, 0, 1] }}
-            className="absolute hidden lg:block right-[70px] top-[300px] w-[360px] h-[220px] rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border dark:border-white/[0.08] border-zinc-200/60"
-          >
-            <Image
-              src="/images/developpeur/Trends_05_Security.jpg"
-              alt="Sécurité & Architecture"
-              fill
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-l dark:from-[#0a0a0f]/5 from-[#fafafc]/5 to-transparent" />
-            <div className="absolute inset-0 bg-violet-900/10" />
-            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t dark:from-[#0a0a0f]/70 from-zinc-100/60 to-transparent" />
-            <div className="absolute bottom-3 left-4 flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
-              <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Sécurité & Architecture</span>
+            {/* Planche image */}
+            <div className="lg:col-span-4">
+              <Reveal delay={0.3}>
+                <figure className="m-0">
+                  <div className="relative w-full aspect-[4/3] overflow-hidden border border-[rgb(var(--foreground-rgb))]/15 grain bg-[var(--color-surface)]">
+                    <Image
+                      src="/images/developpeur/codage.jpg"
+                      alt={t('home.univers.alt_dev')}
+                      fill
+                      priority
+                      sizes="(max-width: 1024px) 100vw, 32vw"
+                      className="object-cover grayscale contrast-[1.05] transition-all duration-1000 ease-out-expo hover:grayscale-0"
+                    />
+                    <span className="absolute bottom-0 left-0 flex items-center gap-2 px-3 py-2 bg-[rgb(var(--background-start-rgb))] font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-dev)] border-r border-t border-[rgb(var(--foreground-rgb))]/15">
+                      <span className="w-1.5 h-1.5 bg-[var(--color-dev)]" />
+                      Full Stack
+                    </span>
+                  </div>
+                  <figcaption className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[rgb(var(--foreground-rgb))]/60">
+                    {locale?.toUpperCase()} — Fig. 01
+                  </figcaption>
+                </figure>
+              </Reveal>
             </div>
-          </motion.div>
-
-          {/* Right edge fade so images blend into background */}
-          <div className="absolute right-0 top-0 bottom-0 w-[200px] bg-gradient-to-l dark:from-[#0a0a0f] from-[#fafafc] to-transparent hidden lg:block" />
-        </div>
-
-        <div className="max-w-[1100px] mx-auto px-6 w-full relative z-10">
-          <div className="max-w-[600px]">
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 dark:bg-indigo-500/10 bg-indigo-50 dark:border-indigo-500/20 border-indigo-100 border rounded-full mb-10"
-            >
-              <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-              <span className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest">{t('dev_page.hero_subtitle')}</span>
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.4 }}
-              className="text-5xl sm:text-6xl lg:text-7xl font-extrabold dark:text-white text-zinc-900 leading-[1.05] tracking-tight mb-6 text-balance"
-            >
-              {t('dev_page.hero_title_part1')} <span className="text-indigo-500 italic">{t('dev_page.hero_title_part2')}</span>,{' '}
-              {t('dev_page.hero_title_part3')}
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.18, duration: 0.4 }}
-              className="text-lg dark:text-zinc-500 text-zinc-500 mb-10 max-w-[560px] leading-[1.75]"
-            >
-              {t('dev_page.hero_description')}
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-              className="flex flex-wrap gap-3"
-            >
-              <Link href="/contact" className="h-11 px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors duration-150 flex items-center gap-2 shadow-lg shadow-indigo-600/20">
-                {t('dev_page.cta_expertise')}
-              </Link>
-              <Link href="/projects" className="h-11 px-6 dark:bg-white/[0.04] bg-white dark:hover:bg-white/[0.08] hover:bg-zinc-100 dark:text-zinc-200 text-zinc-700 dark:border-white/[0.08] border-zinc-200 border rounded-lg text-sm font-semibold transition-all duration-150 flex items-center gap-2">
-                {t('dev_page.cta_projects')}
-              </Link>
-            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* ── SERVICES ── */}
-      <section className="py-20 dark:bg-[#0a0a0f] bg-[#fafafc] border-t dark:border-white/[0.05] border-zinc-100">
-        <div className="max-w-[1100px] mx-auto px-6">
-          <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-10">{t('dev_page.services_subtitle')}</div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* ════════════ 01 — SERVICES ════════════ */}
+      <section className="relative border-t border-[rgb(var(--foreground-rgb))]/15">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)] py-[var(--section-gap)]">
+          <SectionHead
+            index="01"
+            kicker={t('dev_page.services_subtitle')}
+            sigil={<DimensionMark dim="dev" />}
+            title={t('dev_page.services_title')}
+            desc={t('dev_page.stack_description')}
+          />
+
+          <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-[rgb(var(--foreground-rgb))]/15">
             {services.map((s, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08, duration: 0.3, ease: [0.2, 0, 0, 1] }}
-                className="p-6 dark:bg-white/[0.02] bg-white rounded-2xl border dark:border-white/[0.06] border-zinc-200 hover:dark:border-white/[0.1] hover:border-zinc-300 transition-all duration-200"
-              >
-                <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl mb-5 border ${accentBg(s.accent)}`}>
-                  <s.icon className={`w-4 h-4 ${accentColor(s.accent)}`} />
+              <Reveal key={s.n} delay={i * 0.07} amount={0.3}>
+                <div className={`relative h-full p-7 lg:p-8 sm:min-h-[17rem] border-b border-[rgb(var(--foreground-rgb))]/12 lg:border-b-0 group hover:bg-[var(--color-surface)] transition-colors duration-500 ease-out-expo ${i % 2 === 1 ? 'sm:border-l sm:border-[rgb(var(--foreground-rgb))]/12' : ''} ${i > 0 ? 'lg:border-l lg:border-[rgb(var(--foreground-rgb))]/12' : 'lg:border-l-0'}`}>
+                  <span aria-hidden="true" className="absolute inset-0 grid-lines opacity-50 pointer-events-none transition-opacity duration-700 group-hover:opacity-100" />
+                  <div className="relative flex items-start justify-between mb-8">
+                    <span className="index-num text-[var(--color-dev)]">{s.n}</span>
+                    <span className="w-6 h-px bg-[var(--color-dev)] mt-2" />
+                  </div>
+                  <h3 className="relative text-[1.3rem] font-bold leading-[1.14] tracking-[-0.025em] m-0 mb-4">
+                    {t(s.titleKey)}
+                  </h3>
+                  <p className="relative text-[0.925rem] leading-relaxed text-[rgb(var(--foreground-rgb))]/62 m-0">
+                    {t(s.descKey)}
+                  </p>
                 </div>
-                <h3 className="text-sm font-bold dark:text-white text-zinc-900 mb-2 tracking-tight">{s.title}</h3>
-                <p className="text-sm dark:text-zinc-500 text-zinc-500 leading-relaxed">{s.desc}</p>
-              </motion.div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── STACK ── */}
-      <section className="py-20 dark:bg-zinc-950 bg-zinc-900 text-white">
-        <div className="max-w-[1100px] mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <div className="text-[11px] font-semibold text-indigo-400 uppercase tracking-widest mb-6">{t('dev_page.stack_subtitle')}</div>
-              <h2 className="text-4xl font-extrabold tracking-tight mb-6 text-balance">
-                {t('dev_page.stack_title_part1')} <span className="text-indigo-400 italic">{t('dev_page.stack_title_part2')}</span>.
-              </h2>
-              <p className="text-zinc-400 leading-relaxed text-[15px]">
-                {t('dev_page.stack_description')}
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-6">
+      {/* ════════════ 02 — ARSENAL ════════════ */}
+      <section className="relative border-t border-[rgb(var(--foreground-rgb))]/15">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)] py-[var(--section-gap)]">
+          <SectionHead
+            index="02"
+            kicker={t('dev_page.stack_subtitle')}
+            title={
+              <>
+                {t('dev_page.stack_title_part1')}{' '}
+                <span className="font-accent text-[1.08em] text-[var(--color-dev)]">
+                  {t('dev_page.stack_title_part2')}
+                </span>
+                <span className="text-[var(--color-dev)]">.</span>
+              </>
+            }
+          />
+
+          <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-10">
+            <p className="lg:col-span-5 lead m-0">{t('dev_page.stack_description')}</p>
+
+            <div className="lg:col-span-6 lg:col-start-7 grid grid-cols-1 sm:grid-cols-2 gap-x-[var(--gutter)] gap-y-8 sm:gap-y-0">
               {Object.entries(stack).map(([label, items]) => (
                 <div key={label}>
-                  <div className="text-[10px] font-semibold text-indigo-400 uppercase tracking-widest mb-4">{label}</div>
-                  <ul className="space-y-2.5">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-dev)] m-0 mb-4 pb-3 border-b border-[rgb(var(--foreground-rgb))]/15">
+                    {label}
+                  </p>
+                  <ul className="list-none p-0 m-0">
                     {(items as { label: string; icon: React.ComponentType<{ className?: string }> }[]).map((item, i) => (
-                      <li key={i} className="flex items-center gap-2.5 group">
-                        <div className="w-7 h-7 rounded-md bg-white/[0.06] border border-white/[0.08] flex items-center justify-center shrink-0 group-hover:bg-indigo-500/20 group-hover:border-indigo-500/30 transition-all duration-150">
-                          <item.icon className="w-3.5 h-3.5 text-zinc-300 group-hover:text-indigo-300 transition-colors" />
-                        </div>
-                        <span className="text-sm font-semibold text-zinc-200">{item.label}</span>
+                      <li key={i} className="group flex items-center gap-3 py-2.5 border-b border-[rgb(var(--foreground-rgb))]/10">
+                        <span className="font-mono text-[10px] tabular-nums text-[rgb(var(--foreground-rgb))]/60">
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <item.icon className="w-4 h-4 text-[rgb(var(--foreground-rgb))]/60 transition-colors group-hover:text-[var(--color-dev)]" />
+                        <span className="text-[0.9rem] text-[rgb(var(--foreground-rgb))]/72 group-hover:text-[rgb(var(--foreground-rgb))] transition-colors">
+                          {item.label}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -258,48 +233,70 @@ export default function DeveloppeurPage({ projects }: DeveloppeurPageProps) {
         </div>
       </section>
 
-      {/* ── PROJETS ── */}
+      {/* ════════════ 03 — RÉALISATIONS ════════════ */}
       {projects.length > 0 && (
-        <section className="py-20 dark:bg-[#0a0a0f] bg-[#fafafc] border-t dark:border-white/[0.05] border-zinc-100">
-          <div className="max-w-[1100px] mx-auto px-6">
-            <div className="flex justify-between items-end mb-10">
-              <div>
-                <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-3">{t('dev_page.projects_subtitle')}</div>
-                <h2 className="text-3xl font-extrabold dark:text-white text-zinc-900 tracking-tight">{t('dev_page.projects_title')}</h2>
-              </div>
-              <Link href="/projects" className="text-[12px] font-semibold text-indigo-500 flex items-center gap-1 hover:gap-2 transition-all duration-150">
-                {t('projects.all')} <FiChevronRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <section className="relative border-t border-[rgb(var(--foreground-rgb))]/15">
+          <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)] py-[var(--section-gap)]">
+            <SectionHead
+              index="03"
+              kicker={t('dev_page.projects_subtitle')}
+              title={t('dev_page.projects_title')}
+              action={
+                <Link href="/projects" className="link-arrow">
+                  {t('projects.all')} <FiChevronRight className="w-3.5 h-3.5" />
+                </Link>
+              }
+            />
+
+            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-x-[var(--gutter)] gap-y-10">
               {projects.map((p, i) => (
                 <motion.div
                   key={p._id}
-                  initial={{ opacity: 0, y: 16 }}
+                  initial={{ opacity: 0, y: 26 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.07, duration: 0.3 }}
-                  className="group dark:bg-white/[0.02] bg-white rounded-2xl border dark:border-white/[0.06] border-zinc-200 hover:dark:border-white/[0.1] hover:border-zinc-300 overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-black/40"
+                  viewport={{ once: true, amount: 0.25 }}
+                  transition={{ delay: Math.min(i * 0.07, 0.25), duration: 0.65, ease: EASE }}
+                  className="group"
                 >
-                  <div className="relative aspect-[16/9] dark:bg-zinc-900 bg-zinc-100 overflow-hidden">
-                    <Image src={p.imageUrl} alt={p.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="540px" />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                  </div>
-                  <div className="p-5">
-                    <div className="flex items-start justify-between gap-3 mb-2">
-                      <h3 className="text-sm font-bold dark:text-white text-zinc-900 tracking-tight">{p.title}</h3>
-                      <div className="flex gap-2 shrink-0">
-                        {p.githubUrl && <a href={p.githubUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 dark:text-zinc-600 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600 transition-colors"><FiGithub className="w-4 h-4" /></a>}
-                        {p.demoUrl && <a href={p.demoUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 dark:text-zinc-600 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600 transition-colors"><FiExternalLink className="w-4 h-4" /></a>}
+                  <Link href={`/projects`} className="block">
+                    <div className="relative aspect-[16/10] overflow-hidden border border-[rgb(var(--foreground-rgb))]/15 grain bg-[var(--color-surface)]">
+                      <Image
+                        src={p.imageUrl || '/images/default-project.svg'}
+                        alt={p.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, 48vw"
+                        className="object-cover transition-transform duration-[1200ms] ease-out-expo group-hover:scale-[1.04]"
+                      />
+                      <div className="absolute inset-0 bg-[rgb(var(--foreground-rgb))]/0 group-hover:bg-[rgb(var(--foreground-rgb))]/15 transition-colors duration-700" />
+                      <span className="absolute top-0 left-0 px-3 py-2 bg-[rgb(var(--background-start-rgb))] font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-dev)] border-r border-b border-[rgb(var(--foreground-rgb))]/15">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                    </div>
+
+                    <div className="mt-5 flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-[1.25rem] font-bold leading-tight tracking-[-0.025em] m-0 transition-colors duration-300 group-hover:text-[var(--color-dev)]">
+                          {p.title}
+                        </h3>
+                        {hasRealDescription(p.description) && (
+                          <p className="text-[0.9rem] leading-relaxed text-[rgb(var(--foreground-rgb))]/65 mt-2 mb-0 line-clamp-2 max-w-[44ch]">
+                            {p.description}
+                          </p>
+                        )}
                       </div>
+                      <FiArrowUpRight className="w-5 h-5 shrink-0 mt-1 text-[rgb(var(--foreground-rgb))]/60 transition-all duration-500 ease-out-expo group-hover:text-[var(--color-dev)] group-hover:-translate-y-1 group-hover:translate-x-1" />
                     </div>
-                    <p className="text-zinc-500 text-xs leading-relaxed line-clamp-2 mb-3">{p.description}</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {p.technologies.slice(0, 4).map((t, ti) => (
-                        <span key={ti} className="px-2.5 py-1 dark:bg-white/[0.04] bg-zinc-50 dark:text-zinc-500 text-zinc-500 rounded-md text-[10px] font-medium border dark:border-white/[0.05] border-zinc-100">{t}</span>
-                      ))}
-                    </div>
-                  </div>
+
+                    {(p.technologies || []).length > 0 && (
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-4 pt-3 border-t border-[rgb(var(--foreground-rgb))]/10">
+                        {p.technologies.slice(0, 4).map((tech, ti) => (
+                          <span key={ti} className="font-mono text-[10px] uppercase tracking-[0.14em] text-[rgb(var(--foreground-rgb))]/60">
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </Link>
                 </motion.div>
               ))}
             </div>
@@ -307,45 +304,82 @@ export default function DeveloppeurPage({ projects }: DeveloppeurPageProps) {
         </section>
       )}
 
-      {/* ── PROCESSUS ── */}
-      <section className="py-20 dark:bg-white/[0.01] bg-zinc-50 border-t dark:border-white/[0.05] border-zinc-100">
-        <div className="max-w-[1100px] mx-auto px-6">
-          <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-6">{t('dev_page.methodology_subtitle')}</div>
-          <h2 className="text-3xl font-extrabold dark:text-white text-zinc-900 tracking-tight mb-12 text-balance">
-            {t('dev_page.methodology_title')}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 relative">
-            <div className="absolute top-5 left-0 right-0 h-px dark:bg-white/[0.05] bg-zinc-200 hidden md:block" />
+      {/* ════════════ 04 — MÉTHODE ════════════ */}
+      <section className="relative border-t border-[rgb(var(--foreground-rgb))]/15">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)] py-[var(--section-gap)]">
+          <SectionHead
+            index="04"
+            kicker={t('dev_page.methodology_subtitle')}
+            title={t('dev_page.methodology_title')}
+          />
+
+          <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-[var(--gutter)] gap-y-9 border-t border-[rgb(var(--foreground-rgb))]/20 pt-9">
             {process.map((step, i) => (
-              <div key={i} className="relative">
-                <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xs font-bold mb-5 relative z-10 shadow-lg shadow-indigo-600/20">
-                  {step.n}
+              <Reveal key={step.n} delay={i * 0.07} amount={0.3}>
+                <div className="group relative">
+                  <div className="flex items-center gap-3 mb-5">
+                    <span className="flex items-center justify-center w-9 h-9 border border-[var(--color-dev)] text-[var(--color-dev)] font-mono text-[11px] font-semibold tabular-nums transition-colors duration-[400ms] group-hover:bg-[var(--color-dev)] group-hover:text-[rgb(var(--background-start-rgb))]">
+                      {step.n}
+                    </span>
+                    <span className="h-px flex-1 bg-[rgb(var(--foreground-rgb))]/15" />
+                  </div>
+                  <h4 className="text-[1.05rem] font-bold tracking-[-0.02em] m-0 mb-3">{t(step.tKey)}</h4>
+                  <p className="text-[0.9rem] leading-relaxed text-[rgb(var(--foreground-rgb))]/65 m-0">
+                    {t(step.dKey)}
+                  </p>
                 </div>
-                <h4 className="text-sm font-bold dark:text-white text-zinc-900 mb-2 tracking-tight">{step.t}</h4>
-                <p className="text-xs dark:text-zinc-500 text-zinc-500 leading-relaxed">{step.d}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── CTA FINAL ── */}
-      <section className="py-24 bg-indigo-600 relative overflow-hidden">
-        <div className="absolute inset-0 dark:bg-gradient-to-br from-indigo-600 to-violet-700" />
-        <div className="max-w-[1100px] mx-auto px-6 relative z-10 text-center text-white">
-          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6 text-balance">
-            {t('dev_page.footer_cta_title_part1')} <span className="text-indigo-200">{t('dev_page.footer_cta_title_part2')}</span> {locale === 'tr' ? t('dev_page.footer_cta_title_part3') : '?' }
-          </h2>
-          <p className="text-lg text-indigo-100 mb-10 max-w-[480px] mx-auto leading-[1.75] opacity-90">
-            {t('dev_page.footer_cta_description')}
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/contact" className="h-11 px-6 bg-white text-indigo-600 hover:bg-indigo-50 rounded-lg text-sm font-semibold transition-colors duration-150 flex items-center gap-2 shadow-lg">
-              {t('dev_page.footer_cta_btn1')}
-            </Link>
-            <Link href="/projects" className="h-11 px-6 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg text-sm font-semibold transition-all duration-150 flex items-center gap-2">
-              {t('dev_page.footer_cta_btn2')}
-            </Link>
+      {/* ════════════ BANDE — CHAPITRE SUIVANT ════════════ */}
+      <Link
+        href="/designer"
+        className="group block border-t border-[rgb(var(--foreground-rgb))]/15"
+        aria-label={`${t('chapter.next')} — ${t('nav.creative')}`}
+      >
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)] py-9 flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3">
+          <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/60">
+            {t('chapter.next')}
+          </span>
+          <span className="flex items-center gap-3 font-display font-black text-[clamp(1.5rem,3.5vw,2.4rem)] leading-none tracking-[-0.04em] transition-colors duration-300 group-hover:text-[var(--color-creative)] group-focus-visible:text-[var(--color-creative)]">
+            02 — {t('nav.creative')}
+            <FiArrowUpRight className="w-5 h-5 shrink-0 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1" />
+          </span>
+        </div>
+      </Link>
+
+      {/* ════════════ CLÔTURE — bloc méthode ════════════ */}
+      <section className="relative border-t border-[rgb(var(--foreground-rgb))]/15 bg-[var(--color-dev)] text-white overflow-hidden">
+        <span aria-hidden="true" className="absolute inset-0 opacity-[0.14] pointer-events-none"
+          style={{ backgroundImage: 'repeating-linear-gradient(-45deg, rgba(255,255,255,0.6) 0 1px, transparent 1px 9px)' }} />
+        <div className="relative mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)] py-[var(--section-gap)]">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-9 items-end">
+            <div className="lg:col-span-8">
+              <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/70 block mb-6">
+                05 — {t('dev_page.methodology_subtitle')}
+              </span>
+              <h2 className="text-[clamp(2.1rem,5.5vw,4.5rem)] leading-[0.95] tracking-[-0.045em] m-0 text-balance text-white">
+                {t('dev_page.footer_cta_title_part1')}{' '}
+                <span className="font-accent text-[1.1em]">{t('dev_page.footer_cta_title_part2')}</span>
+                <span className="opacity-70">.</span>
+              </h2>
+              <p className="text-[1.05rem] leading-[1.65] text-white/80 mt-7 mb-0 max-w-[46ch]">
+                {t('dev_page.footer_cta_description')}
+              </p>
+            </div>
+            <div className="lg:col-span-4 flex flex-col gap-3">
+              <Link href="/contact" className="btn bg-white text-[var(--color-dev)] border-white hover:bg-white/90 justify-between w-full">
+                {t('dev_page.footer_cta_btn1')}
+                <FiArrowUpRight className="w-4 h-4" />
+              </Link>
+              <Link href="/projects" className="btn bg-transparent text-white border-white/50 hover:bg-white/10 justify-between w-full">
+                {t('dev_page.footer_cta_btn2')}
+                <FiChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -370,19 +404,13 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     }));
 
     return {
-      props: { 
-        projects: JSON.parse(JSON.stringify(projects)),
-        ...(await serverSideTranslations(currentLocale, ['common'])),
-      },
+      props: { projects: JSON.parse(JSON.stringify(projects)), ...(await serverSideTranslations(currentLocale, ['common'])), },
       revalidate: 60,
     };
   } catch {
-    return { 
-      props: { 
-        projects: [],
-        ...(await serverSideTranslations(currentLocale, ['common'])),
-      } 
+    return {
+      props: { projects: [], ...(await serverSideTranslations(currentLocale, ['common'])), },
+      revalidate: 60,
     };
   }
 };
-

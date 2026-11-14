@@ -50,7 +50,11 @@ export default function TestEmail() {
               Cette page permet de tester l'envoi d'email via Resend. Cliquez sur le bouton ci-dessous pour envoyer un email de test.
             </p>
             <p className="text-sm text-gray-500">
-              Email de destination: <span className="font-mono">{process.env.NEXT_PUBLIC_RESEND_EMAIL || 'Non défini'}</span>
+              {/* Aucune adresse affichée (PII) : la référence à
+                  NEXT_PUBLIC_RESEND_EMAIL était inlinée dans le bundle
+                  client — l'adresse était donc lisible par tous. */}
+              L'adresse de destination est configurée côté serveur et n'est
+              jamais exposée au navigateur.
             </p>
           </div>
 

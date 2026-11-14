@@ -1,7 +1,7 @@
 import Head from 'next/head';
 
 interface JSONLDProps {
-  type: 'Person' | 'ProfessionalService' | 'LocalBusiness';
+  type: 'Person' | 'ProfessionalService' | 'LocalBusiness' | 'WebPage' | 'CollectionPage';
   data: any;
 }
 
@@ -36,30 +36,30 @@ export const schemas = {
       'https://github.com/mehmetsalihk',
       'https://linkedin.com/in/mehmetsalihk',
     ],
-    description: 'Expert en création d\'applications web modernes, IoT et design digital haut de gamme.',
+    description: 'Développement web, création vidéo et matériel : trois domaines de travail, une seule méthode.',
   },
   developpeur: {
-    name: 'L\'Architecte Digital - Ingénierie Full Stack',
+    name: 'Développement Web & Architecture',
     serviceType: 'Développement Web & Architecture Logicielle',
-    description: 'Conception d\'écosystèmes numériques scalables avec Next.js, Node.js et MongoDB. Audit de performance et SEO technique.',
+    description: 'Applications web complètes avec Next.js, Node.js et MongoDB, de l\'interface à la base de données.',
     provider: {
       '@type': 'LocalBusiness',
       name: 'Mehmet Salih K.',
     }
   },
   designer: {
-    name: 'L\'Artiste Digital - UI/UX & Branding',
+    name: 'Design & Vidéo',
     serviceType: 'Design d\'Interface & Identité Visuelle',
-    description: 'Création d\'expériences immersives et d\'interfaces haute fidélité pour produits SaaS et digital de luxe.',
+    description: 'Interfaces haute fidélité, systèmes de design et production vidéo, du tournage à l\'étalonnage.',
     provider: {
       '@type': 'LocalBusiness',
       name: 'Mehmet Salih K.',
     }
   },
   maker: {
-    name: 'Le Builder - Ingénierie Hardware & IoT',
-    serviceType: 'Systèmes Embarqués & Prototypage Hardware',
-    description: 'Diagnostic électronique, programmation firmware (ESP32/Arduino) et création de solutions connectées industrielles.',
+    name: 'Hardware & IoT',
+    serviceType: 'Systèmes Embarqués & Prototypage',
+    description: 'Diagnostic électronique, firmware (ESP32/Arduino) et systèmes connectés, du capteur à l\'interface.',
     provider: {
       '@type': 'LocalBusiness',
       name: 'Mehmet Salih K.',

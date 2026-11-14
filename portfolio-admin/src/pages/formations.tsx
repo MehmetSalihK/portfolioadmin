@@ -1,16 +1,18 @@
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import Layout from '@/components/layout/Layout';
+import JSONLD from '@/components/layout/JSONLD';
 import connectDB from '@/lib/db';
 import Education from '@/models/Education';
-import { FiBookOpen, FiCalendar, FiMapPin, FiAward, FiExternalLink } from 'react-icons/fi';
-import { motion } from 'framer-motion';
+import { FiArrowUpRight } from 'react-icons/fi';
 import Link from 'next/link';
 import { useTranslation } from 'next-i18next/pages';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
-
 import { useRouter } from 'next/router';
 import { getLocalized } from '@/utils/i18n-utils';
+import SectionHead from '@/components/ui/SectionHead';
+import { SectionMark } from '@/components/identity/Marks';
+import { Reveal, RevealLines } from '@/components/motion/Reveal';
 
 interface FormationsPageProps {
   educations: {
@@ -19,7 +21,7 @@ interface FormationsPageProps {
     degree: string;
     field: string;
     startDate: string;
-    endDate?: string;
+    endDate?: string | null;
     description: string;
     location: string;
     isCurrentlyStudying: boolean;
@@ -31,154 +33,169 @@ interface FormationsPageProps {
 }
 
 export default function FormationsPage({ educations = [] }: FormationsPageProps) {
-
-  const router = useRouter();
   const { locale } = useRouter();
   const { t } = useTranslation('common');
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string | null) => {
     if (!dateString) return '';
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return '';
     return date.toLocaleDateString(locale === 'tr' ? 'tr-TR' : (locale === 'en' ? 'en-GB' : 'fr-FR'), { year: 'numeric', month: 'short' });
   };
 
+  const endLabel = (edu: FormationsPageProps['educations'][number]) => {
+    if (edu.isCurrentlyStudying) return t('education.studying');
+    if (edu.isPaused) return t('education.paused');
+    return formatDate(edu.endDate);
+  };
+
   return (
     <Layout>
+      <JSONLD
+        type="WebPage"
+        data={{
+          name: `${t('nav.education')} — MSK`,
+          description: t('education.description'),
+          url: 'https://mehmetsalihk.fr/formations',
+        }}
+      />
       <Head>
-        <title>{t('nav.education')} — Portfolio</title>
+        <title>{`${t('nav.education')} — Portfolio`}</title>
         <meta name="description" content={t('education.description')} />
+        <meta property="og:title" content={`${t('nav.education')} — Portfolio`} />
+        <meta property="og:description" content={t('education.description')} />
+        <link rel="icon" href="/favicon.png" />
       </Head>
 
-      <main className="min-h-screen dark:bg-[#0a0a0f] bg-[#fafafc] pt-14">
-        <div className="max-w-[1100px] mx-auto px-6 pt-20 pb-24">
+      {/* ════════════ OUVERTURE ════════════ */}
+      <section className="relative pt-[8.5rem] pb-2">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)]">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-5 mb-9 border-b border-[rgb(var(--foreground-rgb))]/15">
+            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/60">
+              {t('nav.education')} — {t('page_label.education')}
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/60 tabular-nums">
+              {String(educations.length).padStart(2, '0')} {t('nav.education')}
+            </span>
+          </div>
 
-          {/* ── Hero ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.2, 0, 0, 1] }}
-            className="mb-16"
-          >
-            <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-5">
-              {t('education.subtitle')}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-8">
+            <div className="lg:col-span-8">
+              <h1 className="font-display font-black text-[clamp(2.5rem,7vw,6rem)] leading-[0.9] tracking-[-0.05em] m-0 text-balance">
+                <RevealLines delay={0.1} stagger={0.1}>
+                  <span>
+                    {t('education.title_part1')}{' '}
+                    <span className="font-accent text-[1.1em] text-[var(--accent-text)] dark:text-[var(--accent)]">
+                      {t('education.title_part2')}
+                    </span>
+                    <span className="text-[var(--accent-text)] dark:text-[var(--accent)]">.</span>
+                  </span>
+                </RevealLines>
+              </h1>
             </div>
-            <h1 className="text-5xl md:text-6xl font-extrabold dark:text-white text-zinc-900 tracking-tight mb-5 text-balance">
-              {t('education.title_part1')} <span className="text-indigo-500 italic">{t('education.title_part2')}</span>.
-            </h1>
-            <p className="dark:text-zinc-500 text-zinc-500 text-lg max-w-[520px] leading-[1.75]">
-              {t('education.description')}
-            </p>
-          </motion.div>
+            <div className="lg:col-span-4 lg:pb-3">
+              <Reveal delay={0.3}>
+                <p className="lead m-0">{t('education.description')}</p>
+              </Reveal>
+            </div>
+          </div>
+        </div>
+      </section>
 
-          {/* ── Séparateur ── */}
-          <div className="border-t dark:border-white/[0.05] border-zinc-100 mb-12" />
+      {/* ════════════ 01 — PARCOURS ════════════ */}
+      <section className="relative mt-[var(--section-gap)]">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)] pb-[var(--section-gap)]">
+          <SectionHead
+            index="01"
+            kicker={t('education.subtitle')}
+            sigil={<SectionMark name="skills" />}
+            title={t('education.title_part1')}
+          />
 
-          {/* ── Timeline ── */}
           {educations.length > 0 ? (
-            <div className="relative">
-              {/* Ligne verticale */}
-              <div className="absolute left-5 top-2 bottom-2 w-px dark:bg-white/[0.06] bg-zinc-200" />
-
-              <div className="space-y-6">
-                {educations.map((edu, i) => (
-                  <motion.div
-                    key={edu._id}
-                    initial={{ opacity: 0, x: -12 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.3, delay: i * 0.06, ease: [0.2, 0, 0, 1] }}
-                    className="relative pl-14"
-                  >
-                    {/* Dot */}
-                    <div className="absolute left-[17px] top-6 w-2.5 h-2.5 rounded-full bg-indigo-500 ring-4 dark:ring-[#0a0a0f] ring-[#fafafc]" />
-
-                    <div className="dark:bg-white/[0.02] bg-white rounded-2xl p-6 border dark:border-white/[0.06] border-zinc-200 hover:dark:border-white/[0.1] hover:border-zinc-300 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-black/30">
-                      
-                      {/* Header */}
-                      <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl dark:bg-indigo-500/10 bg-indigo-50 border dark:border-indigo-500/20 border-indigo-100 flex items-center justify-center shrink-0">
-                            <FiAward className="w-4 h-4 text-indigo-500" />
-                          </div>
-                          <div>
-                            <div className="text-[10px] font-semibold text-indigo-500 uppercase tracking-widest mb-0.5">
-                              {edu.field}
-                            </div>
-                            <h3 className="text-base font-bold dark:text-white text-zinc-900 tracking-tight leading-snug">
-                              {edu.degree}
-                            </h3>
-                          </div>
-                        </div>
-
+            <div className="mt-12 border-t border-[rgb(var(--foreground-rgb))]/20">
+              {educations.map((edu, i) => (
+                <Reveal key={edu._id} delay={Math.min(i * 0.06, 0.3)} amount={0.3}>
+                  <article className="group grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-5 py-8 lg:py-9 border-b border-[rgb(var(--foreground-rgb))]/12 hover:bg-[var(--color-surface)] transition-colors duration-500 ease-out-expo -mx-3 px-3">
+                    {/* Index + dates */}
+                    <div className="lg:col-span-3">
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="index-num text-[var(--accent-text)] dark:text-[var(--accent)] tabular-nums">
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
                         {edu.isDiplomaPassed && (
-                          <div className="flex items-center gap-1.5 px-3 py-1 dark:bg-emerald-500/10 bg-emerald-50 rounded-full border dark:border-emerald-500/20 border-emerald-200 shrink-0">
-                            <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                            <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">{t('education.graduated')}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Meta */}
-                      <div className="flex flex-wrap gap-4 mb-4">
-                        <span className="flex items-center gap-1.5 text-xs dark:text-zinc-500 text-zinc-500">
-                          <FiBookOpen className="w-3.5 h-3.5 text-indigo-500" />
-                          {edu.school}
-                        </span>
-                        <span className="flex items-center gap-1.5 text-xs dark:text-zinc-500 text-zinc-500">
-                          <FiCalendar className="w-3.5 h-3.5 text-indigo-500" />
-                          {formatDate(edu.startDate)} — {
-                            edu.isCurrentlyStudying ? t('education.studying') : 
-                            edu.isPaused ? t('education.paused') : 
-                            formatDate(edu.endDate!)
-                          }
-                        </span>
-                        {edu.location && (
-                          <span className="flex items-center gap-1.5 text-xs dark:text-zinc-500 text-zinc-500">
-                            <FiMapPin className="w-3.5 h-3.5 text-indigo-500" />
-                            {edu.location}
+                          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[rgb(var(--foreground-rgb))]/60 border border-[rgb(var(--foreground-rgb))]/25 px-2 py-1 leading-none">
+                            {t('education.graduated')}
                           </span>
                         )}
                       </div>
+                      <p className="font-mono text-[12px] leading-relaxed tracking-[0.03em] text-[rgb(var(--foreground-rgb))]/70 m-0 tabular-nums">
+                        {formatDate(edu.startDate)}
+                        <span className="text-[rgb(var(--foreground-rgb))]/60"> → </span>
+                        <span className={edu.isCurrentlyStudying ? 'text-[var(--accent-text)] dark:text-[var(--accent)]' : ''}>
+                          {endLabel(edu)}
+                        </span>
+                      </p>
+                      {edu.location && (
+                        <p className="font-mono text-[11px] tracking-[0.04em] text-[rgb(var(--foreground-rgb))]/60 mt-2 mb-0">
+                          {edu.location}
+                        </p>
+                      )}
+                    </div>
 
+                    {/* Diplôme + établissement */}
+                    <div className="lg:col-span-4">
+                      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[rgb(var(--foreground-rgb))]/60 m-0 mb-2.5">
+                        {edu.field}
+                      </p>
+                      <h3 className="text-[1.4rem] sm:text-[1.6rem] font-bold leading-[1.08] tracking-[-0.03em] m-0 transition-transform duration-500 ease-out-expo group-hover:translate-x-1.5">
+                        {edu.degree}
+                      </h3>
+                      <p className="text-[0.975rem] font-medium text-[rgb(var(--foreground-rgb))]/75 mt-2.5 mb-0">
+                        {edu.school}
+                      </p>
+                    </div>
+
+                    {/* Description + diplôme */}
+                    <div className="lg:col-span-5">
                       {edu.description && (
-                        <p className="text-sm dark:text-zinc-500 text-zinc-500 leading-relaxed">
+                        <p className="text-[0.975rem] leading-[1.7] text-[rgb(var(--foreground-rgb))]/68 m-0 max-w-[56ch]">
                           {edu.description}
                         </p>
                       )}
-
                       {edu.diplomaFile && (
-                        <div className="mt-4 pt-4 border-t dark:border-white/[0.05] border-zinc-100">
-                          <Link
-                            href={edu.diplomaFile}
-                            target="_blank"
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-500 hover:text-indigo-400 transition-colors"
-                          >
-                            {t('education.view_diploma')}
-                            <FiExternalLink className="w-3.5 h-3.5" />
-                          </Link>
-                        </div>
+                        <Link
+                          href={edu.diplomaFile}
+                          target="_blank"
+                          className="link-arrow mt-5 inline-flex text-[var(--accent-text)] dark:text-[var(--accent)]"
+                        >
+                          {t('education.view_diploma')} <FiArrowUpRight className="w-3.5 h-3.5" />
+                        </Link>
                       )}
                     </div>
-                  </motion.div>
-                ))}
+                  </article>
+                </Reveal>
+              ))}
+
+              <div className="flex items-center gap-4 pt-8">
+                <span className="index-num tabular-nums">
+                  {String(educations.length).padStart(2, '0')} / {String(educations.length).padStart(2, '0')}
+                </span>
+                <span className="h-px flex-1 bg-[rgb(var(--foreground-rgb))]/12" />
               </div>
             </div>
           ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-24 dark:bg-white/[0.02] bg-white rounded-2xl border dark:border-white/[0.06] border-zinc-200 border-dashed"
-            >
-              <div className="w-14 h-14 rounded-2xl dark:bg-indigo-500/10 bg-indigo-50 flex items-center justify-center mx-auto mb-5">
-                <FiBookOpen className="w-6 h-6 text-indigo-500" />
-              </div>
-              <h3 className="text-lg font-bold dark:text-white text-zinc-900 mb-2">{t('education.empty')}</h3>
-              <p className="dark:text-zinc-500 text-zinc-500 text-sm">{t('education.empty_desc')}</p>
-            </motion.div>
+            <div className="mt-12 border-t border-[rgb(var(--foreground-rgb))]/15 pt-10">
+              <p className="font-mono text-[12px] uppercase tracking-[0.16em] text-[rgb(var(--foreground-rgb))]/60 m-0 mb-2">
+                — {t('education.empty')}
+              </p>
+              <p className="text-[0.95rem] text-[rgb(var(--foreground-rgb))]/60 m-0">
+                {t('education.empty_desc')}
+              </p>
+            </div>
           )}
         </div>
-      </main>
+      </section>
     </Layout>
   );
 }
@@ -188,32 +205,23 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
   try {
     await connectDB();
     const rawEducations = await Education.find({ isVisible: true }).sort({ startDate: -1 }).lean();
-    
-    const educations = rawEducations.map((edu: any) => ({
-      ...edu,
-      degree: getLocalized(edu, 'degree', currentLocale),
-      field: getLocalized(edu, 'field', currentLocale),
-      description: getLocalized(edu, 'description', currentLocale),
-      _id: edu._id.toString(),
-      startDate: edu.startDate.toISOString(),
-      endDate: edu.endDate ? edu.endDate.toISOString() : null,
-    }));
-
-    return {
-      props: { 
-        educations: JSON.parse(JSON.stringify(educations)),
-        ...(await serverSideTranslations(currentLocale, ['common'])),
-      },
-      revalidate: 60,
-    };
+    const educations = rawEducations.map((edu: any) => {
+      // Retire les données sensibles/techniques du rendu public :
+      // `diplomaData` (fichier en base64) partait tel quel dans le HTML
+      // de la page via __NEXT_DATA__ → accessible sans authentification.
+      const { diplomaData, diplomaFilePath, diplomaFileName, ...publicFields } = edu;
+      return {
+        ...publicFields,
+        degree: getLocalized(edu, 'degree', currentLocale),
+        field: getLocalized(edu, 'field', currentLocale),
+        description: getLocalized(edu, 'description', currentLocale),
+        _id: edu._id.toString(),
+        startDate: edu.startDate.toISOString(),
+        endDate: edu.endDate ? edu.endDate.toISOString() : null,
+      };
+    });
+    return { props: { educations: JSON.parse(JSON.stringify(educations)), ...(await serverSideTranslations(currentLocale, ['common'])), }, revalidate: 60 };
   } catch {
-    return { 
-      props: { 
-        educations: [],
-        ...(await serverSideTranslations(currentLocale, ['common'])),
-      }, 
-      revalidate: 60 
-    };
+    return { props: { educations: [], ...(await serverSideTranslations(currentLocale, ['common'])), }, revalidate: 60 };
   }
 };
-

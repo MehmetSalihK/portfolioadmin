@@ -1,11 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from './auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
 import formidable from 'formidable';
 import mongoose from 'mongoose';
 import path from 'path';
 import fs from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
+import { isPathInside, resolveSafePath } from '@/utils/pathSafety';
+import { extensionOf, readFileHead, sniffFileKind } from '@/utils/uploadSafety';
 let sharp: any;
 try {
   sharp = require('sharp');
@@ -93,15 +94,9 @@ async function processImageWithBlur(inputPath: string, outputPath: string, custo
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const session = await getServerSession(req, res, authOptions);
-    if (!session) {
-      return res.status(401).json({ error: 'Non autorisé' });
-    }
-
-    // Strict Admin Role Check
-    if ((session.user as any).role !== 'admin') {
-      return res.status(403).json({ error: 'Interdit : Droits administrateur requis' });
-    }
+    // Session + rôle admin en une seule vérification centralisée.
+    const guard = await requireAdmin(req, res);
+    if (!guard) return;
 
     if (req.method === 'POST') {
       if (!isVercel) {
@@ -137,6 +132,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
         if (!allowedTypes.includes(file.mimetype || '')) {
           return res.status(400).json({ error: 'Type de fichier non autorisé. Seuls PDF, JPEG et PNG sont acceptés.' });
+        }
+
+        // Le MIME est déclaré par le client (non fiable) : on vérifie
+        // l'extension (liste blanche) puis la signature réelle du fichier.
+        // Sans cela, un fichier .html/.svg pouvait être stocké et servi
+        // depuis le domaine → XSS stocké.
+        const ext = extensionOf(file.originalFilename || '');
+        if (!['.pdf', '.jpg', '.jpeg', '.png'].includes(ext)) {
+          return res.status(400).json({
+            error: 'Extension non autorisée. Seuls .pdf, .jpg, .jpeg et .png sont acceptés.',
+          });
+        }
+
+        let head: Buffer;
+        try {
+          head = await readFileHead(file.filepath, 16);
+        } catch {
+          return res.status(400).json({ error: 'Fichier illisible' });
+        }
+
+        const kind = sniffFileKind(head);
+        if (!kind) {
+          return res.status(400).json({ error: 'Contenu du fichier non reconnu (signature invalide)' });
+        }
+        if ((kind === 'pdf') !== (ext === '.pdf')) {
+          return res.status(400).json({ error: 'Le contenu du fichier ne correspond pas à son extension' });
         }
 
         const fileId = new mongoose.Types.ObjectId();
@@ -191,10 +212,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     } else if (req.method === 'DELETE') {
       const { filePath } = req.body;
-      if (filePath) {
+      if (typeof filePath === 'string' && filePath) {
         try {
           if (!isVercel) {
-            const fullPath = path.join(process.cwd(), 'public', filePath);
+            // Anti path traversal : le chemin est résolu puis contraint à
+            // public/uploads (avant : path.join(cwd, 'public', filePath)
+            // acceptait « ../../../.env » et supprimait un fichier au choix).
+            const publicDir = path.join(process.cwd(), 'public');
+            const uploadsDir = path.join(publicDir, 'uploads');
+            const relative = filePath.replace(/^\/+/, '');
+            const fullPath = resolveSafePath(publicDir, relative);
+            if (!fullPath || !isPathInside(fullPath, uploadsDir)) {
+              return res.status(400).json({ error: 'Chemin de fichier invalide' });
+            }
             if (existsSync(fullPath)) {
               await fs.unlink(fullPath);
             }

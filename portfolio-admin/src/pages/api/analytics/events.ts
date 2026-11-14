@@ -1,6 +1,22 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import dbConnect from '../../../../lib/db';
+import dbConnect from '@/lib/db';
 import mongoose from 'mongoose';
+import { requireAdmin } from '@/lib/auth-guard';
+
+/** Anonymise une IP avant stockage (minimisation PII) : /24 IPv4, /48 IPv6. */
+function anonymizeIp(value: string): string {
+  let ip = String(value).split(',')[0].trim();
+  if (ip.startsWith('::ffff:')) ip = ip.slice('::ffff:'.length);
+  if (ip.includes(':')) {
+    const groups = ip.split(':').filter((group) => group !== '').slice(0, 3);
+    return groups.length > 0 ? `${groups.join(':')}::/48` : '';
+  }
+  const parts = ip.split('.');
+  if (parts.length === 4 && parts.every((part) => /^\d{1,3}$/.test(part))) {
+    return `${parts[0]}.${parts[1]}.${parts[2]}.0`;
+  }
+  return '';
+}
 
 // Schéma pour les événements analytics
 const eventSchema = new mongoose.Schema({
@@ -51,6 +67,10 @@ export default async function handler(
   if (req.method === 'POST') {
     return handleCreateEvent(req, res);
   } else if (req.method === 'GET') {
+    // Les événements bruts contiennent IP, user-agent et sessionId (PII)
+    // : la lecture est réservée à l'administrateur. (Avant : public.)
+    const guard = await requireAdmin(req, res);
+    if (!guard) return;
     return handleGetEvents(req, res);
   } else {
     return res.status(405).json({ message: 'Method not allowed' });
@@ -72,14 +92,33 @@ async function handleCreateEvent(
       timestamp
     } = req.body;
 
-    // Validation des données requises
-    if (!event || !page || !sessionId) {
+    // Validation stricte : ce POST est public (tracking depuis le site),
+    // les types doivent être bornés pour éviter le remplissage arbitraire
+    // de la base (objets profonds, chaînes géantes).
+    if (
+      typeof event !== 'string' || !event.trim() || event.length > 100 ||
+      typeof page !== 'string' || !page.trim() || page.length > 300 ||
+      typeof sessionId !== 'string' || !sessionId.trim() || sessionId.length > 100
+    ) {
       return res.status(400).json({ 
         message: 'Event, page et sessionId sont requis' 
       });
     }
 
-    // Récupérer l'IP du client
+    const safeData =
+      data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+    try {
+      if (JSON.stringify(safeData).length > 2000) {
+        return res.status(400).json({ message: 'Données trop volumineuses' });
+      }
+    } catch {
+      return res.status(400).json({ message: 'Données invalides' });
+    }
+
+    const parsedTimestamp =
+      timestamp && !Number.isNaN(Date.parse(timestamp)) ? new Date(timestamp) : new Date();
+
+    // Récupérer l'IP du client (anonymisée avant stockage)
     const clientIp = req.headers['x-forwarded-for'] || 
                      req.headers['x-real-ip'] || 
                      req.connection.remoteAddress || 
@@ -89,13 +128,13 @@ async function handleCreateEvent(
 
     // Créer l'événement
     const analyticsEvent = new AnalyticsEvent({
-      event,
-      data: data || {},
+      event: event.trim(),
+      data: safeData,
       page,
       sessionId,
-      userAgent: req.headers['user-agent'] || '',
-      ip: Array.isArray(clientIp) ? clientIp[0] : clientIp,
-      timestamp: timestamp ? new Date(timestamp) : new Date()
+      userAgent: String(req.headers['user-agent'] || '').slice(0, 500),
+      ip: anonymizeIp(Array.isArray(clientIp) ? clientIp[0] : clientIp),
+      timestamp: parsedTimestamp
     });
 
     await analyticsEvent.save();

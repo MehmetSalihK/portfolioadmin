@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]';
+import mongoose from 'mongoose';
 import connectDB from '@/lib/db';
 import Skill from '@/models/Skill';
+import { requireAdmin } from '@/lib/auth-guard';
 
 const DEFAULT_CATEGORIES = {
   "Langages de programmation": ["JavaScript", "TypeScript", "Python"],
@@ -35,24 +35,31 @@ export default async function handler(
       }
 
     case 'POST':
+      // Écriture en base → réservée admin (avant : aucune vérification).
+      {
+        const postGuard = await requireAdmin(req, res);
+        if (!postGuard) return;
+      }
       try {
         const { name, isVisible } = req.body;
         
-        if (!name) {
+        if (typeof name !== 'string' || !name.trim() || name.length > 100) {
           return res.status(400).json({ error: 'Le nom est requis' });
         }
+        const trimmedName = name.trim();
+        const visible = typeof isVisible === 'boolean' ? isVisible : true;
 
         let skillCategory = null;
         for (const [category, skills] of Object.entries(DEFAULT_CATEGORIES)) {
-          if (skills.includes(name)) {
+          if (skills.includes(trimmedName)) {
             skillCategory = category;
             break;
           }
         }
 
         const skill = await Skill.create({
-          name,
-          isVisible,
+          name: trimmedName,
+          isVisible: visible,
           category: skillCategory
         });
 
@@ -63,17 +70,21 @@ export default async function handler(
       }
 
     case 'DELETE':
-      const deleteSession = await getServerSession(req, res, authOptions);
-      if (!deleteSession) {
-        return res.status(401).json({ message: 'Non autorisé' });
+      // Suppression → rôle admin exigé (avant : simple session).
+      {
+        const deleteGuard = await requireAdmin(req, res);
+        if (!deleteGuard) return;
       }
 
       try {
-        const { id } = req.query;
+        const id = req.query.id;
+        if (typeof id !== 'string' || !mongoose.Types.ObjectId.isValid(id)) {
+          return res.status(400).json({ error: 'Identifiant invalide' });
+        }
         await Skill.findByIdAndDelete(id);
         return res.status(200).json({ message: 'Compétence supprimée' });
       } catch (error: any) {
-        return res.status(400).json({ error: error.message });
+        return res.status(400).json({ error: 'Suppression impossible' });
       }
 
     default:

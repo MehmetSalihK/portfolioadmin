@@ -7,11 +7,13 @@ import { getLocalized } from '@/utils/i18n-utils';
 import { useRouter } from 'next/router';
 import { fr, enUS, tr } from 'date-fns/locale';
 import Head from 'next/head';
-import { motion } from 'framer-motion';
-import { FiMapPin, FiCalendar, FiCheckCircle, FiLink } from 'react-icons/fi';
+import { FiArrowUpRight } from 'react-icons/fi';
 import { GetStaticProps } from 'next';
 import Layout from '@/components/layout/Layout';
-import { useTheme } from '@/contexts/ThemeContext';
+import JSONLD from '@/components/layout/JSONLD';
+import SectionHead from '@/components/ui/SectionHead';
+import { SectionMark } from '@/components/identity/Marks';
+import { Reveal, EASE } from '@/components/motion/Reveal';
 
 interface Experience {
   _id: string;
@@ -19,8 +21,8 @@ interface Experience {
   company: string;
   location: string;
   startDate: string;
-  endDate?: string;
-  isCurrentPosition: boolean;
+  endDate?: string | null;
+  isCurrentPosition?: boolean;
   description: string;
   companyUrl?: string;
   technologies: string[];
@@ -30,8 +32,7 @@ interface ExperiencesPageProps {
   experiences: Experience[];
 }
 
-export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
-  const { theme } = useTheme();
+export default function ExperiencesPage({ experiences = [] }: ExperiencesPageProps) {
   const { t } = useTranslation('common');
   const { locale } = useRouter();
 
@@ -47,160 +48,181 @@ export default function ExperiencesPage({ experiences }: ExperiencesPageProps) {
       const d = new Date(date);
       if (isNaN(d.getTime())) return t('common.invalid_date');
       return format(d, 'MMMM yyyy', { locale: getDateLocale() });
-    } catch (e) {
+    } catch {
       return t('common.date_error');
     }
   };
 
+  const formatRange = (exp: Experience) => {
+    const start = formatDate(exp.startDate);
+    const end = exp.isCurrentPosition || !exp.endDate ? t('experience.present') : formatDate(exp.endDate);
+    return { start, end, current: exp.isCurrentPosition || !exp.endDate };
+  };
+
   return (
     <Layout>
+      <JSONLD
+        type="WebPage"
+        data={{
+          name: `${t('experience.title')} — MSK`,
+          description: t('experience.subtitle'),
+          url: 'https://mehmetsalihk.fr/experiences',
+        }}
+      />
       <Head>
-        <title>{t('experience.title')} | Portfolio Professionnel</title>
-        <meta name="description" content={t('experience.subtitle')} />
+        <title>{`${t('experience.title')} — Portfolio`}</title>
+        <meta name="description" content={t('experience.description_full')} />
+        <meta property="og:title" content={`${t('experience.title')} — Portfolio`} />
+        <meta property="og:description" content={t('experience.description_full')} />
+        <link rel="icon" href="/favicon.png" />
       </Head>
 
-      <div className="min-h-screen dark:bg-[#09090f] bg-white relative pb-32 overflow-hidden pt-40 transition-colors duration-500">
-        {/* Ambient background effects synchronized with Strategy */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] dark:bg-indigo-600/5 bg-indigo-50/40 rounded-full blur-[120px] opacity-70" />
-          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] dark:bg-violet-600/5 bg-violet-50/30 rounded-full blur-[120px] opacity-70" />
-          <div className="absolute inset-0 dark:bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.03)_0%,transparent_70%)]" />
-        </div>
+      {/* ════════════ OUVERTURE ════════════ */}
+      <section className="relative pt-[8.5rem] pb-2">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)]">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-5 mb-9 border-b border-[rgb(var(--foreground-rgb))]/15">
+            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/60">
+              {t('nav.experience')} — {t('page_label.experience')}
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/60 tabular-nums">
+              {String(experiences.length).padStart(2, '0')} {t('experience.title')}
+            </span>
+          </div>
 
-        <div className="max-w-5xl mx-auto px-6 relative z-10">
-          {/* Header Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="mb-24"
-          >
-            <div className="flex items-center gap-2 text-indigo-500 font-bold text-[10px] uppercase tracking-[0.3em] mb-6">
-              <span className="w-10 h-[1px] bg-indigo-500" />
-              {t('experience.subtitle')}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-8">
+            <div className="lg:col-span-8">
+              <h1 className="font-display font-black text-[clamp(2.5rem,7vw,6rem)] leading-[0.9] tracking-[-0.05em] m-0 text-balance">
+                {t('experience.title')}
+                <span className="font-accent text-[1.08em] text-[var(--accent-text)] dark:text-[var(--accent)]">
+                  {' '}{t('common.concrete')}
+                </span>
+                <span className="text-[var(--accent-text)] dark:text-[var(--accent)]">.</span>
+              </h1>
             </div>
-            <h1 className="text-5xl lg:text-7xl font-black dark:text-white text-zinc-900 tracking-tight mb-8">
-              {t('experience.title')} <span className="text-indigo-600 dark:text-indigo-500">{t('common.concrete')}</span>.
-            </h1>
-            <p className="text-zinc-600 dark:text-zinc-500 text-xl max-w-2xl leading-relaxed font-medium">
-              {t('experience.description_full')}
-            </p>
-          </motion.div>
+            <div className="lg:col-span-4 lg:pb-3">
+              <Reveal delay={0.25}>
+                <p className="lead m-0">{t('experience.description_full')}</p>
+              </Reveal>
+            </div>
+          </div>
+        </div>
+      </section>
 
-          {/* Timeline Section */}
-          <div className="relative">
-            {/* Timeline line - Refined */}
-            <div className="absolute left-6 md:left-[35px] top-4 bottom-4 w-px dark:bg-indigo-500/20 bg-indigo-200 block" />
-            
-            <div className="space-y-16">
-              {experiences.map((experience, index) => (
-                <motion.div
-                  key={experience._id}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="pl-16 md:pl-24 relative"
-                >
-                  {/* Timeline dot with pulse glow */}
-                  <div className="absolute left-4 md:left-[28.5px] top-9 w-4 h-4 rounded-full bg-indigo-500 border-[3px] dark:border-[#09090f] border-white shadow-[0_0_15px_rgba(99,102,241,0.4)] z-10" />
-                  
-                  <div className="dark:bg-zinc-900/40 bg-white backdrop-blur-xl rounded-[2.5rem] p-10 dark:border-white/5 border-zinc-200 border group hover:border-indigo-500/20 transition-all duration-500 shadow-sm hover:shadow-2xl overflow-hidden relative">
-                    {/* Interior glow effect */}
-                    <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/10 transition-colors" />
+      {/* ════════════ 01 — CHRONOLOGIE ════════════ */}
+      <section className="relative mt-[var(--section-gap)]">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)] pb-[var(--section-gap)]">
+          <SectionHead
+            index="01"
+            kicker={t('experience.subtitle')}
+            sigil={<SectionMark name="experience" />}
+            title={t('experience.impact_validated')}
+          />
 
-                    <div className="relative z-10">
-                      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-8 mb-10">
-                        <div>
-                           <div className="flex items-center gap-2 mb-3">
-                              <span className="px-3 py-1 bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest rounded-lg">{t('experience.active_position')}</span>
-                              <div className="w-1 h-1 rounded-full bg-indigo-500/30" />
-                           </div>
-                          <h2 className="text-3xl font-black dark:text-white text-zinc-900 tracking-tight mb-2 group-hover:text-indigo-500 transition-colors">
-                            {experience.title}
-                          </h2>
-                          <div className="flex items-center gap-3">
-                            <span className="font-bold dark:text-zinc-300 text-zinc-800 text-lg">
-                              {experience.company}
+          {experiences.length === 0 ? (
+            <div className="mt-12 border-t border-[rgb(var(--foreground-rgb))]/15 pt-10">
+              <p className="font-mono text-[12px] uppercase tracking-[0.16em] text-[rgb(var(--foreground-rgb))]/60">
+                — {t('experience.empty')}
+              </p>
+            </div>
+          ) : (
+            <div className="mt-12 border-t border-[rgb(var(--foreground-rgb))]/20">
+              {experiences.map((experience, index) => {
+                const { start, end, current } = formatRange(experience);
+                return (
+                  <Reveal key={experience._id} delay={Math.min(index * 0.06, 0.3)} amount={0.25}>
+                    <article className="group grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-5 py-8 lg:py-10 border-b border-[rgb(var(--foreground-rgb))]/12 hover:bg-[var(--color-surface)] transition-colors duration-500 ease-out-expo -mx-3 px-3">
+                      {/* Colonne date + index */}
+                      <div className="lg:col-span-3">
+                        <div className="flex items-center gap-3 mb-4">
+                          <span className="index-num text-[var(--accent-text)] dark:text-[var(--accent)] tabular-nums">
+                            {String(index + 1).padStart(2, '0')}
+                          </span>
+                          {current && (
+                            <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--accent-text)] dark:text-[var(--accent)]">
+                              <StatusDot />
+                              {t('experience.active_position')}
                             </span>
-                            <span className="dark:text-zinc-700 text-zinc-300">·</span>
-                            <span className="dark:text-zinc-500 text-zinc-500 font-medium text-sm flex items-center gap-1.5">
-                              <FiMapPin className="w-3.5 h-3.5 text-indigo-500" />
-                              {experience.location}
-                            </span>
-                          </div>
+                          )}
                         </div>
-
-                        <div className="inline-flex items-center px-5 py-2.5 dark:bg-white/5 bg-zinc-50 dark:text-zinc-400 text-zinc-600 dark:border-white/10 border-zinc-100 border rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap self-start">
-                          <FiCalendar className="w-3.5 h-3.5 mr-2 text-indigo-500" />
-                          {formatDate(experience.startDate)}
-                          <span className="mx-2 text-zinc-700">→</span>
-                          {experience.isCurrentPosition || !experience.endDate 
-                            ? <span className="text-emerald-500 font-black">{t('experience.present')}</span>
-                            : formatDate(experience.endDate)
-                          }
-                        </div>
-                      </div>
-
-                      <div className="mb-10">
-                        <p className="dark:text-zinc-400 text-zinc-600 leading-relaxed text-lg font-medium">
-                          {experience.description}
+                        <p className="font-mono text-[12px] leading-relaxed tracking-[0.03em] text-[rgb(var(--foreground-rgb))]/70 m-0 tabular-nums">
+                          {start}
+                          <span className="text-[rgb(var(--foreground-rgb))]/60"> → </span>
+                          <span className={current ? 'text-[var(--accent-text)] dark:text-[var(--accent)]' : ''}>
+                            {end}
+                          </span>
+                        </p>
+                        <p className="font-mono text-[11px] tracking-[0.04em] text-[rgb(var(--foreground-rgb))]/60 mt-2 mb-0">
+                          {experience.location}
                         </p>
                       </div>
 
-                      {experience.technologies && experience.technologies.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-10">
-                          {experience.technologies.map((tech) => (
-                            <span
-                              key={tech}
-                              className="px-3 py-1.5 dark:bg-white/5 bg-zinc-50 dark:text-zinc-500 text-zinc-500 dark:border-white/10 border-zinc-100 border rounded-xl text-[10px] font-black uppercase tracking-widest"
-                            >
-                              {tech}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="flex items-center justify-between pt-8 border-t dark:border-white/5 border-zinc-100">
-                        <div className="flex items-center gap-3">
-                           <div className="w-10 h-10 rounded-2xl dark:bg-indigo-500/10 bg-indigo-50 flex items-center justify-center border dark:border-indigo-500/20 border-indigo-100">
-                             <FiCheckCircle className="w-5 h-5 text-indigo-500" />
-                           </div>
-                                                       <span className="text-[10px] font-black dark:text-zinc-600 text-zinc-400 uppercase tracking-widest">{t('experience.impact_validated')}</span>
-                        </div>
-                        
+                      {/* Poste + société */}
+                      <div className="lg:col-span-4">
+                        <h2 className="text-[1.4rem] sm:text-[1.65rem] font-bold leading-[1.08] tracking-[-0.03em] m-0 transition-transform duration-500 ease-out-expo group-hover:translate-x-1.5">
+                          {experience.title}
+                        </h2>
+                        <p className="text-[0.975rem] font-medium text-[rgb(var(--foreground-rgb))]/75 mt-2.5 mb-0">
+                          {experience.company}
+                        </p>
                         {experience.companyUrl && (
                           <a
                             href={experience.companyUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-indigo-500 hover:text-indigo-400 font-black text-[10px] uppercase tracking-[0.2em] transition-all group/link"
+                            className="link-arrow mt-4 inline-flex text-[rgb(var(--foreground-rgb))]/60"
                           >
-                                                        {t('experience.company_details')}
-                            <FiLink className="w-3.5 h-3.5 group-hover/link:translate-x-1 group-hover/link:-translate-y-1 transition-transform" />
+                            {t('experience.company_details')} <FiArrowUpRight className="w-3.5 h-3.5" />
                           </a>
                         )}
                       </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+
+                      {/* Description + stack */}
+                      <div className="lg:col-span-5">
+                        <p className="text-[0.975rem] leading-[1.7] text-[rgb(var(--foreground-rgb))]/68 m-0 max-w-[56ch]">
+                          {experience.description}
+                        </p>
+                        {(experience.technologies || []).length > 0 && (
+                          <div className="flex flex-wrap gap-x-5 gap-y-2 mt-5 pt-4 border-t border-[rgb(var(--foreground-rgb))]/10">
+                            {experience.technologies.map((tech) => (
+                              <span key={tech} className="font-mono text-[10px] uppercase tracking-[0.14em] text-[rgb(var(--foreground-rgb))]/60">
+                                {tech}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </article>
+                  </Reveal>
+                );
+              })}
+
+              {/* Filet de clôture */}
+              <div className="flex items-center gap-4 pt-8">
+                <span className="index-num tabular-nums">
+                  {String(experiences.length).padStart(2, '0')} / {String(experiences.length).padStart(2, '0')}
+                </span>
+                <span className="h-px flex-1 bg-[rgb(var(--foreground-rgb))]/12" />
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[rgb(var(--foreground-rgb))]/60">
+                  {t('experience.present')}
+                </span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
-      </div>
+      </section>
     </Layout>
   );
 }
+
+/* Pastille « en cours » — repère d'atelier */
+const StatusDot = () => <span className="inline-block w-1.5 h-1.5 bg-[var(--accent)] shrink-0" />;
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
   const currentLocale = locale || 'fr';
   try {
     await connectDB();
     const rawExperiences = await ExperienceModel.find({ isVisible: { $ne: false } })
-      .sort({ startDate: -1 })
-      .lean();
-
+      .sort({ startDate: -1 }).lean();
     const experiences = rawExperiences.map((exp: any) => ({
       ...exp,
       _id: exp._id.toString(),
@@ -209,22 +231,12 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
       startDate: exp.startDate instanceof Date ? exp.startDate.toISOString() : new Date(exp.startDate).toISOString(),
       endDate: exp.endDate ? (exp.endDate instanceof Date ? exp.endDate.toISOString() : new Date(exp.endDate).toISOString()) : null,
     }));
-
     return {
-      props: {
-        experiences: JSON.parse(JSON.stringify(experiences)),
-        ...(await serverSideTranslations(currentLocale, ['common'])),
-      },
+      props: { experiences: JSON.parse(JSON.stringify(experiences)), ...(await serverSideTranslations(currentLocale, ['common'])), },
       revalidate: 60
     };
   } catch (error) {
     console.error('Erreur lors de la récupération des expériences:', error);
-    return {
-      props: {
-        experiences: [],
-        ...(await serverSideTranslations(currentLocale, ['common'])),
-      },
-      revalidate: 60
-    };
+    return { props: { experiences: [], ...(await serverSideTranslations(currentLocale, ['common'])), }, revalidate: 60 };
   }
 };

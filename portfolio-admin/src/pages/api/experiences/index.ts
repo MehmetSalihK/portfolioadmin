@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]';
+import { requireAdmin } from '@/lib/auth-guard';
 import connectDB from '@/lib/db';
 import Experience from '@/models/Experience';
 import { format } from 'date-fns';
@@ -9,11 +8,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const session = await getServerSession(req, res, authOptions);
-
-  if (!session) {
-    return res.status(401).json({ error: 'Non autorisé' });
-  }
+  const guard = await requireAdmin(req, res);
+  if (!guard) return;
   await connectDB();
 
   if (req.method === 'GET') {
@@ -57,10 +53,8 @@ export default async function handler(
       }
 
     case 'DELETE':
-      const deleteSession = await getServerSession(req, res, authOptions);
-      if (!deleteSession) {
-        return res.status(401).json({ message: 'Non autorisé' });
-      }
+      const deleteGuard = await requireAdmin(req, res);
+      if (!deleteGuard) return;
 
       try {
         const { id } = req.query;

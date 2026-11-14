@@ -2,11 +2,18 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '@/lib/db';
 import Admin from '@/models/Admin';
 import bcrypt from 'bcryptjs';
+import { requireAdmin } from '@/lib/auth-guard';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
+
+  // Endpoint de réinitialisation des identifiants admin → réservé admin.
+  // (Avant : tout anonyme pouvait forcer le mot de passe admin à la valeur
+  // de l'environnement en un POST.)
+  const guard = await requireAdmin(req, res);
+  if (!guard) return;
 
   try {
     await connectDB();

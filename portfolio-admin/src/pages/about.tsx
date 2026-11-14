@@ -2,19 +2,21 @@ import Head from 'next/head';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Layout from '@/components/layout/Layout';
-import { FaUser, FaCode, FaVideo, FaTools } from 'react-icons/fa';
-import { FiArrowRight } from 'react-icons/fi';
+import JSONLD, { schemas } from '@/components/layout/JSONLD';
+import { FiArrowUpRight } from 'react-icons/fi';
 import DOMPurify from 'isomorphic-dompurify';
 import parse from 'html-react-parser';
 import Link from 'next/link';
 import { GetStaticProps } from 'next';
 import { useTranslation } from 'next-i18next/pages';
 import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
-
 import { useRouter } from 'next/router';
 import connectDB from '@/lib/db';
 import Setting from '@/models/Setting';
 import { getLocalized } from '@/utils/i18n-utils';
+import SectionHead from '@/components/ui/SectionHead';
+import { SectionMark } from '@/components/identity/Marks';
+import { Reveal, RevealLines, EASE } from '@/components/motion/Reveal';
 
 interface AboutSettings {
   aboutTitle?: string;
@@ -27,138 +29,175 @@ interface AboutPageProps {
   settings: AboutSettings;
 }
 
+/* Les trois dimensions — différenciées par un traitement, pas par un arc-en-ciel */
+const expertises = [
+  { key: 'dev', index: '01', titleKey: 'about.expertise1_title', descKey: 'about.expertise1_desc', href: '/developpeur', texture: 'grid-lines' },
+  { key: 'creative', index: '02', titleKey: 'about.expertise2_title', descKey: 'about.expertise2_desc', href: '/designer', texture: 'grain' },
+  { key: 'maker', index: '03', titleKey: 'about.expertise3_title', descKey: 'about.expertise3_desc', href: '/maker', texture: 'hatch' },
+];
+
 export default function About({ settings }: AboutPageProps) {
   const { locale } = useRouter();
   const { t } = useTranslation('common');
 
-  const features = [
-    {
-      icon: <FaCode className="w-5 h-5" />,
-      title: t('about.expertise1_title'),
-      desc: t('about.expertise1_desc'),
-      accentCls: 'dark:bg-indigo-500/10 bg-indigo-50 dark:border-indigo-500/20 border-indigo-200 dark:text-indigo-400 text-indigo-600',
-    },
-    {
-      icon: <FaVideo className="w-5 h-5" />,
-      title: t('about.expertise2_title'),
-      desc: t('about.expertise2_desc'),
-      accentCls: 'dark:bg-violet-500/10 bg-violet-50 dark:border-violet-500/20 border-violet-200 dark:text-violet-400 text-violet-600',
-    },
-    {
-      icon: <FaTools className="w-5 h-5" />,
-      title: t('about.expertise3_title'),
-      desc: t('about.expertise3_desc'),
-      accentCls: 'dark:bg-emerald-500/10 bg-emerald-50 dark:border-emerald-500/20 border-emerald-200 dark:text-emerald-400 text-emerald-600',
-    },
-  ];
-
   return (
     <Layout>
+      <JSONLD type="Person" data={schemas.me} />
       <Head>
         <title>{settings.siteTitle ? `${t('about.hero_subtitle')} — ${settings.siteTitle}` : `${t('about.hero_subtitle')} — Portfolio`}</title>
         <meta name="description" content={t('about.hero_description')} />
+        <meta property="og:title" content={settings.siteTitle ? `${t('about.hero_subtitle')} — ${settings.siteTitle}` : `${t('about.hero_subtitle')} — Portfolio`} />
+        <meta property="og:description" content={t('about.hero_description')} />
+        <link rel="icon" href="/favicon.png" />
       </Head>
 
+      {/* ════════════ OUVERTURE ════════════ */}
+      <section className="relative pt-[8.5rem] pb-2">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)]">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-5 mb-9 border-b border-[rgb(var(--foreground-rgb))]/15">
+            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/60">
+              {t('nav.about')} — {t('page_label.about')}
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[rgb(var(--foreground-rgb))]/60 tabular-nums">
+              FR / EN / TR
+            </span>
+          </div>
 
-      <div className="max-w-[1100px] mx-auto px-6 pt-24 pb-24">
-        {/* HERO */}
-        <section className="mb-20 pt-8">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.2, 0, 0, 1] }}
-          >
-            <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-6">
-              {t('about.hero_subtitle')}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-10">
+            <div className="lg:col-span-8">
+              <h1 className="font-display font-black text-[clamp(2.4rem,6.6vw,5.75rem)] leading-[0.92] tracking-[-0.05em] m-0 text-balance">
+                <RevealLines delay={0.1} stagger={0.09}>
+                  <span>{t('about.hero_title_part1')} {t('about.hero_title_part2')}</span>
+                  <span>
+                    {t('about.hero_title_part3')}{' '}
+                    <span className="font-accent text-[1.1em] text-[var(--accent-text)] dark:text-[var(--accent)]">
+                      {t('about.hero_title_part4')}
+                    </span>
+                    <span className="text-[var(--accent-text)] dark:text-[var(--accent)]">.</span>
+                  </span>
+                </RevealLines>
+              </h1>
             </div>
-            <h1 className="text-5xl lg:text-6xl font-extrabold dark:text-white text-zinc-900 leading-[1.1] tracking-tight mb-6 text-balance">
-              {t('about.hero_title_part1')} <span className="text-indigo-500 italic">{t('about.hero_title_part2')}</span>,{' '}
-              {t('about.hero_title_part3')} <span className="text-indigo-500 italic">{t('about.hero_title_part4')}</span>.
-            </h1>
-            <p className="text-lg dark:text-zinc-500 text-zinc-500 max-w-[560px] leading-[1.75] font-normal">
-              {t('about.hero_description')}
-            </p>
-          </motion.div>
-        </section>
 
+            <div className="lg:col-span-4 lg:pb-3">
+              <Reveal delay={0.35}>
+                <p className="lead m-0">{t('about.hero_description')}</p>
+              </Reveal>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        {/* LES 3 IDENTITÉS */}
-        <section className="mb-20">
-          <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest mb-8">{t('about.expertises_subtitle')}</div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {features.map((f, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.07, duration: 0.3, ease: [0.2, 0, 0, 1] }}
-                className="p-6 rounded-2xl dark:bg-white/[0.02] bg-white border dark:border-white/[0.06] border-zinc-200 hover:dark:border-white/[0.1] hover:border-zinc-300 transition-all duration-200"
-              >
-                <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl mb-5 ${f.accentCls} border`}>
-                  {f.icon}
-                </div>
-                <h3 className="text-base font-bold dark:text-white text-zinc-900 mb-2 tracking-tight">{f.title}</h3>
-                <p className="text-sm dark:text-zinc-500 text-zinc-500 leading-relaxed">{f.desc}</p>
-              </motion.div>
+      {/* ════════════ 01 — TROIS EXPERTISES ════════════ */}
+      <section className="relative mt-[var(--section-gap)]">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)]">
+          <SectionHead
+            index="01"
+            kicker={t('about.expertises_subtitle')}
+            sigil={<SectionMark name="univers" />}
+            title={t('about.expertises_title')}
+          />
+
+          {/* Tablet : 2 colonnes (3 à 768px écrasait le texte à ~175px) */}
+          <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-[rgb(var(--foreground-rgb))]/15">
+            {expertises.map((e, i) => (
+              <Reveal key={e.key} delay={i * 0.07} amount={0.3}>
+                <Link
+                  href={e.href}
+                  className={`group relative block h-full p-7 lg:p-8 sm:min-h-[17rem] lg:min-h-[19rem] border-b border-[rgb(var(--foreground-rgb))]/12 lg:border-b-0 ${
+                    i % 2 === 1 ? 'sm:border-l sm:border-[rgb(var(--foreground-rgb))]/12' : ''
+                  } ${i > 0 ? 'lg:border-l lg:border-[rgb(var(--foreground-rgb))]/12' : 'lg:border-l-0' } hover:bg-[var(--color-surface)] transition-colors duration-500 ease-out-expo`}
+                >
+                  {/* Texture propre à chaque dimension */}
+                  <span aria-hidden="true" className={`absolute inset-0 pointer-events-none opacity-40 ${e.texture} transition-opacity duration-700 group-hover:opacity-70`} />
+
+                  <div className="relative flex items-start justify-between gap-4 mb-8">
+                    <span className="index-num text-[var(--accent-text)] dark:text-[var(--accent)]">{e.index}</span>
+                    <FiArrowUpRight className="w-5 h-5 text-[rgb(var(--foreground-rgb))]/60 transition-all duration-500 ease-out-expo group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-[var(--accent)]" />
+                  </div>
+
+                  <h3 className="relative text-[1.6rem] font-black leading-[1.02] tracking-[-0.035em] m-0 mb-4 transition-transform duration-500 ease-out-expo group-hover:translate-x-1.5">
+                    {t(e.titleKey)}
+                  </h3>
+
+                  <p className="relative text-[0.925rem] leading-relaxed text-[rgb(var(--foreground-rgb))]/60 m-0 max-w-[34ch]">
+                    {t(e.descKey)}
+                  </p>
+
+                  <span className="relative block h-px w-10 bg-[var(--accent)] mt-7 origin-left transition-transform duration-500 ease-out-expo group-hover:scale-x-[3]" />
+                </Link>
+              </Reveal>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* BIO */}
-        <section className="mb-16">
-          <div className="dark:bg-white/[0.02] bg-white rounded-2xl p-8 md:p-12 dark:border-white/[0.06] border-zinc-200 border">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-              <div className="lg:col-span-4">
-                {settings.aboutImage && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    className="relative aspect-square rounded-[2rem] overflow-hidden mb-8 border-4 dark:border-white/5 border-zinc-100 shadow-2xl group"
-                  >
+      {/* ════════════ 02 — BIOGRAPHIE ════════════ */}
+      {/* Pas de mt : la section précédente se termine déjà par son propre
+          rythme — mt + py doublait le vide (160px à 390px). */}
+      <section className="relative border-t border-[rgb(var(--foreground-rgb))]/15">
+        <div className="mx-auto w-full px-[var(--container-px)] max-w-[var(--container-max)] py-[var(--section-gap)]">
+          <SectionHead
+            index="02"
+            kicker={t('about.philosophy_default_title')}
+            title={settings.aboutTitle || t('about.title')}
+          />
+
+          <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--gutter)] gap-y-12 items-start">
+            {/* Portrait — planche contact (d'abord en mobile : l'ancre visuelle) */}
+            <div className="lg:col-span-4 lg:order-1 lg:sticky lg:top-28">
+              {settings.aboutImage && (
+                <motion.figure
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.8, ease: EASE }}
+                  className="m-0"
+                >
+                  <div className="relative aspect-[4/5] overflow-hidden border border-[rgb(var(--foreground-rgb))]/15 grain bg-[var(--color-surface)]">
                     <Image
                       src={settings.aboutImage}
-                      alt={settings.aboutTitle || 'Profile'}
+                      alt={settings.aboutTitle || 'Portrait'}
                       fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-110"
+                      sizes="(max-width: 1024px) 100vw, 30vw"
+                      className="object-cover grayscale contrast-[1.03] transition-all duration-1000 ease-out-expo hover:grayscale-0"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  </motion.div>
-                )}
-                <h2 className="text-2xl font-bold dark:text-white text-zinc-900 tracking-tight mb-4 text-balance">
-                  {settings.aboutTitle || t('about.philosophy_default_title')}
-                </h2>
-                <div className="w-12 h-1 bg-indigo-500 rounded-full" />
-              </div>
-              <div className="lg:col-span-8">
-                <div className="dark:text-zinc-400 text-zinc-600 text-base leading-[1.8] space-y-4">
-                  {settings.aboutBio ? (
-                    parse(DOMPurify.sanitize(settings.aboutBio))
-                  ) : (
-                    <p>{t('about.philosophy_default_bio')}</p>
-                  )}
+                  </div>
+                  <figcaption className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[rgb(var(--foreground-rgb))]/60">
+                    <span>{settings.aboutTitle || 'Portrait'}</span>
+                    <span className="tabular-nums">{locale?.toUpperCase()}</span>
+                  </figcaption>
+                </motion.figure>
+              )}
+            </div>
+
+            {/* Texte éditorial */}
+            <div className="lg:col-span-7 lg:col-start-6 order-2 lg:order-2">
+              <Reveal>
+                <div className="border-t border-[rgb(var(--foreground-rgb))]/20 pt-7">
+                  <div className="prose-editorial text-[1.05rem] leading-[1.75] text-[rgb(var(--foreground-rgb))]/78 max-w-[62ch]">
+                    {settings.aboutBio ? (
+                      parse(DOMPurify.sanitize(settings.aboutBio))
+                    ) : (
+                      <p>{t('about.philosophy_default_bio')}</p>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-4 mt-12 pt-8 border-t border-[rgb(var(--foreground-rgb))]/12">
+                    <Link href="/contact" className="btn btn-primary">
+                      {t('about.cta_project')}
+                      <FiArrowUpRight className="w-4 h-4" />
+                    </Link>
+                    <Link href="/projects" className="link-arrow text-[rgb(var(--foreground-rgb))]/65">
+                      {t('about.cta_work')} <FiArrowUpRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
                 </div>
-                <div className="mt-8 flex flex-wrap gap-4 items-center">
-                  <Link
-                    href="/contact"
-                    className="h-11 px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors duration-150 flex items-center gap-2 shadow-lg shadow-indigo-600/20"
-                  >
-                    {t('about.cta_project')}
-                    <FiArrowRight className="w-4 h-4" />
-                  </Link>
-                  <Link
-                    href="/projects"
-                    className="text-sm font-medium text-indigo-500 hover:text-indigo-400 transition-colors duration-150 flex items-center gap-1"
-                  >
-                    {t('about.cta_work')} →
-                  </Link>
-                </div>
-              </div>
+              </Reveal>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </Layout>
   );
 }
@@ -168,8 +207,6 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
   try {
     await connectDB();
     const rawSettings = await Setting.findOne({}).lean();
-    
-    // Map settings to active locale
     const settings = rawSettings ? {
       ...rawSettings,
       _id: (rawSettings as any)._id.toString(),
@@ -182,21 +219,14 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     };
 
     return {
-      props: { 
-        settings: JSON.parse(JSON.stringify(settings)),
-        ...(await serverSideTranslations(currentLocale, ['common'])),
-      },
+      props: { settings: JSON.parse(JSON.stringify(settings)), ...(await serverSideTranslations(currentLocale, ['common'])), },
       revalidate: 60,
     };
   } catch (error) {
     console.error("Error in About getStaticProps:", error);
     return {
-      props: { 
-        settings: { aboutTitle: 'Mon Parcours', aboutBio: '' },
-        ...(await serverSideTranslations(currentLocale, ['common'])),
-      },
+      props: { settings: { aboutTitle: 'Mon Parcours', aboutBio: '' }, ...(await serverSideTranslations(currentLocale, ['common'])), },
       revalidate: 60,
     };
   }
 };
-

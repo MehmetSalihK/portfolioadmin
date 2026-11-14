@@ -1,16 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "../auth/[...nextauth]";
+import { requireAdmin } from "@/lib/auth-guard";
 import connectDB from "@/lib/db";
-import Settings from "@/models/Settings";
-import HomePage from "@/models/HomePage";
 import Setting from "@/models/Setting";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  // Allow public GET access for frontend
+  // Allow public GET access for frontend — source unique du contenu du site.
   if (req.method === "GET") {
     try {
       await connectDB();
@@ -20,12 +17,9 @@ export default async function handler(
 
       if (!settings) {
         settings = {
-          email: "contact@mehmetsalihk.fr",
-          github: "https://github.com/mehmetsalihk",
-          linkedin: "https://www.linkedin.com/in/mehmetsalihk/",
           siteTitle: "Portfolio",
           siteDescription: "Mon portfolio professionnel",
-        };
+        } as any;
       }
 
       return res.status(200).json(settings);
@@ -35,90 +29,68 @@ export default async function handler(
     }
   }
 
-  const session = await getServerSession(req, res, authOptions);
-  if (!session) {
-    return res.status(401).json({ error: "Not authenticated" });
-  }
+  const guard = await requireAdmin(req, res);
+  if (!guard) return;
 
   if (req.method === "POST") {
     try {
       await connectDB();
-      console.log("Received data:", req.body);
 
-      // Créer ou mettre à jour les settings dans le modèle Setting (utilisé par la page contact et about)
-      await Setting.findOneAndUpdate(
+      // Anti opérateur Mongo / pollution de prototype : le spread
+      // `...req.body` partait tel quel dans findOneAndUpdate (un champ
+      // `$inc`/`$unset` au top-level était traité comme un opérateur).
+      const rawBody = req.body;
+      if (
+        !rawBody ||
+        typeof rawBody !== "object" ||
+        Array.isArray(rawBody) ||
+        Object.keys(rawBody).some(
+          (k) => k.startsWith("$") || ["__proto__", "constructor", "prototype"].includes(k),
+        )
+      ) {
+        return res.status(400).json({ error: "Corps de requête invalide" });
+      }
+      const body = rawBody as Record<string, unknown>;
+
+      // Source unique : le document `Setting` (singleton) est la vérité
+      // centrale du contenu du site. Plus de duplication vers les modèles
+      // `Settings` / `HomePage` (Phase 3 — content management centralisé).
+      const updated = await Setting.findOneAndUpdate(
         {},
         {
-          ...req.body,
-          phone: req.body.phone || "",
-          whatsapp: req.body.whatsapp || "",
-          telegram: req.body.telegram || "",
-          position: req.body.position || "",
-          position_en: req.body.position_en || "",
-          position_tr: req.body.position_tr || "",
-          aboutTitle: req.body.aboutTitle || "",
-          aboutTitle_en: req.body.aboutTitle_en || "",
-          aboutTitle_tr: req.body.aboutTitle_tr || "",
-          aboutBio: req.body.aboutBio || "",
-          aboutBio_en: req.body.aboutBio_en || "",
-          aboutBio_tr: req.body.aboutBio_tr || "",
-          siteDescription_en: req.body.siteDescription_en || "",
-          siteDescription_tr: req.body.siteDescription_tr || "",
+          siteTitle: String(body.siteTitle || "Portfolio"),
+          siteTitle_en: String(body.siteTitle_en || ""),
+          siteTitle_tr: String(body.siteTitle_tr || ""),
+          siteDescription: String(body.siteDescription || ""),
+          siteDescription_en: String(body.siteDescription_en || ""),
+          siteDescription_tr: String(body.siteDescription_tr || ""),
+          aboutTitle: String(body.aboutTitle || ""),
+          aboutTitle_en: String(body.aboutTitle_en || ""),
+          aboutTitle_tr: String(body.aboutTitle_tr || ""),
+          aboutBio: String(body.aboutBio || ""),
+          aboutBio_en: String(body.aboutBio_en || ""),
+          aboutBio_tr: String(body.aboutBio_tr || ""),
+          aboutImage: String(body.aboutImage || ""),
+          email: String(body.email || ""),
+          phone: String(body.phone || ""),
+          position: String(body.position || ""),
+          position_en: String(body.position_en || ""),
+          position_tr: String(body.position_tr || ""),
+          github: String(body.github || ""),
+          linkedin: String(body.linkedin || ""),
+          twitter: String(body.twitter || ""),
+          whatsapp: String(body.whatsapp || ""),
+          telegram: String(body.telegram || ""),
         },
         { upsert: true, new: true },
       );
 
-      // Créer ou mettre à jour les settings dans le modèle Settings (pour compatibilité)
-      const settings = await Settings.findOneAndUpdate(
-        {},
-        {
-          ...req.body,
-          phone: req.body.phone || "",
-          whatsapp: req.body.whatsapp || "",
-          telegram: req.body.telegram || "",
-          position: req.body.position || "",
-        },
-        { upsert: true, new: true },
-      );
-
-      // Mettre à jour HomePage
-      await HomePage.findOneAndUpdate(
-        {},
-        {
-          title: req.body.siteTitle,
-          title_en: req.body.siteTitle_en, // Added for completeness if ever used
-          title_tr: req.body.siteTitle_tr,
-          subtitle: req.body.siteDescription,
-          subtitle_en: req.body.siteDescription_en,
-          subtitle_tr: req.body.siteDescription_tr,
-          aboutTitle: req.body.aboutTitle,
-          aboutTitle_en: req.body.aboutTitle_en,
-          aboutTitle_tr: req.body.aboutTitle_tr,
-          aboutText: req.body.aboutBio,
-          aboutText_en: req.body.aboutBio_en,
-          aboutText_tr: req.body.aboutBio_tr,
-          email: req.body.email,
-          phone: req.body.phone,
-          socialLinks: {
-            github: req.body.github,
-            linkedin: req.body.linkedin,
-            twitter: req.body.twitter,
-            whatsapp: req.body.whatsapp,
-            telegram: req.body.telegram,
-          },
-        },
-        { upsert: true, new: true },
-      );
-
-      console.log("Updated settings:", settings);
-      return res.status(200).json(settings);
+      return res.status(200).json(updated);
     } catch (error) {
       console.error("Settings update error:", error);
       return res.status(500).json({ error: "Failed to update settings" });
     }
   }
-
-
 
   return res.status(405).json({ message: "Method not allowed" });
 }
