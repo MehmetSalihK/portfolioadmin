@@ -450,14 +450,6 @@ Les contributions sont les bienvenues ! Voici comment vous pouvez contribuer :
 - Mettez à jour la documentation si nécessaire
 - Utilisez des messages de commit clairs et descriptifs
 
-### 🏆 Contributeurs
-
-Merci à tous les contributeurs qui ont participé à ce projet !
-
-<a href="https://github.com/MehmetSalihK/portfolioadmin/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=MehmetSalihK/portfolioadmin" />
-</a>
-
 ## 📄 Licence
 
 Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.

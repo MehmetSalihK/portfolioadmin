@@ -450,14 +450,6 @@ Katkılar memnuniyetle karşılanır! İşte nasıl katkıda bulunabileceğiniz:
 - Gerekirse dokümantasyonu güncelleyin
 - Açık ve açıklayıcı commit mesajları kullanın
 
-### 🏆 Katkıda Bulunanlar
-
-Bu projeye katkıda bulunan herkese teşekkürler!
-
-<a href="https://github.com/MehmetSalihK/portfolioadmin/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=MehmetSalihK/portfolioadmin" />
-</a>
-
 ## 📄 Lisans
 
 Bu proje MIT Lisansı altındadır. Detaylar için [LICENSE](LICENSE) dosyasına bakın.
