@@ -33,7 +33,7 @@
 - [⚙️ Yapılandırma](#%EF%B8%8F-yapılandırma)
 - [📁 Proje Yapısı](#-proje-yapısı)
 - [🌐 API Rotaları](#-api-rotaları)
-- [🚧 Proje Durumu](#-proje-durumu)
+- [✅ Proje Durumu](#-mevcut-proje-durumu)
 - [🔧 Sorun Giderme](#-sorun-giderme)
 - [🤝 Katkıda Bulunma](#-katkıda-bulunma)
 - [📄 Lisans](#-lisans)
@@ -71,13 +71,13 @@ Portfolio Admin, profesyonel portföyünüzü çevrimiçi yönetmek için modern
 
   - Oturum yönetimi için NextAuth.js
   - Yönetici rota koruması
-  - GitHub kimlik doğrulaması
+  - Credentials kimlik doğrulama + e-posta 2FA
 
 - 📊 **Proje Yönetimi**
 
   - Kodlamadan proje Ekleme/Düzenleme/Silme
   - Önizlemeli resim yükleme
-  - Sürükle & bırak organizasyonu (yakında)
+  - Sürükle & bırak organizasyonu
   - Kategori yönetimi
   - **Etkileşimli Modal Görüntüleme**
     - Tam detayları görüntülemek için modallar
@@ -116,6 +116,12 @@ Portfolio Admin, profesyonel portföyünüzü çevrimiçi yönetmek için modern
 ## 💻 Yönetici Arayüzü
 
 Yönetici arayüzü şunları yapmanıza olanak tanır:
+
+### 0. Kontrol Paneli (Control Center)
+
+- Genel görünüm: toplu istatistikler ve son aktivite
+- Tüm bölümlere hızlı bağlantılar
+- Karanlık/açık tema ve komut paleti (⌘K)
 
 ### 1. Ana Sayfa
 
@@ -186,6 +192,7 @@ Proje artık kurumsal düzeyde güvenlik entegre ediyor:
 - **Hız Sınırlama (Rate Limiting)**: Kaba Kuvvet ve DDOS saldırılarına karşı koruma.
 - **Sterilizasyon (Sanitization)**: `isomorphic-dompurify` ile otomatik giriş temizleme (XSS) ve `zod` ile sıkı doğrulama.
 - **Güvenli Kimlik Doğrulama**: `HttpOnly` çerezleri ve güvenli oturum yönetimi kullanımı.
+- **İki Faktörlü Kimlik Doğrulama (2FA)**: Her girişte e-posta ile gönderilen tek kullanımlık kod.
 
 Tüm bu değişiklikler doğrudan yönetici arayüzünden yapılır, koda dokunmanıza gerek yoktur!
 
@@ -235,8 +242,8 @@ Tüm bu değişiklikler doğrudan yönetici arayüzünden yapılır, koda dokunm
 
 ```bash
 # Depoyu klonlayın
-git clone https://github.com/mehmetsalihkuscu/portfolio-admin.git
-cd portfolio-admin/portfolio-admin
+git clone https://github.com/MehmetSalihK/portfolioadmin.git
+cd portfolioadmin/portfolio-admin
 ```
 
 #### 2️⃣ Bağımlılıkları yükleyin
@@ -278,13 +285,6 @@ npm run dev
 # http://localhost:3000/admin
 ```
 
-### ⚡ Komut Dosyası ile Hızlı Kurulum
-
-```bash
-# Otomatik kurulum komut dosyası
-curl -fsSL https://raw.githubusercontent.com/mehmetsalihkuscu/portfolio-admin/main/install.sh | bash
-```
-
 > 💡 **İpucu**: Sisteminizde Node.js 18+ ve npm kurulu olduğundan emin olun
 
 ## ⚙️ Yapılandırma
@@ -303,13 +303,14 @@ NEXTAUTH_SECRET=votre_secret_nextauth
 ADMIN_EMAIL=votre_email_admin
 ADMIN_PASSWORD=votre_mot_de_passe_admin
 
-# GitHub OAuth
-GITHUB_ID=votre_github_id
-GITHUB_SECRET=votre_github_secret
+# GitHub Sync (kullanıcı adı + erişim jetonu)
+GITHUB_ID=github_kullanici_adi
+GITHUB_SECRET=github_jetonu
 
-# Configuration de l'API Resend
-RESEND_API_KEY=votre_cle_api_resend
-RESEND_EMAIL=votre_email_resend
+# Resend API Yapılandırması
+RESEND_API_KEY=resend_api_anahtari
+RESEND_EMAIL=resend_email
+RESEND_FROM_EMAIL=Adınız <gonderici@dogrulanan-alan>
 ```
 
 ## 📁 Proje Yapısı
@@ -318,12 +319,12 @@ RESEND_EMAIL=votre_email_resend
 portfolio-admin/
 ├── src/
 │   ├── components/      # Yeniden Kullanılabilir Bileşenler
-│   │   ├── ProjectCard.tsx        # Modal ile proje kartı
-│   │   ├── EnhancedProjectCard.tsx # Modal ile geliştirilmiş versiyon
-│   │   ├── modals/
-│   │   │   └── CVModal.tsx        # CV görüntüleme modalı
-│   │   └── ...                    # Diğer bileşenler
+│   │   ├── admin/           # Yönetim arayüzü bileşenleri
+│   │   ├── layouts/         # Düzenler (sidebar'lı AdminLayout dahil)
+│   │   ├── home/            # Ana sayfa bölümleri
+│   │   └── ...              # Diğer bileşenler
 │   ├── pages/          # Sayfalar ve API rotaları
+│   ├── services/       # İş servisleri (ör. GitHub senkronizasyonu)
 │   ├── styles/         # Global stiller
 │   ├── lib/           # Araçlar ve yapılandırmalar
 │   └── models/        # MongoDB Modelleri
@@ -333,17 +334,25 @@ portfolio-admin/
 
 ## 🌐 API Rotaları
 
-### GET /api/homepage
+### GET /api/admin/settings
 
-- Ana sayfa verilerini alır
+- Merkezi ana sayfa verilerini alır (tek `Setting` modeli)
 
-### POST /api/homepage
+### POST /api/admin/settings
 
 - Ana sayfa verilerini günceller
 
+### GET /api/dashboard/stats
+
+- Toplu yönetim paneli istatistikleri (korumalı: oturum gerekli)
+
+### POST /api/auth/send-2fa · POST /api/auth/verify-2fa
+
+- Girişte 2FA e-posta kodunu gönderir ve doğrular
+
 ### GET /api/projects
 
-- Tüm projeleri listeler
+- Projeleri listeler (arsivlenmiş projeler sunucu tarafında hariç tutulur, aktif yönetim oturumu hariç)
 
 ### POST /api/projects
 
@@ -357,63 +366,40 @@ portfolio-admin/
 
 - Bir projeyi siler
 
-## 🚧 Mevcut Proje Durumu
+## ✅ Mevcut Proje Durumu
 
 ### ✅ Tamamlanan Özellikler
 
-- GitHub ile güvenli kimlik doğrulama
+- Güvenli kimlik doğrulama (credentials) ile **e-posta 2FA** (send/verify 2FA)
+- Birleşik yönetim paneli (Control Center): istatistikler, son aktivite, hızlı bağlantılar
 - Ana sayfa için zengin metin editörü
   - Metin biçimlendirme (kalın, italik, altı çizili)
   - Renk değişikliği
   - Metin hizalama
-- Ana sayfa içerik yönetimi
+- Merkezi ana sayfa içerik yönetimi (tek `Setting` modeli)
   - Başlık ve alt başlık düzenleme
   - "Hakkında" bölümü düzenleme
   - Sosyal bağlantı yönetimi
-- Temel resim yükleme
-- MongoDB veritabanı yapısı
+- Proje yönetimi: tam CRUD, sürükle & bırak, kategoriler, sunucu tarafında arşiv filtresi
+- GitHub senkronizasyonu: depo içe aktarma, manuel düzenleme koruması, yeniden adlandırma algılama
+- Medya sistemi: galeri, kırpma, otomatik optimizasyon
+- Yedekleme ve sürümler: dışa/içe aktarma, geri yükleme
+- SEO, bakım modu, mesajlar, dinamik CV (dosya varsa buton görünür)
+- Çok dilli FR/EN/TR (anahtar simetrisi script ile doğrulanır) + karanlık/açık tema
 - **Gelişmiş Proje Görüntüleme**
   - Tam proje detayları için etkileşimli modallar
-  - Stilize edilmiş "Daha fazla oku" butonları (mavi ve altı çizili)
-  - Modallarda büyük format resim görüntüleme
-  - Teknolojiler ve bağlantılarla tam açıklama
-  - Arka plan etkileşimini engelleme
-  - Dış tıklama veya kapatma butonu ile kapatma
-  - Akıcı animasyonlar ve duyarlı tasarım
-  - Karanlık mod desteği
-  - Modaller açıldığında sayfa kaydırma engelleme
+  - Büyük format resimler, akıcı animasyonlar, duyarlı tasarım
+  - Karanlık mod desteği, sayfa kaydırma engelleme
 
-### 🔄 Geliştirme Aşamasında
+### ⏳ Bekleyen (gerçek doğrulama)
 
-- Tam yönetici arayüzü
-  - İstatistikli ana kontrol paneli
-  - Bölümler arası sezgisel navigasyon
-  - Karanlık/açık tema
-- Gelişmiş proje yönetimi
-  - Yeniden düzenleme için sürükle & bırak arayüzü
-  - Proje kategorizasyonu
-  - Etiketler ve filtreler
-- Geliştirilmiş medya sistemi
-  - Resim galerisi
-  - Kırpma ve yeniden boyutlandırma
-  - Otomatik optimizasyon
-- Değişikliklerin gerçek zamanlı önizlemesi
-
-### 📝 Planlanan Özellikler
-
-- Analitik ve istatistikler
-  - Ziyaret takibi
-  - Sayfa başına geçirilen zaman
-- Yedekleme ve versiyon sistemi
-- Veri dışa/içe aktarma
-- Bakım modu
-- Gelişmiş SEO optimizasyonu
-- Otomatik testler
-- Tam API dokümantasyonu
+- Gerçek 2FA e-posta gönderimi (doğrulanmış Resend alanı + `RESEND_FROM_EMAIL`)
+- Uçtan uca testler: giriş → 2FA → oturum, CV yükleme → buton görünümü
+- Masaüstü/mobil görsel inceleme (tarayıcı)
 
 ## ⚠️ Önemli Not
 
-Bu proje şu anda aktif geliştirme aşamasındadır. Bazı özellikler kararsız veya eksik olabilir. Katkılar ve geri bildirimler memnuniyetle karşılanır!
+Bu proje aktif üretimdedir. Katkılar ve geri bildirimler memnuniyetle karşılanır!
 
 ## 🔧 Sorun Giderme
 
@@ -439,7 +425,7 @@ Katkılar memnuniyetle karşılanır! İşte nasıl katkıda bulunabileceğiniz:
 
 ### 🐛 Hata Bildirin
 
-1. Hatanın [Issues](https://github.com/mehmetsalihkuscu/portfolio-admin/issues) bölümünde zaten bildirilmediğini kontrol edin
+1. Hatanın [Issues](https://github.com/MehmetSalihK/portfolioadmin/issues) bölümünde zaten bildirilmediğini kontrol edin
 2. "Bug Report" şablonu ile yeni bir sorun oluşturun
 3. Sorunu yeniden oluşturma adımları ile detaylıca açıklayın
 
@@ -468,8 +454,8 @@ Katkılar memnuniyetle karşılanır! İşte nasıl katkıda bulunabileceğiniz:
 
 Bu projeye katkıda bulunan herkese teşekkürler!
 
-<a href="https://github.com/mehmetsalihkuscu/portfolio-admin/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=mehmetsalihkuscu/portfolio-admin" />
+<a href="https://github.com/MehmetSalihK/portfolioadmin/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=MehmetSalihK/portfolioadmin" />
 </a>
 
 ## 📄 Lisans

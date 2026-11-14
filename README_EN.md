@@ -33,7 +33,7 @@
 - [⚙️ Configuration](#%EF%B8%8F-configuration)
 - [📁 Project Structure](#-project-structure)
 - [🌐 API Routes](#-api-routes)
-- [🚧 Project Status](#-project-status)
+- [✅ Project Status](#-current-project-status)
 - [🔧 Troubleshooting](#-troubleshooting)
 - [🤝 Contribution](#-contribution)
 - [📄 License](#-license)
@@ -71,13 +71,13 @@ Portfolio Admin is a modern and intuitive **no-code** solution for managing your
 
   - NextAuth.js for session management
   - Admin route protection
-  - GitHub authentication
+  - Credentials authentication + email 2FA
 
 - 📊 **Project Management**
 
   - Add/Edit/Delete projects without coding
   - Image upload with preview
-  - Drag & drop organization (coming soon)
+  - Drag & drop organization
   - Category management
   - **Interactive Modal Display**
     - Modals to view complete details
@@ -116,6 +116,12 @@ Portfolio Admin is a modern and intuitive **no-code** solution for managing your
 ## 💻 Admin Interface
 
 The admin interface allows you to:
+
+### 0. Dashboard (Control Center)
+
+- Overview: aggregated statistics and recent activity
+- Quick links to all sections
+- Dark/light theme and command palette (⌘K)
 
 ### 1. Homepage
 
@@ -186,6 +192,7 @@ The project now integrates enterprise-grade security:
 - **Rate Limiting**: Protection against Brute-Force and DDOS attacks.
 - **Sanitization**: Automatic input cleaning (XSS) with `isomorphic-dompurify` and strict validation with `zod`.
 - **Secure Authentication**: Use of `HttpOnly` cookies and secure session management.
+- **Two-Factor Authentication (2FA)**: One-time code sent by email at every login.
 
 All these modifications are done directly from the admin interface, without needing to touch the code!
 
@@ -235,8 +242,8 @@ All these modifications are done directly from the admin interface, without need
 
 ```bash
 # Clone the repository
-git clone https://github.com/mehmetsalihkuscu/portfolio-admin.git
-cd portfolio-admin/portfolio-admin
+git clone https://github.com/MehmetSalihK/portfolioadmin.git
+cd portfolioadmin/portfolio-admin
 ```
 
 #### 2️⃣ Install dependencies
@@ -278,13 +285,6 @@ npm run dev
 # http://localhost:3000/admin
 ```
 
-### ⚡ Quick Installation with Script
-
-```bash
-# Automatic installation script
-curl -fsSL https://raw.githubusercontent.com/mehmetsalihkuscu/portfolio-admin/main/install.sh | bash
-```
-
 > 💡 **Tip**: Make sure you have Node.js 18+ and npm installed on your system
 
 ## ⚙️ Configuration
@@ -303,13 +303,14 @@ NEXTAUTH_SECRET=your_nextauth_secret
 ADMIN_EMAIL=your_admin_email
 ADMIN_PASSWORD=your_admin_password
 
-# GitHub OAuth
-GITHUB_ID=your_github_id
-GITHUB_SECRET=your_github_secret
+# GitHub Sync (kullanıcı adı + erişim jetonu)
+GITHUB_ID=your_github_username
+GITHUB_SECRET=your_github_token
 
 # Resend API Configuration
 RESEND_API_KEY=your_resend_api_key
 RESEND_EMAIL=your_resend_email
+RESEND_FROM_EMAIL=Your Name <sender@your-verified-domain>
 ```
 
 ## 📁 Project Structure
@@ -318,12 +319,12 @@ RESEND_EMAIL=your_resend_email
 portfolio-admin/
 ├── src/
 │   ├── components/      # Reusable Components
-│   │   ├── ProjectCard.tsx        # Project card with modal
-│   │   ├── EnhancedProjectCard.tsx # Enhanced version with modal
-│   │   ├── modals/
-│   │   │   └── CVModal.tsx        # CV display modal
-│   │   └── ...                    # Other components
+│   │   ├── admin/           # Admin interface components
+│   │   ├── layouts/         # Layouts (incl. AdminLayout with sidebar)
+│   │   ├── home/            # Homepage sections
+│   │   └── ...              # Other components
 │   ├── pages/          # Pages and API routes
+│   ├── services/       # Business services (e.g. GitHub sync)
 │   ├── styles/         # Global styles
 │   ├── lib/           # Utilities and configuration
 │   └── models/        # MongoDB Models
@@ -333,17 +334,25 @@ portfolio-admin/
 
 ## 🌐 API Routes
 
-### GET /api/homepage
+### GET /api/admin/settings
 
-- Retrieves homepage data
+- Retrieves centralized homepage data (single `Setting` model)
 
-### POST /api/homepage
+### POST /api/admin/settings
 
 - Updates homepage data
 
+### GET /api/dashboard/stats
+
+- Aggregated admin dashboard statistics (protected: session required)
+
+### POST /api/auth/send-2fa · POST /api/auth/verify-2fa
+
+- Sends and verifies the 2FA email code at login
+
 ### GET /api/projects
 
-- Lists all projects
+- Lists projects (archived projects are excluded server-side unless an admin session is active)
 
 ### POST /api/projects
 
@@ -357,63 +366,40 @@ portfolio-admin/
 
 - Deletes a project
 
-## 🚧 Current Project Status
+## ✅ Current Project Status
 
 ### ✅ Completed Features
 
-- Secure authentication with GitHub
+- Secure credential authentication with **email 2FA** (send/verify 2FA)
+- Unified admin dashboard (Control Center): statistics, recent activity, quick links
 - Rich text editor for homepage
   - Text formatting (bold, italic, underline)
   - Color change
   - Text alignment
-- Homepage content management
+- Centralized homepage content management (single `Setting` model)
   - Title and subtitle editing
   - "About" section editing
   - Social links management
-- Basic image upload
-- MongoDB database structure
+- Project management: full CRUD, drag & drop, categories, server-side archived filter
+- GitHub sync: repository import, manual-edit overwrite guard, rename detection
+- Media system: gallery, cropping, automatic optimization
+- Backups and versions: export/import, restore
+- SEO, maintenance mode, messages, dynamic CV (button shown only when a file exists)
+- Multi-language FR/EN/TR (key symmetry verified by script) + dark/light theme
 - **Advanced Project Display**
   - Interactive modals for complete project details
-  - Styled "Read more" buttons (blue and underlined)
-  - Large format image display in modals
-  - Complete description with technologies and links
-  - Background interaction prevention
-  - Closing by outside click or close button
-  - Smooth animations and responsive design
-  - Dark mode support
-  - Page scroll blocking when modals open
+  - Large format images, smooth animations, responsive design
+  - Dark mode support, page scroll blocking
 
-### 🔄 In Development
+### ⏳ Pending (real-world validation)
 
-- Complete admin interface
-  - Main dashboard with statistics
-  - Intuitive navigation between sections
-  - Dark/light theme
-- Advanced project management
-  - Drag & drop interface for reorganization
-  - Project categorization
-  - Tags and filters
-- Enhanced media system
-  - Image gallery
-  - Cropping and resizing
-  - Automatic optimization
-- Real-time modification preview
-
-### 📝 Planned Features
-
-- Analytics and statistics
-  - Visit tracking
-  - Time spent per page
-- Backup and version system
-- Data export/import
-- Maintenance mode
-- Advanced SEO optimization
-- Automated tests
-- Complete API documentation
+- Real 2FA email delivery (verified Resend domain + `RESEND_FROM_EMAIL`)
+- End-to-end tests: login → 2FA → session, CV upload → button display
+- Desktop/mobile visual review (browser)
 
 ## ⚠️ Important Note
 
-This project is currently in active development. Some features may be unstable or incomplete. Contributions and feedback are welcome!
+This project is in active production. Contributions and feedback are welcome!
 
 ## 🔧 Troubleshooting
 
@@ -439,7 +425,7 @@ Contributions are welcome! Here is how you can contribute:
 
 ### 🐛 Report a Bug
 
-1. Check if the bug has not already been reported in [Issues](https://github.com/mehmetsalihkuscu/portfolio-admin/issues)
+1. Check if the bug has not already been reported in [Issues](https://github.com/MehmetSalihK/portfolioadmin/issues)
 2. Create a new issue with the "Bug Report" template
 3. Describe the problem in detail with reproduction steps
 
@@ -468,8 +454,8 @@ Contributions are welcome! Here is how you can contribute:
 
 Thanks to all contributors who participated in this project!
 
-<a href="https://github.com/mehmetsalihkuscu/portfolio-admin/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=mehmetsalihkuscu/portfolio-admin" />
+<a href="https://github.com/MehmetSalihK/portfolioadmin/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=MehmetSalihK/portfolioadmin" />
 </a>
 
 ## 📄 License

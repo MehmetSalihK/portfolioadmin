@@ -33,7 +33,7 @@
 - [⚙️ Configuration](#⚙️-configuration)
 - [📁 Structure du projet](#📁-structure-du-projet)
 - [🌐 API Routes](#🌐-api-routes)
-- [🚧 État du projet](#🚧-état-actuel-du-projet)
+- [✅ État du projet](#-état-actuel-du-projet)
 - [🔧 Dépannage](#🔧-dépannage)
 - [🤝 Contribution](#🤝-contribution)
 - [📄 Licence](#📄-licence)
@@ -71,13 +71,13 @@ Portfolio Admin est une solution **no-code** moderne et intuitive pour gérer vo
 
   - NextAuth.js pour la gestion des sessions
   - Protection des routes admin
-  - Authentification GitHub
+  - Authentification credentials + 2FA par email
 
 - 📊 **Gestion des Projets**
 
   - Ajout/Modification/Suppression de projets sans coder
   - Upload d'images avec prévisualisation
-  - Organisation par drag & drop (à venir)
+  - Organisation par drag & drop
   - Gestion des catégories
   - **Affichage modal interactif**
     - Modales pour visualiser les détails complets
@@ -116,6 +116,12 @@ Portfolio Admin est une solution **no-code** moderne et intuitive pour gérer vo
 ## 💻 Interface d'Administration
 
 L'interface d'administration vous permet de :
+
+### 0. Dashboard (Control Center)
+
+- Vue d'ensemble : statistiques agrégées et activité récente
+- Liens rapides vers toutes les sections
+- Thème sombre/clair et palette de commandes (⌘K)
 
 ### 1. Page d'Accueil
 
@@ -186,6 +192,7 @@ Le projet intègre désormais une sécurité de niveau entreprise :
 - **Rate Limiting** : Protection contre les attaques par force brute et DDOS.
 - **Sanitization** : Nettoyage automatique des entrées (XSS) avec `isomorphic-dompurify` et validation stricte avec `zod`.
 - **Authentification Sécurisée** : Utilisation de cookies `HttpOnly` et gestion sécurisée des sessions.
+- **Double Authentification (2FA)** : Code à usage unique envoyé par email à chaque connexion.
 
 Toutes ces modifications se font directement depuis l'interface d'administration, sans avoir besoin de toucher au code !
 
@@ -235,8 +242,8 @@ Toutes ces modifications se font directement depuis l'interface d'administration
 
 ```bash
 # Clonez le repository
-git clone https://github.com/mehmetsalihkuscu/portfolio-admin.git
-cd portfolio-admin/portfolio-admin
+git clone https://github.com/MehmetSalihK/portfolioadmin.git
+cd portfolioadmin/portfolio-admin
 ```
 
 #### 2️⃣ Installer les dépendances
@@ -278,13 +285,6 @@ npm run dev
 # http://localhost:3000/admin
 ```
 
-### ⚡ Installation rapide avec un seul script
-
-```bash
-# Script d'installation automatique
-curl -fsSL https://raw.githubusercontent.com/mehmetsalihkuscu/portfolio-admin/main/install.sh | bash
-```
-
 > 💡 **Astuce** : Assurez-vous d'avoir Node.js 18+ et npm installés sur votre système
 
 ## ⚙️ Configuration
@@ -303,13 +303,14 @@ NEXTAUTH_SECRET=votre_secret_nextauth
 ADMIN_EMAIL=votre_email_admin
 ADMIN_PASSWORD=votre_mot_de_passe_admin
 
-# GitHub OAuth
-GITHUB_ID=votre_github_id
-GITHUB_SECRET=votre_github_secret
+# GitHub Sync (nom d'utilisateur + token d'accès en lecture)
+GITHUB_ID=votre_nom_utilisateur_github
+GITHUB_SECRET=votre_token_github
 
 # Configuration de l'API Resend
 RESEND_API_KEY=votre_cle_api_resend
 RESEND_EMAIL=votre_email_resend
+RESEND_FROM_EMAIL=Votre Nom <expediteur@votre-domaine-verifie>
 ```
 
 ## 📁 Structure du projet
@@ -318,12 +319,12 @@ RESEND_EMAIL=votre_email_resend
 portfolio-admin/
 ├── src/
 │   ├── components/      # Composants réutilisables
-│   │   ├── ProjectCard.tsx        # Carte de projet avec modal
-│   │   ├── EnhancedProjectCard.tsx # Version améliorée avec modal
-│   │   ├── modals/
-│   │   │   └── CVModal.tsx        # Modale d'affichage du CV
-│   │   └── ...                    # Autres composants
+│   │   ├── admin/           # Composants de l'interface d'administration
+│   │   ├── layouts/         # Layouts (dont AdminLayout avec sidebar)
+│   │   ├── home/            # Sections de la page d'accueil
+│   │   └── ...              # Autres composants
 │   ├── pages/          # Pages et API routes
+│   ├── services/       # Services métier (ex. synchronisation GitHub)
 │   ├── styles/         # Styles globaux
 │   ├── lib/           # Utilitaires et configurations
 │   └── models/        # Modèles MongoDB
@@ -333,17 +334,25 @@ portfolio-admin/
 
 ## 🌐 API Routes
 
-### GET /api/homepage
+### GET /api/admin/settings
 
-- Récupère les données de la page d'accueil
+- Récupère les données centralisées de la page d'accueil (modèle `Setting` unique)
 
-### POST /api/homepage
+### POST /api/admin/settings
 
 - Met à jour les données de la page d'accueil
 
+### GET /api/dashboard/stats
+
+- Statistiques agrégées du dashboard admin (protégé : session requise)
+
+### POST /api/auth/send-2fa · POST /api/auth/verify-2fa
+
+- Envoi et vérification du code 2FA par email lors du login
+
 ### GET /api/projects
 
-- Liste tous les projets
+- Liste les projets (les projets archivés sont exclus côté serveur, sauf session admin)
 
 ### POST /api/projects
 
@@ -357,63 +366,40 @@ portfolio-admin/
 
 - Supprime un projet
 
-## 🚧 État Actuel du Projet
+## ✅ État Actuel du Projet
 
 ### ✅ Fonctionnalités Terminées
 
-- Authentification sécurisée avec GitHub
+- Authentification sécurisée (credentials) avec **2FA par email** (send/verify 2FA)
+- Dashboard admin unifié (Control Center) : statistiques, activité récente, liens rapides
 - Éditeur de texte riche pour la page d'accueil
   - Formatage du texte (gras, italique, souligné)
   - Changement de couleur
   - Alignement du texte
-- Gestion du contenu de la page d'accueil
+- Gestion du contenu de la page d'accueil centralisée (modèle `Setting` unique)
   - Modification du titre et sous-titre
   - Édition de la section "À propos"
   - Gestion des liens sociaux
-- Upload d'images basique
-- Structure de base de données MongoDB
+- Gestion des projets : CRUD complet, drag & drop, catégories, filtre des archivés côté serveur
+- Synchronisation GitHub : import des dépôts, garde anti-écrasement des éditions manuelles, détection de renommage
+- Système de médias : galerie, recadrage, optimisation automatique
+- Sauvegardes et versions : export/import, restauration
+- SEO, mode maintenance, messages, CV dynamique (bouton selon présence de fichier)
+- Multi-langues FR/EN/TR (symétrie des clés vérifiée par script) + thème sombre/clair
 - **Affichage avancé des projets**
   - Modales interactives pour les détails complets des projets
-  - Boutons "Lire plus" stylisés (bleu et soulignés)
-  - Affichage des images en grand format dans les modales
-  - Description complète avec technologies et liens
-  - Prévention de l'interaction avec l'arrière-plan
-  - Fermeture par clic extérieur ou bouton de fermeture
-  - Animations fluides et design responsive
-  - Support du mode sombre
-  - Blocage du défilement de la page lors de l'ouverture des modales
+  - Images en grand format, animations fluides, design responsive
+  - Support du mode sombre, blocage du défilement
 
-### 🔄 En Cours de Développement
+### ⏳ En Attente (validation réelle)
 
-- Interface d'administration complète
-  - Dashboard principal avec statistiques
-  - Navigation intuitive entre les sections
-  - Thème sombre/clair
-- Gestion avancée des projets
-  - Interface drag & drop pour réorganiser
-  - Catégorisation des projets
-  - Tags et filtres
-- Système de médias amélioré
-  - Galerie d'images
-  - Recadrage et redimensionnement
-  - Optimisation automatique
-- Prévisualisation en temps réel des modifications
-
-### 📝 Fonctionnalités Prévues
-
-- Analytics et statistiques
-  - Suivi des visites
-  - Temps passé par page
-- Système de sauvegarde et versions
-- Export/Import des données
-- Mode maintenance
-- Optimisation SEO avancée
-- Tests automatisés
-- Documentation API complète
+- Envoi réel des emails 2FA (domaine Resend vérifié + `RESEND_FROM_EMAIL`)
+- Tests bout-en-bout : login → 2FA → session, upload CV → affichage du bouton
+- Passe visuelle desktop/mobile (navigateur)
 
 ## ⚠️ Note Importante
 
-Ce projet est actuellement en développement actif. Certaines fonctionnalités peuvent être instables ou incomplètes. Les contributions et retours sont les bienvenus !
+Ce projet est en production active. Les contributions et retours sont les bienvenus !
 
 ## 🔧 Dépannage
 
@@ -439,7 +425,7 @@ Les contributions sont les bienvenues ! Voici comment vous pouvez contribuer :
 
 ### 🐛 Signaler un bug
 
-1. Vérifiez que le bug n'a pas déjà été signalé dans les [Issues](https://github.com/mehmetsalihkuscu/portfolio-admin/issues)
+1. Vérifiez que le bug n'a pas déjà été signalé dans les [Issues](https://github.com/MehmetSalihK/portfolioadmin/issues)
 2. Créez une nouvelle issue avec le template "Bug Report"
 3. Décrivez le problème en détail avec des étapes de reproduction
 
@@ -468,8 +454,8 @@ Les contributions sont les bienvenues ! Voici comment vous pouvez contribuer :
 
 Merci à tous les contributeurs qui ont participé à ce projet !
 
-<a href="https://github.com/mehmetsalihkuscu/portfolio-admin/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=mehmetsalihkuscu/portfolio-admin" />
+<a href="https://github.com/MehmetSalihK/portfolioadmin/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=MehmetSalihK/portfolioadmin" />
 </a>
 
 ## 📄 Licence
